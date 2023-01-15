@@ -1,10 +1,9 @@
-import org.jetbrains.compose.compose
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("multiplatform")
     id("org.jetbrains.compose")
+    id("com.squareup.sqldelight")
 }
 
 group = "com.shimmermare.stuffiread"
@@ -24,12 +23,29 @@ kotlin {
         withJava()
     }
     sourceSets {
-        val jvmMain by getting {
+        val commonMain by getting {
             dependencies {
                 implementation(compose.desktop.currentOs)
+                implementation("com.squareup.sqldelight:sqlite-driver:${extra["sqldelight.version"]}")
+                implementation("com.squareup.sqldelight:coroutines-extensions-jvm:${extra["sqldelight.version"]}")
+            }
+            sqldelight {
+                database("Database") {
+                    packageName = "com.shimmermare.stuffiread.db"
+                }
             }
         }
+
+        val commonTest by getting
+
+        val jvmMain by getting {
+
+        }
+
         val jvmTest by getting
+
+        // Suppress unused warning
+        listOf(commonMain, commonTest, jvmMain, jvmTest)
     }
 }
 
