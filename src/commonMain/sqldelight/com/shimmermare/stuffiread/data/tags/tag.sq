@@ -1,0 +1,89 @@
+import kotlin.Int;
+
+CREATE TABLE IF NOT EXISTS tag
+(
+    id          INTEGER AS Int PRIMARY KEY AUTOINCREMENT,
+    name        TEXT NOT NULL UNIQUE,
+    categoryId  INTEGER AS Int NOT NULL,
+    description TEXT,
+    FOREIGN KEY(categoryId) REFERENCES tagCategory(id)
+);
+
+selectById:
+SELECT *
+FROM tag
+WHERE id = ?;
+
+selectByIds:
+SELECT *
+FROM tag
+WHERE id IN ?;
+
+selectNameById:
+SELECT name
+FROM tag
+WHERE id = ?;
+
+selectByName:
+SELECT *
+FROM tag
+WHERE name = ?;
+
+selectIdByName:
+SELECT id
+FROM tag
+WHERE name = ?;
+
+selectExistingIds:
+SELECT id FROM tag WHERE id IN ?;
+
+countByCategory:
+SELECT count(*) FROM tag WHERE categoryId = ?;
+
+selectByCategory:
+SELECT * FROM tag WHERE categoryId = ?;
+
+selectByCategoryIncludingImplied:
+SELECT tag.id                  AS id,
+       tag.categoryId                AS categoryId,
+       tag.name                AS name,
+       tag.description         AS description,
+       tagWithParent.impliedBy AS impliedBy
+FROM tag,
+     (WITH RECURSIVE tagWithParent(id, impliedBy) AS (SELECT id, 0
+                                                      FROM tag
+                                                      WHERE categoryId = ?
+                                                      UNION
+                                                      SELECT tagImplied.impliedTagId, tagWithParent.id
+                                                      FROM tagImplied,
+                                                           tagWithParent
+                                                      WHERE tagImplied.implyingTagId = tagWithParent.id)
+      SELECT id, coalesce(max(impliedBy), 0) AS impliedBy
+      FROM tagWithParent
+      GROUP BY id) AS tagWithParent
+WHERE tag.id = tagWithParent.id;
+
+selectAll:
+SELECT *
+FROM tag;
+
+insert:
+INSERT INTO tag(name, categoryId, description)
+VALUES (?, ?, ?);
+
+update:
+UPDATE tag
+SET name = ?,
+    categoryId = ?,
+    description = ?
+WHERE id = ?;
+
+changeTagCategory:
+UPDATE tag SET categoryId = :toCategoryId WHERE categoryId = :fromCategoryId;
+
+selectLastInserted:
+SELECT * FROM tag WHERE id = last_insert_rowid();
+
+delete:
+DELETE FROM tag
+WHERE id = ?;

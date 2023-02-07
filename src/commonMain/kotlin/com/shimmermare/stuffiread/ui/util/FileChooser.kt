@@ -4,6 +4,7 @@ import java.nio.file.Path
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileFilter
 import javax.swing.filechooser.FileSystemView
+import kotlin.io.path.extension
 
 fun showOpenDialog(
     title: String? = null,
@@ -34,7 +35,8 @@ fun showSaveDialog(
     selectedFile: Path? = null,
     fileSelectionMode: Int = JFileChooser.FILES_ONLY,
     isAcceptAllFileFilterUsed: Boolean = false,
-    fileFilter: FileFilter? = null
+    fileFilter: FileFilter? = null,
+    extension: String? = null
 ): Path? {
     val fileChooser = JFileChooser(FileSystemView.getFileSystemView())
     fileChooser.currentDirectory = currentDirectory?.toFile()
@@ -44,9 +46,14 @@ fun showSaveDialog(
     fileChooser.isAcceptAllFileFilterUsed = isAcceptAllFileFilterUsed
     fileChooser.fileFilter = fileFilter
 
-    return if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-        fileChooser.selectedFile?.toPath()
-    } else {
-        null
+    if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+        val result = fileChooser.selectedFile?.toPath() ?: return null
+        return if (result.extension != extension && extension != null) {
+            result.resolveSibling("${result.fileName}.$extension")
+        } else {
+            result
+        }
     }
+
+    return null
 }

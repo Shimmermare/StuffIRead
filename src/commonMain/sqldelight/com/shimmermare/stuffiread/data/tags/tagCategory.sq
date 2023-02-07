@@ -1,0 +1,58 @@
+import kotlin.Int;
+
+CREATE TABLE IF NOT EXISTS tagCategory
+(
+    id          INTEGER AS Int PRIMARY KEY AUTOINCREMENT,
+    name        TEXT NOT NULL UNIQUE,
+    description TEXT,
+    sortOrder   INTEGER AS Int NOT NULL DEFAULT 0,
+    color       INTEGER AS Int NOT NULL DEFAULT -16730881
+);
+
+selectById:
+SELECT *
+FROM tagCategory
+WHERE id = ?;
+
+selectNameById:
+SELECT name
+FROM tagCategory
+WHERE id = ?;
+
+selectColorsByIds:
+SELECT id, color
+FROM tagCategory
+WHERE id IN ?;
+
+selectByName:
+SELECT *
+FROM tagCategory
+WHERE name = ?;
+
+selectIdByName:
+SELECT id
+FROM tagCategory
+WHERE name = ?;
+
+selectAll:
+SELECT *
+FROM tagCategory;
+
+insert:
+INSERT INTO tagCategory(name, description, sortOrder, color)
+VALUES (?, ?, ?, ?);
+
+update:
+UPDATE tagCategory
+SET name = ?,
+    description = ?,
+    sortOrder = ?,
+    color = ?
+WHERE id = ?;
+
+selectLastInserted:
+SELECT * FROM tagCategory WHERE id = last_insert_rowid();
+
+delete:
+DELETE FROM tagCategory
+WHERE id = ?;

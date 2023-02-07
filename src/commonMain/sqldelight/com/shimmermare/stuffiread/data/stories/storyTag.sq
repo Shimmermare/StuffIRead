@@ -1,0 +1,32 @@
+import kotlin.Int;
+
+CREATE TABLE IF NOT EXISTS storyTag
+(
+    story          INTEGER AS Int NOT NULL,
+    tag         INTEGER AS Int NOT NULL,
+    PRIMARY KEY (story, tag),
+    FOREIGN KEY(story) REFERENCES story(id) ON DELETE CASCADE,
+    FOREIGN KEY(tag) REFERENCES tag(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_storyTag_story ON storyTag(story);
+CREATE INDEX idx_storyTag_tag ON storyTag(tag);
+
+selectTagsForStory:
+SELECT tag
+FROM storyTag
+WHERE story = ?;
+
+selectTagsForStories:
+SELECT story, tag
+FROM storyTag
+WHERE story IN ?;
+
+deleteTagsForStory:
+DELETE FROM storyTag WHERE story = ?;
+
+deleteTagsForStoryExcept:
+DELETE FROM storyTag WHERE story = ? AND tag NOT IN ?;
+
+insertOrIgnore:
+INSERT OR IGNORE INTO storyTag VALUES (?, ?);

@@ -1,0 +1,31 @@
+import kotlin.Int;
+
+CREATE TABLE IF NOT EXISTS tagImplied
+(
+    implyingTagId   INTEGER AS Int NOT NULL,
+    impliedTagId    INTEGER AS Int NOT NULL,
+    PRIMARY KEY (implyingTagId, impliedTagId),
+    FOREIGN KEY(implyingTagId) REFERENCES tag(id) ON DELETE CASCADE,
+    FOREIGN KEY(impliedTagId) REFERENCES tag(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_tagImplied_tag ON tagImplied(implyingTagId);
+CREATE INDEX idx_tagImplied_implied ON tagImplied(impliedTagId);
+
+selectImpliedForTag:
+SELECT impliedTagId FROM tagImplied WHERE implyingTagId = ?;
+
+selectImpliedForTags:
+SELECT implyingTagId, impliedTagId FROM tagImplied WHERE implyingTagId IN ?;
+
+selectImplyingForTag:
+SELECT implyingTagId FROM tagImplied WHERE impliedTagId = ?;
+
+deleteImpliedForTag:
+DELETE FROM tagImplied WHERE implyingTagId = ?;
+
+deleteImpliedForTagExcept:
+DELETE FROM tagImplied WHERE implyingTagId = ? AND impliedTagId NOT IN ?;
+
+insertOrIgnore:
+INSERT OR IGNORE INTO tagImplied VALUES (?, ?);

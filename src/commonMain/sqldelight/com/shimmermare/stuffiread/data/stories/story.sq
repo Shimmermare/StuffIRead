@@ -1,0 +1,45 @@
+import java.time.OffsetDateTime;
+import kotlin.Float;
+import kotlin.Int;
+import kotlin.Long;
+
+CREATE TABLE IF NOT EXISTS story
+(
+    id          INTEGER AS Int PRIMARY KEY AUTOINCREMENT,
+    author      TEXT,
+    name        TEXT NOT NULL,
+    url         TEXT,
+    description TEXT,
+    createdTs   INTEGER AS OffsetDateTime CHECK(createdTs >= 0),
+    updatedTs   INTEGER AS OffsetDateTime CHECK(updatedTs >= 0 AND updatedTs >= createdTs),
+    score       REAL AS Float CHECK(score >= 0 AND score <= 1),
+    review      TEXT,
+    firstReadTs INTEGER AS OffsetDateTime CHECK(firstReadTs >= 0),
+    lastReadTs  INTEGER AS OffsetDateTime CHECK(lastReadTs >= 0 AND lastReadTs >= firstReadTs),
+    timesRead   INTEGER AS Int NOT NULL DEFAULT 1 CHECK (timesRead >= 0)
+);
+
+CREATE INDEX idx_story_author ON story(author) WHERE author IS NOT NULL;
+CREATE INDEX idx_story_name ON story(name);
+CREATE INDEX idx_story_createdTs ON story(createdTs);
+CREATE INDEX idx_story_updatedTs ON story(updatedTs);
+CREATE INDEX idx_story_score ON story(score);
+CREATE INDEX idx_story_firstReadTs ON story(firstReadTs);
+CREATE INDEX idx_story_lastReadTs ON story(lastReadTs);
+CREATE INDEX idx_story_timesRead ON story(timesRead);
+
+selectById:
+SELECT *
+FROM story
+WHERE id = ?;
+
+selectAll:
+SELECT *
+FROM story;
+
+insert:
+INSERT INTO story(author, name, url, description, createdTs, updatedTs, score, review, firstReadTs, lastReadTs, timesRead)
+VALUES (?, ?, ?, ?,?,?,?,?,?,?,?);
+
+selectLastInserted:
+SELECT * FROM story WHERE id = last_insert_rowid();

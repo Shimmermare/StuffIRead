@@ -1,0 +1,50 @@
+import kotlin.Int;
+
+CREATE TABLE IF NOT EXISTS storySequel
+(
+    story          INTEGER AS Int NOT NULL,
+    sequel         INTEGER AS Int NOT NULL,
+    PRIMARY KEY (story, sequel),
+    FOREIGN KEY(story) REFERENCES story(id) ON DELETE CASCADE,
+    FOREIGN KEY(sequel) REFERENCES story(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_storySequel_story ON storySequel(story);
+CREATE INDEX idx_storySequel_sequel ON storySequel(sequel);
+
+selectSequelsForStory:
+SELECT sequel
+FROM storySequel
+WHERE story = ?;
+
+selectSequelsForStories:
+SELECT story, sequel
+FROM storySequel
+WHERE story IN ?;
+
+selectPrequelsForStory:
+SELECT story AS prequel
+FROM storySequel
+WHERE sequel = ?;
+
+selectPrequelsForStories:
+SELECT
+    sequel AS story,
+    story AS prequel
+FROM storySequel
+WHERE sequel IN ?;
+
+deleteSequelsForStory:
+DELETE FROM storySequel WHERE story = ?;
+
+deleteSequelsForStoryExcept:
+DELETE FROM storySequel WHERE story = ? AND sequel NOT IN ?;
+
+deletePrequelsForStory:
+DELETE FROM storySequel WHERE sequel = ?;
+
+deletePrequelsForStoryExcept:
+DELETE FROM storySequel WHERE sequel = ? AND story NOT IN ?;
+
+insertOrIgnore:
+INSERT OR IGNORE INTO storySequel VALUES (?, ?);
