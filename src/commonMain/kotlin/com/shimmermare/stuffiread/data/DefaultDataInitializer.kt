@@ -4,7 +4,9 @@ import com.shimmermare.stuffiread.data.tags.TagCategoryDatasource
 import com.shimmermare.stuffiread.data.tags.TagDatasource
 import com.shimmermare.stuffiread.domain.tags.Tag
 import com.shimmermare.stuffiread.domain.tags.TagCategory
+import com.shimmermare.stuffiread.domain.tags.TagCategoryId
 import java.awt.Color
+import java.time.OffsetDateTime
 
 class DefaultDataInitializer(
     private val database: Database,
@@ -19,12 +21,31 @@ class DefaultDataInitializer(
         for (i in 0..100) {
             tagCat(Math.random().toString(), Math.random().toString(), 5, Color(113, 57, 132))
         }
-        tagDatasource.insert(Tag(0, "Example Series", series.id, "Series tag"))
-        tagDatasource.insert(Tag(0, "Example Genre", genre.id, "Genre tag"))
-        tagDatasource.insert(Tag(0, "Example Character", character.id, "Character tag"))
+        tag("Example Series", series.id, "Series tag")
+        tag("Example Genre", genre.id, "Genre tag")
+        tag("Example Character", character.id, "Character tag")
     }
 
     private fun tagCat(name: String, desc: String?, sortOrder: Int, color: Color): TagCategory {
-        return tagCategoryDatasource.insert(TagCategory(0, name, desc, sortOrder, color.rgb))
+        return tagCategoryDatasource.insert(
+            TagCategory(
+                name = name,
+                description = desc,
+                sortOrder = sortOrder,
+                color = color.rgb,
+                created = OffsetDateTime.now()
+            )
+        )
+    }
+
+    private fun tag(name: String, cat: TagCategoryId, desc: String?): Tag {
+        return tagDatasource.insert(
+            Tag(
+                name = name,
+                categoryId = cat,
+                description = desc,
+                created = OffsetDateTime.now()
+            )
+        )
     }
 }

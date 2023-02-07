@@ -68,7 +68,9 @@ class TagDatasourceImpl(
                 categoryId = it.categoryId,
                 name = it.name,
                 description = it.description,
-                impliedTags = impliedByTagId[it.id] ?: emptySet()
+                impliedTags = impliedByTagId[it.id] ?: emptySet(),
+                created = it.createdTs,
+                updated = it.updatedTs,
             )
         }
     }
@@ -99,7 +101,13 @@ class TagDatasourceImpl(
 
     override fun insert(tag: Tag): Tag {
         return db.transactionWithResult {
-            tagQueries.insert(tag.name, tag.categoryId, tag.description)
+            tagQueries.insert(
+                name = tag.name,
+                categoryId = tag.categoryId,
+                description = tag.description,
+                createdTs = tag.created,
+                updatedTs = tag.updated,
+            )
             val dbTag = tagQueries.selectLastInserted().executeAsOne()
             val result = toEntity(dbTag, tag.impliedTags)
             updateImplied(tag)
@@ -109,7 +117,14 @@ class TagDatasourceImpl(
 
     override fun update(tag: Tag) {
         db.transaction {
-            tagQueries.update(tag.name, tag.categoryId, tag.description, tag.id)
+            tagQueries.update(
+                id = tag.id,
+                name = tag.name,
+                categoryId = tag.categoryId,
+                description = tag.description,
+                createdTs = tag.created,
+                updatedTs = tag.updated,
+            )
             updateImplied(tag)
         }
     }
@@ -134,6 +149,14 @@ class TagDatasourceImpl(
     }
 
     private fun toEntity(tag: DbTag, impliedTags: Set<Int>): Tag {
-        return Tag(tag.id, tag.name, tag.categoryId, tag.description, impliedTags)
+        return Tag(
+            id = tag.id,
+            name = tag.name,
+            categoryId = tag.categoryId,
+            description = tag.description,
+            impliedTags = impliedTags,
+            created = tag.createdTs,
+            updated = tag.updatedTs,
+        )
     }
 }

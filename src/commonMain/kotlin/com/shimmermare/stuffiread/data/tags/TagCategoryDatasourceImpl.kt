@@ -36,13 +36,28 @@ class TagCategoryDatasourceImpl(
 
     override fun insert(tagCategory: TagCategory): TagCategory {
         return db.transactionWithResult {
-            queries.insert(tagCategory.name, tagCategory.description, tagCategory.sortOrder, tagCategory.color)
+            queries.insert(
+                name = tagCategory.name,
+                description = tagCategory.description,
+                sortOrder = tagCategory.sortOrder,
+                color = tagCategory.color,
+                createdTs = tagCategory.created,
+                updatedTs = tagCategory.updated,
+            )
             queries.selectLastInserted().executeAsOne().toEntity()
         }
     }
 
     override fun update(tagCategory: TagCategory) {
-        queries.update(tagCategory.name, tagCategory.description, tagCategory.sortOrder, tagCategory.color, tagCategory.id)
+        queries.update(
+            id = tagCategory.id,
+            name = tagCategory.name,
+            description = tagCategory.description,
+            sortOrder = tagCategory.sortOrder,
+            color = tagCategory.color,
+            createdTs = tagCategory.created,
+            updatedTs = tagCategory.updated
+        )
     }
 
     override fun delete(id: TagCategoryId) {
@@ -51,7 +66,13 @@ class TagCategoryDatasourceImpl(
 
     private fun DbTagCategory.toEntity(): TagCategory {
         return TagCategory(
-            id, name, description, sortOrder, color
+            id = id,
+            name = name,
+            description = description,
+            sortOrder = sortOrder,
+            color = color,
+            created = createdTs,
+            updated = updatedTs,
         )
     }
 }

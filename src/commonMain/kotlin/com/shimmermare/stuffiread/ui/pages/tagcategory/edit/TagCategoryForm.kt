@@ -15,6 +15,7 @@ import com.shimmermare.stuffiread.ui.components.form.*
 import com.shimmermare.stuffiread.ui.components.text.FilledNameText
 import com.shimmermare.stuffiread.ui.pages.tagcategory.edit.EditTagCategoryPageMode.CREATE
 import com.shimmermare.stuffiread.ui.pages.tagcategory.edit.EditTagCategoryPageMode.EDIT
+import java.time.OffsetDateTime
 
 @Composable
 fun TagCategoryForm(
@@ -34,7 +35,14 @@ fun TagCategoryForm(
             EDIT -> "Save"
         },
         canSubmitWithoutChanges = mode == CREATE,
-        onSubmit = onSubmit,
+        onSubmit = {
+            onSubmit(
+                when (mode) {
+                    CREATE -> it.copy(created = OffsetDateTime.now(), updated = OffsetDateTime.now())
+                    EDIT -> it.copy(updated = OffsetDateTime.now())
+                }
+            )
+        },
         fields = listOf(
             TextFormField(
                 name = "Name",

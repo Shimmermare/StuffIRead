@@ -19,6 +19,7 @@ import com.shimmermare.stuffiread.domain.tags.Tag
 import com.shimmermare.stuffiread.domain.tags.TagCategory
 import com.shimmermare.stuffiread.domain.tags.TagCategoryId
 import com.shimmermare.stuffiread.ui.AppState
+import com.shimmermare.stuffiread.ui.components.date.Date
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
 import com.shimmermare.stuffiread.ui.components.tag.TagName
 import com.shimmermare.stuffiread.ui.components.tagcategory.DeleteTagCategoryDialog
@@ -118,7 +119,6 @@ private fun PropertiesBlock(router: Router, category: TagCategory) {
                 Text(text = "Sorting order", style = MaterialTheme.typography.h6)
                 Text(text = category.sortOrder.toString())
             }
-
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 Text(text = "Color", style = MaterialTheme.typography.h6)
                 Row(
@@ -128,6 +128,16 @@ private fun PropertiesBlock(router: Router, category: TagCategory) {
                     Box(modifier = Modifier.size(48.dp).background(color, CircleShape))
                     Text("HEX: ${color.toHexColor()}")
                     Text("RGB: ${color.redInt}, ${color.greenInt}, ${color.blueInt}")
+                }
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                Text(text = "Created", style = MaterialTheme.typography.h6)
+                Date(category.created)
+            }
+            if (category.created != category.updated) {
+                Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                    Text(text = "Updated", style = MaterialTheme.typography.h6)
+                    Date(category.updated)
                 }
             }
         }

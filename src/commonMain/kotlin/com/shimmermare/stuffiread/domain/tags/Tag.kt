@@ -1,5 +1,7 @@
 package com.shimmermare.stuffiread.domain.tags
 
+import java.time.OffsetDateTime
+
 typealias TagId = Int
 
 /**
@@ -25,6 +27,8 @@ data class Tag(
      * Note: implied tags are allowed to form implication cycles. That just means that all tags in cycle are implied.
      */
     val impliedTags: Set<TagId> = emptySet(),
+    val created: OffsetDateTime,
+    val updated: OffsetDateTime = created,
 ) {
     init {
         if (name.length > MAX_NAME_LENGTH) {
@@ -35,6 +39,9 @@ data class Tag(
         }
         if (impliedTags.contains(id)) {
             throw IllegalArgumentException("Tag can't imply itself")
+        }
+        if (updated.isBefore(created)) {
+            throw IllegalArgumentException("Updated date ($updated) is before created date ($created)")
         }
     }
 

@@ -17,6 +17,7 @@ import com.shimmermare.stuffiread.ui.routing.EmptyData
 import com.shimmermare.stuffiread.ui.routing.Page
 import com.shimmermare.stuffiread.ui.routing.PageData
 import com.shimmermare.stuffiread.ui.routing.Router
+import java.time.OffsetDateTime
 
 object EditTagPage : Page<EditTagPageData> {
     override val name = "Tag"
@@ -73,6 +74,7 @@ data class EditTagPageData(
             tag = Tag(
                 name = "New tag",
                 categoryId = 0,
+                created = OffsetDateTime.MIN
             )
         )
 

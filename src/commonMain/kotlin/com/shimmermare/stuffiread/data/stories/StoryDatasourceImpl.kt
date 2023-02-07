@@ -22,16 +22,16 @@ class StoryDatasourceImpl(
             val storyIds: Set<StoryId> = stories.map { it.id }.toSet()
             val tagsByStoryId: Map<StoryId, Set<TagId>> = storyTagQueries.selectTagsForStories(storyIds)
                 .executeAsList()
-                .groupBy({ it.story }) { it.tag }.mapValues { (_, v) -> v.toSet() }
+                .groupBy({ it.storyId }) { it.tagId }.mapValues { (_, v) -> v.toSet() }
             val sequelsByStoryId: Map<StoryId, Set<StoryId>> = storySequelQueries.selectSequelsForStories(storyIds)
                 .executeAsList()
-                .groupBy({ it.story }) { it.sequel }.mapValues { (_, v) -> v.toSet() }
+                .groupBy({ it.prequelStoryId }) { it.sequelStoryId }.mapValues { (_, v) -> v.toSet() }
             val prequelsByStoryId: Map<StoryId, Set<StoryId>> = storySequelQueries.selectPrequelsForStories(storyIds)
                 .executeAsList()
                 .groupBy({ it.story }) { it.prequel }.mapValues { (_, v) -> v.toSet() }
             val filesByStoryId: Map<StoryId, Set<StoryFileId>> = storyFileQueries.selectFileIdsForStories(storyIds)
                 .executeAsList()
-                .groupBy({ it.story }) { it.id }.mapValues { (_, v) -> v.toSet() }
+                .groupBy({ it.storyId }) { it.id }.mapValues { (_, v) -> v.toSet() }
 
             return@transactionWithResult stories.map {
                 toEntity(
@@ -53,22 +53,22 @@ class StoryDatasourceImpl(
         files: Set<StoryFileId>,
     ): Story {
         return Story(
-            story.id,
-            story.author,
-            story.name,
-            story.url,
-            story.description,
-            story.createdTs,
-            story.updatedTs,
-            tags,
-            sequels,
-            prequels,
-            files,
-            story.score?.let { Score(it) },
-            story.review,
-            story.firstReadTs,
-            story.lastReadTs,
-            story.timesRead
+            id = story.id,
+            author = story.author,
+            name = story.name,
+            url = story.url,
+            description = story.description,
+            created = story.createdTs,
+            updated = story.updatedTs,
+            tags = tags,
+            sequels = sequels,
+            prequels = prequels,
+            files = files,
+            score = story.score?.let { Score(it) },
+            review = story.review,
+            firstRead = story.firstReadTs,
+            lastRead = story.lastReadTs,
+            timesRead = story.timesRead
         )
     }
 }

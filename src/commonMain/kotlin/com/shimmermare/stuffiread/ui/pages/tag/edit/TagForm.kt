@@ -14,6 +14,7 @@ import com.shimmermare.stuffiread.ui.components.tag.MultiTagSelector
 import com.shimmermare.stuffiread.ui.components.tagcategory.TagCategorySelector
 import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPageMode.CREATE
 import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPageMode.EDIT
+import java.time.OffsetDateTime
 
 @Composable
 fun TagForm(
@@ -34,7 +35,14 @@ fun TagForm(
             EDIT -> "Save"
         },
         canSubmitWithoutChanges = mode == CREATE,
-        onSubmit = onSubmit,
+        onSubmit = {
+            onSubmit(
+                when (mode) {
+                    CREATE -> it.copy(created = OffsetDateTime.now(), updated = OffsetDateTime.now())
+                    EDIT -> it.copy(updated = OffsetDateTime.now())
+                }
+            )
+        },
         fields = listOf(
             TextFormField(
                 name = "Name",

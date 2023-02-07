@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.domain.tags.*
 import com.shimmermare.stuffiread.ui.AppState
+import com.shimmermare.stuffiread.ui.components.date.Date
 import com.shimmermare.stuffiread.ui.components.tag.DeleteTagDialog
 import com.shimmermare.stuffiread.ui.components.tag.TagName
 import com.shimmermare.stuffiread.ui.components.tagcategory.TagCategoryName
@@ -132,6 +133,16 @@ private fun PropertiesBlock(router: Router, app: AppState, tag: Tag, category: T
                 Text(text = text, style = MaterialTheme.typography.h6)
                 impliedTags.forEach {
                     TagName(router, it, colorsByCategoryId[it.categoryId])
+                }
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                Text(text = "Created", style = MaterialTheme.typography.h6)
+                Date(tag.created)
+            }
+            if (tag.created != tag.updated) {
+                Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                    Text(text = "Updated", style = MaterialTheme.typography.h6)
+                    Date(tag.updated)
                 }
             }
         }

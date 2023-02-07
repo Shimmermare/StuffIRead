@@ -17,6 +17,7 @@ import com.shimmermare.stuffiread.ui.routing.EmptyData
 import com.shimmermare.stuffiread.ui.routing.Page
 import com.shimmermare.stuffiread.ui.routing.PageData
 import com.shimmermare.stuffiread.ui.routing.Router
+import java.time.OffsetDateTime
 
 object EditTagCategoryPage : Page<EditTagCategoryPageData> {
     override val name = "Tag category"
@@ -71,6 +72,7 @@ data class EditTagCategoryPageData(
             category = TagCategory(
                 name = "New tag category",
                 color = TagCategory.DEFAULT_COLOR,
+                created = OffsetDateTime.MIN
             )
         )
 

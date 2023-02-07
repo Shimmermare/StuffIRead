@@ -2,49 +2,49 @@ import kotlin.Int;
 
 CREATE TABLE IF NOT EXISTS storySequel
 (
-    story          INTEGER AS Int NOT NULL,
-    sequel         INTEGER AS Int NOT NULL,
-    PRIMARY KEY (story, sequel),
-    FOREIGN KEY(story) REFERENCES story(id) ON DELETE CASCADE,
-    FOREIGN KEY(sequel) REFERENCES story(id) ON DELETE CASCADE
+    prequelStoryId        INTEGER AS Int NOT NULL,
+    sequelStoryId         INTEGER AS Int NOT NULL,
+    PRIMARY KEY (prequelStoryId, sequelStoryId),
+    FOREIGN KEY(prequelStoryId) REFERENCES story(id) ON DELETE CASCADE,
+    FOREIGN KEY(sequelStoryId) REFERENCES story(id) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_storySequel_story ON storySequel(story);
-CREATE INDEX idx_storySequel_sequel ON storySequel(sequel);
+CREATE INDEX idx_storySequel_story ON storySequel(prequelStoryId);
+CREATE INDEX idx_storySequel_sequel ON storySequel(sequelStoryId);
 
 selectSequelsForStory:
-SELECT sequel
+SELECT sequelStoryId
 FROM storySequel
-WHERE story = ?;
+WHERE prequelStoryId = ?;
 
 selectSequelsForStories:
-SELECT story, sequel
+SELECT prequelStoryId, sequelStoryId
 FROM storySequel
-WHERE story IN ?;
+WHERE prequelStoryId IN ?;
 
 selectPrequelsForStory:
-SELECT story AS prequel
+SELECT prequelStoryId AS prequel
 FROM storySequel
-WHERE sequel = ?;
+WHERE sequelStoryId = ?;
 
 selectPrequelsForStories:
 SELECT
-    sequel AS story,
-    story AS prequel
+    sequelStoryId AS story,
+    prequelStoryId AS prequel
 FROM storySequel
-WHERE sequel IN ?;
+WHERE sequelStoryId IN ?;
 
 deleteSequelsForStory:
-DELETE FROM storySequel WHERE story = ?;
+DELETE FROM storySequel WHERE prequelStoryId = ?;
 
 deleteSequelsForStoryExcept:
-DELETE FROM storySequel WHERE story = ? AND sequel NOT IN ?;
+DELETE FROM storySequel WHERE prequelStoryId = ? AND sequelStoryId NOT IN ?;
 
 deletePrequelsForStory:
-DELETE FROM storySequel WHERE sequel = ?;
+DELETE FROM storySequel WHERE sequelStoryId = ?;
 
 deletePrequelsForStoryExcept:
-DELETE FROM storySequel WHERE sequel = ? AND story NOT IN ?;
+DELETE FROM storySequel WHERE sequelStoryId = ? AND prequelStoryId NOT IN ?;
 
 insertOrIgnore:
 INSERT OR IGNORE INTO storySequel VALUES (?, ?);

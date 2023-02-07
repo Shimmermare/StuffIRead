@@ -1,3 +1,4 @@
+import java.time.OffsetDateTime;
 import kotlin.Int;
 
 CREATE TABLE IF NOT EXISTS tag
@@ -6,6 +7,8 @@ CREATE TABLE IF NOT EXISTS tag
     name        TEXT NOT NULL UNIQUE,
     categoryId  INTEGER AS Int NOT NULL,
     description TEXT,
+    createdTs   INTEGER AS OffsetDateTime NOT NULL DEFAULT (unixepoch()) CHECK(createdTs >= 0),
+    updatedTs   INTEGER AS OffsetDateTime NOT NULL DEFAULT (unixepoch()) CHECK(updatedTs >= 0 AND updatedTs >= createdTs),
     FOREIGN KEY(categoryId) REFERENCES tagCategory(id)
 );
 
@@ -45,9 +48,11 @@ SELECT * FROM tag WHERE categoryId = ?;
 
 selectByCategoryIncludingImplied:
 SELECT tag.id                  AS id,
-       tag.categoryId                AS categoryId,
+       tag.categoryId          AS categoryId,
        tag.name                AS name,
        tag.description         AS description,
+       tag.createdTs           AS createdTs,
+       tag.updatedTs           AS updatedTs,
        tagWithParent.impliedBy AS impliedBy
 FROM tag,
      (WITH RECURSIVE tagWithParent(id, impliedBy) AS (SELECT id, 0
@@ -68,14 +73,16 @@ SELECT *
 FROM tag;
 
 insert:
-INSERT INTO tag(name, categoryId, description)
-VALUES (?, ?, ?);
+INSERT INTO tag(name, categoryId, description, createdTs, updatedTs)
+VALUES (?, ?, ?, ?, ?);
 
 update:
 UPDATE tag
 SET name = ?,
     categoryId = ?,
-    description = ?
+    description = ?,
+    createdTs = ?,
+    updatedTs = ?
 WHERE id = ?;
 
 changeTagCategory:

@@ -1,6 +1,7 @@
 package com.shimmermare.stuffiread.domain.tags
 
 import java.awt.Color
+import java.time.OffsetDateTime
 
 typealias TagCategoryId = Int
 
@@ -25,6 +26,8 @@ data class TagCategory(
      * All tags of type will be displayed using this color.
      */
     val color: Int = DEFAULT_COLOR,
+    val created: OffsetDateTime,
+    val updated: OffsetDateTime = created,
 ) {
     init {
         if (name.length > MAX_NAME_LENGTH) {
@@ -32,6 +35,9 @@ data class TagCategory(
         }
         if (description != null && description.length > MAX_DESCRIPTION_LENGTH) {
             throw IllegalArgumentException("Description length exceeded $MAX_DESCRIPTION_LENGTH (${description.length})")
+        }
+        if (updated.isBefore(created)) {
+            throw IllegalArgumentException("Updated date ($updated) is before created date ($created)")
         }
     }
 

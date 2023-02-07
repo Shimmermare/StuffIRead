@@ -4,10 +4,7 @@ import com.shimmermare.stuffiread.data.stories.Story
 import com.shimmermare.stuffiread.data.stories.StoryDatasource
 import com.shimmermare.stuffiread.data.stories.StoryDatasourceImpl
 import com.shimmermare.stuffiread.data.stories.StoryFile
-import com.shimmermare.stuffiread.data.tags.TagCategoryDatasource
-import com.shimmermare.stuffiread.data.tags.TagCategoryDatasourceImpl
-import com.shimmermare.stuffiread.data.tags.TagDatasource
-import com.shimmermare.stuffiread.data.tags.TagDatasourceImpl
+import com.shimmermare.stuffiread.data.tags.*
 import com.shimmermare.stuffiread.data.util.OffsetDateTimeColumnAdapter
 import com.squareup.sqldelight.EnumColumnAdapter
 import com.squareup.sqldelight.db.SqlDriver
@@ -30,15 +27,23 @@ class StoryDatabase(
         driver = JdbcSqliteDriver("jdbc:sqlite:${file.absolute()}", Properties())
         database = Database.invoke(
             driver,
+            tagAdapter = Tag.Adapter(
+                createdTsAdapter = OffsetDateTimeColumnAdapter,
+                updatedTsAdapter = OffsetDateTimeColumnAdapter,
+            ),
+            tagCategoryAdapter = TagCategory.Adapter(
+                createdTsAdapter = OffsetDateTimeColumnAdapter,
+                updatedTsAdapter = OffsetDateTimeColumnAdapter,
+            ),
             storyAdapter = Story.Adapter(
                 createdTsAdapter = OffsetDateTimeColumnAdapter,
                 updatedTsAdapter = OffsetDateTimeColumnAdapter,
                 firstReadTsAdapter = OffsetDateTimeColumnAdapter,
-                lastReadTsAdapter = OffsetDateTimeColumnAdapter
+                lastReadTsAdapter = OffsetDateTimeColumnAdapter,
             ),
             storyFileAdapter = StoryFile.Adapter(
-                formatAdapter = EnumColumnAdapter()
-            )
+                formatAdapter = EnumColumnAdapter(),
+            ),
         )
 
         storyDatasource = StoryDatasourceImpl(database)

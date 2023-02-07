@@ -1,3 +1,4 @@
+import java.time.OffsetDateTime;
 import kotlin.Int;
 
 CREATE TABLE IF NOT EXISTS tagCategory
@@ -6,7 +7,9 @@ CREATE TABLE IF NOT EXISTS tagCategory
     name        TEXT NOT NULL UNIQUE,
     description TEXT,
     sortOrder   INTEGER AS Int NOT NULL DEFAULT 0,
-    color       INTEGER AS Int NOT NULL DEFAULT -16730881
+    color       INTEGER AS Int NOT NULL DEFAULT -16730881,
+    createdTs   INTEGER AS OffsetDateTime NOT NULL DEFAULT (unixepoch()) CHECK(createdTs >= 0),
+    updatedTs   INTEGER AS OffsetDateTime NOT NULL DEFAULT (unixepoch()) CHECK(updatedTs >= 0 AND updatedTs >= createdTs)
 );
 
 selectById:
@@ -39,15 +42,17 @@ SELECT *
 FROM tagCategory;
 
 insert:
-INSERT INTO tagCategory(name, description, sortOrder, color)
-VALUES (?, ?, ?, ?);
+INSERT INTO tagCategory(name, description, sortOrder, color, createdTs, updatedTs)
+VALUES (?, ?, ?, ?, ?,?);
 
 update:
 UPDATE tagCategory
 SET name = ?,
     description = ?,
     sortOrder = ?,
-    color = ?
+    color = ?,
+    createdTs = ?,
+    updatedTs = ?
 WHERE id = ?;
 
 selectLastInserted:
