@@ -13,13 +13,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
-import com.shimmermare.stuffiread.domain.tags.*
+import com.shimmermare.stuffiread.domain.tags.ExtendedTag
 import com.shimmermare.stuffiread.ui.AppState
 import com.shimmermare.stuffiread.ui.components.date.Date
 import com.shimmermare.stuffiread.ui.components.tag.DeleteTagDialog
 import com.shimmermare.stuffiread.ui.components.tag.TagName
 import com.shimmermare.stuffiread.ui.components.tagcategory.TagCategoryName
-import com.shimmermare.stuffiread.ui.components.text.FilledNameText
 import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPage
 import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPageData
 import com.shimmermare.stuffiread.ui.pages.tags.TagsPage
@@ -27,9 +26,7 @@ import com.shimmermare.stuffiread.ui.routing.EmptyData
 import com.shimmermare.stuffiread.ui.routing.Router
 
 @Composable
-fun TagInfo(router: Router, app: AppState, tag: Tag) {
-    val category: TagCategory? = remember(tag.categoryId) { app.tagCategoryService.getById(tag.categoryId) }
-
+fun TagInfo(router: Router, app: AppState, tag: ExtendedTag) {
     var showDeleteDialog: Boolean by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -38,10 +35,10 @@ fun TagInfo(router: Router, app: AppState, tag: Tag) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                FloatingActionButton(onClick = { router.goTo(EditTagPage, EditTagPageData.createCopy(tag)) }) {
+                FloatingActionButton(onClick = { router.goTo(EditTagPage, EditTagPageData.createCopy(tag.tag)) }) {
                     Icon(Icons.Filled.ContentCopy, null)
                 }
-                FloatingActionButton(onClick = { router.goTo(EditTagPage, EditTagPageData(tag)) }) {
+                FloatingActionButton(onClick = { router.goTo(EditTagPage, EditTagPageData.edit(tag.tag)) }) {
                     Icon(Icons.Filled.Edit, null)
                 }
                 FloatingActionButton(onClick = { showDeleteDialog = true }) {
@@ -60,89 +57,81 @@ fun TagInfo(router: Router, app: AppState, tag: Tag) {
                 Box(
                     modifier = Modifier.weight(0.5F)
                 ) {
-                    PropertiesBlock(router, app, tag, category)
+                    PropertiesBlock(router, tag)
                 }
                 Box(
                     modifier = Modifier.weight(0.5F)
                 ) {
-                    StatsBlock(app.tagService, app.tagCategoryService, tag, category)
+                    StatsBlock()
                 }
             }
         }
     }
 
     if (showDeleteDialog) {
-        DeleteTagDialog(app.tagCategoryService, app.tagService, tag) { deleted ->
-            showDeleteDialog = false
-            if (deleted) {
+        DeleteTagDialog(
+            tag = tag,
+            onConfirm = {
+                app.tagService.deleteById(tag.tag.id)
+                showDeleteDialog = false
                 router.goTo(TagsPage, EmptyData)
-            }
-        }
+            },
+            onDismiss = { showDeleteDialog = false }
+        )
     }
 }
 
 @Composable
-private fun PropertiesBlock(router: Router, app: AppState, tag: Tag, category: TagCategory?) {
-    val implyingTags: List<Tag> = remember(tag.id) { app.tagService.getImplying(tag.id) }
-    val impliedTags: List<Tag> = remember(tag.impliedTags) { app.tagService.getTags(tag.impliedTags) }
-    val colorsByCategoryId: Map<TagCategoryId, Color> = remember(implyingTags, impliedTags) {
-        app.tagCategoryService.getColorsByIds((implyingTags + impliedTags).map { it.categoryId }.toSet())
-            .mapValues { Color(it.value) }
-    }
-
+private fun PropertiesBlock(router: Router, tag: ExtendedTag) {
     SelectionContainer {
         Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 Text(text = "Name", style = MaterialTheme.typography.h6)
-                TagName(router, tag, category?.let { Color(it.color) })
+                TagName(router, tag)
             }
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 Text(text = "Category", style = MaterialTheme.typography.h6)
-                if (category != null) {
-                    TagCategoryName(router, category)
-                } else {
-                    FilledNameText("Category ${tag.categoryId} is missing!", Color.Black)
-                }
+                TagCategoryName(router, tag.category)
             }
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 Text(text = "Description", style = MaterialTheme.typography.h6)
-                if (tag.description != null) {
-                    Text(text = tag.description)
+                if (tag.tag.description.isPresent) {
+                    Text(text = tag.tag.description.value!!)
                 } else {
                     Text(text = "No description", fontStyle = FontStyle.Italic, color = Color.LightGray)
                 }
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                val text = if (implyingTags.isEmpty()) {
+                val text = if (tag.implyingTags.isEmpty()) {
                     "Not implied by other tags"
                 } else {
-                    "Implied by ${implyingTags.size} tags"
+                    "Implied by ${tag.implyingTags.size} tags"
                 }
                 Text(text = text, style = MaterialTheme.typography.h6)
-                implyingTags.forEach {
-                    TagName(router, it, colorsByCategoryId[it.categoryId])
+                tag.implyingTags.forEach {
+                    TagName(router, it)
                 }
             }
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                val text = if (impliedTags.isEmpty()) {
+                val text = if (tag.impliedTags.isEmpty()) {
                     "Not implies other tags"
                 } else {
-                    "Implies ${impliedTags.size} tags"
+                    "Implies ${tag.impliedTags.size} tags"
                 }
                 Text(text = text, style = MaterialTheme.typography.h6)
-                impliedTags.forEach {
-                    TagName(router, it, colorsByCategoryId[it.categoryId])
+                tag.impliedTags.forEach {
+                    TagName(router, it)
                 }
             }
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 Text(text = "Created", style = MaterialTheme.typography.h6)
-                Date(tag.created)
+                Date(tag.tag.created)
             }
-            if (tag.created != tag.updated) {
+            if (tag.tag.created != tag.tag.updated) {
                 Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                     Text(text = "Updated", style = MaterialTheme.typography.h6)
-                    Date(tag.updated)
+                    Date(tag.tag.updated)
                 }
             }
         }
@@ -151,10 +140,6 @@ private fun PropertiesBlock(router: Router, app: AppState, tag: Tag, category: T
 
 @Composable
 private fun StatsBlock(
-    tagService: TagService,
-    tagCategoryService: TagCategoryService,
-    tag: Tag,
-    category: TagCategory?
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(10.dp)

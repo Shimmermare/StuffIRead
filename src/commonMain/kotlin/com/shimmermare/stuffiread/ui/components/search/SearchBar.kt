@@ -1,4 +1,4 @@
-package com.shimmermare.stuffiread.ui.components.searchbar
+package com.shimmermare.stuffiread.ui.components.search
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn

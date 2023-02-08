@@ -18,6 +18,14 @@ class TagCategoryService(
         }
     }
 
+    fun getByIdOrThrow(id: TagCategoryId): TagCategory = getById(id) ?: error("Tag category $id not found")
+
+    fun getByIds(ids: Collection<TagCategoryId>): List<TagCategory> {
+        return database.transactionWithResult {
+            tagCategoryDatasource.findByIds(ids)
+        }
+    }
+
     fun getNameById(id: TagCategoryId): String? {
         return database.transactionWithResult {
             tagCategoryDatasource.findNameById(id)

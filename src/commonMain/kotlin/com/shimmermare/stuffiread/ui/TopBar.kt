@@ -20,7 +20,7 @@ fun TopBar(router: Router, onResetAppStateRequest: () -> Unit) {
     var menuOpened: Boolean by remember { mutableStateOf(false) }
 
     TopAppBar(
-        title = { router.renderTitle() },
+        title = { router.CurrentPageTitle() },
         navigationIcon = {
             Box {
                 IconButton(onClick = { menuOpened = true }) {

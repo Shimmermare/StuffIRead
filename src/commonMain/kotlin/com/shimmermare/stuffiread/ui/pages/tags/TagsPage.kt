@@ -1,74 +1,73 @@
 package com.shimmermare.stuffiread.ui.pages.tags
 
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.FloatingActionButton
-import androidx.compose.material.Icon
-import androidx.compose.material.Scaffold
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import com.shimmermare.stuffiread.domain.tags.Tag
-import com.shimmermare.stuffiread.domain.tags.TagCategory
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import com.shimmermare.stuffiread.domain.tags.ExtendedTag
 import com.shimmermare.stuffiread.domain.tags.TagId
 import com.shimmermare.stuffiread.ui.AppState
-import com.shimmermare.stuffiread.ui.components.table.TableWithSearch
 import com.shimmermare.stuffiread.ui.components.tag.DeleteTagDialog
+import com.shimmermare.stuffiread.ui.pages.MutableTablePage
 import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPage
 import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPageData
 import com.shimmermare.stuffiread.ui.pages.tag.info.TagInfoPage
 import com.shimmermare.stuffiread.ui.pages.tag.info.TagInfoPageData
 import com.shimmermare.stuffiread.ui.routing.EmptyData
-import com.shimmermare.stuffiread.ui.routing.Page
 import com.shimmermare.stuffiread.ui.routing.Router
+import io.github.aakira.napier.Napier
 
 /**
  * Page with listing of all tags with search available.
  */
-object TagsPage : Page<EmptyData> {
+object TagsPage : MutableTablePage<EmptyData, TagId, ExtendedTag>() {
     override val name = "Tags"
 
+    override fun ExtendedTag.id(): TagId = tag.id
+
+    override fun ExtendedTag.name(): String = tag.name.value
+
+    override suspend fun load(app: AppState, data: EmptyData): Map<TagId, ExtendedTag> {
+        return app.tagService.getAllExtended().associateBy { it.tag.id }
+    }
+
     @Composable
-    override fun renderBody(router: Router, app: AppState, data: EmptyData) {
-        val categories: List<TagCategory> = remember { app.tagCategoryService.getAll().toMutableStateList() }
-        // SnapshotStateMap is either bugged or PITA to use, immutability FTW
-        var tagsById: Map<TagId, Tag> by remember { mutableStateOf(app.tagService.getAll().associateBy { it.id }) }
+    override fun LoadingError(data: EmptyData, e: Exception?) {
+        Napier.e(e) { "Failed to load tags" }
+        Text("Failed to load tags", style = MaterialTheme.typography.h5)
+    }
 
-        var showDeleteDialogFor: Tag? by remember { mutableStateOf(null) }
+    override fun getUnitName(count: Int): String {
+        return if (count == 1) "tag" else "tags"
+    }
 
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            floatingActionButton = {
-                FloatingActionButton(
-                    onClick = { router.goTo(EditTagPage, EditTagPageData.Create) }
-                ) {
-                    Icon(Icons.Filled.Add, null)
-                }
-            }
-        ) {
-            TableWithSearch(
-                // Using copy list because for some reason SnapshotStateMap.values is not working
-                remember(tagsById) { tagsById.values.toList() },
-                nameGetter = { it.name },
-                unitNameProvider = { if (it == 1) "tag" else "tags" }
-            ) { filtered ->
-                TagTable(
-                    tags = filtered,
-                    tagCategories = categories,
-                    onClick = { router.goTo(TagInfoPage, TagInfoPageData(it)) },
-                    onEdit = { router.goTo(EditTagPage, EditTagPageData(it)) },
-                    onDelete = { showDeleteDialogFor = it }
-                )
-            }
-        }
+    override fun Router.goToCreatePage() {
+        goTo(EditTagPage, EditTagPageData.Create)
+    }
 
-        if (showDeleteDialogFor != null) {
-            DeleteTagDialog(app.tagCategoryService, app.tagService, tag = showDeleteDialogFor!!) { deleted ->
-                if (deleted && showDeleteDialogFor != null) {
-                    tagsById = tagsById - showDeleteDialogFor!!.id
-                }
-                showDeleteDialogFor = null
-            }
-        }
+    @Composable
+    override fun DeleteDialog(app: AppState, item: ExtendedTag, onDeleted: () -> Unit, onDismiss: () -> Unit) {
+        DeleteTagDialog(
+            tag = item,
+            onConfirm = {
+                app.tagService.deleteById(item.tag.id)
+                onDeleted()
+            },
+            onDismiss = onDismiss
+        )
+    }
+
+    @Composable
+    override fun TableContent(
+        router: Router,
+        app: AppState,
+        items: Collection<ExtendedTag>,
+        onDeleteRequest: (ExtendedTag) -> Unit
+    ) {
+        TagTable(
+            tags = items,
+            onRowClick = { router.goTo(TagInfoPage, TagInfoPageData(it.tag.id)) },
+            onEditRequest = { router.goTo(EditTagPage, EditTagPageData.edit(it.tag)) },
+            onDeleteRequest = onDeleteRequest
+        )
     }
 }

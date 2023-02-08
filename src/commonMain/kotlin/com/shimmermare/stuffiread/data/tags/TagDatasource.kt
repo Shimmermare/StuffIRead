@@ -14,6 +14,7 @@ interface TagDatasource {
     fun countInCategory(categoryId: TagCategoryId): Int
     fun findInCategory(categoryId: TagCategoryId): List<Tag>
     fun findInCategoryWithImplied(categoryId: TagCategoryId): List<Tag>
+    fun findImplyingIds(tagId: TagId): Set<TagId>
     fun findImplyingTags(tagId: TagId): List<Tag>
     fun findAll(): List<Tag>
     fun insert(tag: Tag): Tag

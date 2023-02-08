@@ -27,9 +27,9 @@ import com.shimmermare.stuffiread.ui.components.tagcategory.TagCategoryName
 @Composable
 fun TagCategoryTable(
     categories: Collection<TagCategory>,
-    onClick: (TagCategory) -> Unit,
-    onEdit: (TagCategory) -> Unit,
-    onDelete: (TagCategory) -> Unit
+    onClickRequest: (TagCategory) -> Unit,
+    onEditRequest: (TagCategory) -> Unit,
+    onDeleteRequest: (TagCategory) -> Unit
 ) {
     // TODO: Should be done properly using measuring
     val indexColumnWidth: Dp = remember(categories) {
@@ -38,9 +38,8 @@ fun TagCategoryTable(
 
     Table(
         items = categories,
-        defaultOrder = Comparator.comparing(TagCategory::sortOrder).thenComparing(TagCategory::name)
-            .thenComparing(TagCategory::id),
-        onRowClick = onClick,
+        defaultOrder = TagCategory.DEFAULT_ORDER,
+        onRowClick = onClickRequest,
     ) {
         column(
             header = {
@@ -77,23 +76,23 @@ fun TagCategoryTable(
         column(
             title = "Description",
             columnWeight = 0.67F,
-            sorter = Comparator.comparing { it.name }
+            sorter = Comparator.comparing { it.description }
         ) { _, item ->
-            item.description?.let { Text(it) }
+            item.description.value?.let { Text(it) }
         }
 
         column(
             header = { Icon(Icons.Filled.Edit, null, modifier = Modifier.alpha(0F)) },
         ) { item ->
             Icon(Icons.Filled.Edit, null, modifier = Modifier.clickable {
-                onEdit.invoke(item)
+                onEditRequest.invoke(item)
             })
         }
         column(
             header = { Icon(Icons.Filled.Delete, null, modifier = Modifier.alpha(0F)) },
         ) { item ->
             Icon(Icons.Filled.Delete, null, modifier = Modifier.clickable {
-                onDelete.invoke(item)
+                onDeleteRequest.invoke(item)
             })
         }
     }

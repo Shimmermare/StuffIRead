@@ -14,12 +14,12 @@ interface Page<D : PageData> {
      * Override if title is needed (e.g. story name).
      */
     @Composable
-    fun renderTopBarTitle(app: AppState, data: D) {
+    fun Title(app: AppState, data: D) {
     }
 
     /**
      * Page body content.
      */
     @Composable
-    fun renderBody(router: Router, app: AppState, data: D)
+    fun Body(router: Router, app: AppState, data: D)
 }

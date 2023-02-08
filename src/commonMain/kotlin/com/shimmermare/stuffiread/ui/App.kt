@@ -65,7 +65,7 @@ private fun AppWithState(app: AppState, onResetAppStateRequest: () -> Unit) {
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.TopCenter,
         ) {
-            router.renderBody()
+            router.CurrentPageBody()
         }
     }
 }

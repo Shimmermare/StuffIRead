@@ -1,4 +1,4 @@
-package com.shimmermare.stuffiread.ui.components.table
+package com.shimmermare.stuffiread.ui.components.search
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -10,13 +10,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.shimmermare.stuffiread.ui.components.searchbar.SearchBar
 
 /**
- * Table with search through named items with customizable advanced search.
+ * List with search through named items and customizable advanced search.
  */
 @Composable
-fun <T> TableWithSearch(
+fun <T> SearchList(
     items: Collection<T>,
     modifier: Modifier = Modifier.padding(20.dp),
     nameGetter: (T) -> String,

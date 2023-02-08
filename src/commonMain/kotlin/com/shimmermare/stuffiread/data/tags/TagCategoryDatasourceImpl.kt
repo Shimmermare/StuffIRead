@@ -2,7 +2,9 @@ package com.shimmermare.stuffiread.data.tags
 
 import com.shimmermare.stuffiread.data.Database
 import com.shimmermare.stuffiread.domain.tags.TagCategory
+import com.shimmermare.stuffiread.domain.tags.TagCategoryDescription
 import com.shimmermare.stuffiread.domain.tags.TagCategoryId
+import com.shimmermare.stuffiread.domain.tags.TagCategoryName
 import com.shimmermare.stuffiread.data.tags.TagCategory as DbTagCategory
 
 class TagCategoryDatasourceImpl(
@@ -12,6 +14,10 @@ class TagCategoryDatasourceImpl(
 
     override fun findById(id: TagCategoryId): TagCategory? {
         return queries.selectById(id).executeAsOneOrNull()?.toEntity()
+    }
+
+    override fun findByIds(ids: Collection<TagCategoryId>): List<TagCategory> {
+        return queries.selectByIds(ids).executeAsList().map { it.toEntity() }
     }
 
     override fun findNameById(id: TagCategoryId): String? {
@@ -37,8 +43,8 @@ class TagCategoryDatasourceImpl(
     override fun insert(tagCategory: TagCategory): TagCategory {
         return db.transactionWithResult {
             queries.insert(
-                name = tagCategory.name,
-                description = tagCategory.description,
+                name = tagCategory.name.value,
+                description = tagCategory.description.value,
                 sortOrder = tagCategory.sortOrder,
                 color = tagCategory.color,
                 createdTs = tagCategory.created,
@@ -51,8 +57,8 @@ class TagCategoryDatasourceImpl(
     override fun update(tagCategory: TagCategory) {
         queries.update(
             id = tagCategory.id,
-            name = tagCategory.name,
-            description = tagCategory.description,
+            name = tagCategory.name.value,
+            description = tagCategory.description.value,
             sortOrder = tagCategory.sortOrder,
             color = tagCategory.color,
             createdTs = tagCategory.created,
@@ -67,8 +73,8 @@ class TagCategoryDatasourceImpl(
     private fun DbTagCategory.toEntity(): TagCategory {
         return TagCategory(
             id = id,
-            name = name,
-            description = description,
+            name = TagCategoryName(name),
+            description = TagCategoryDescription.of(description),
             sortOrder = sortOrder,
             color = color,
             created = createdTs,

@@ -7,9 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
-import com.shimmermare.stuffiread.domain.tags.TagCategory
-import com.shimmermare.stuffiread.domain.tags.TagCategoryId
-import com.shimmermare.stuffiread.domain.tags.TagCategoryService
+import com.shimmermare.stuffiread.domain.tags.*
 import com.shimmermare.stuffiread.ui.components.colorpicker.PopupColorPicker
 import com.shimmermare.stuffiread.ui.components.form.*
 import com.shimmermare.stuffiread.ui.components.text.FilledNameText
@@ -47,16 +45,16 @@ fun TagCategoryForm(
             TextFormField(
                 name = "Name",
                 description = "Unique tag category name. Examples: \"Characters\", \"Ships\"",
-                getter = { it.name },
-                setter = { form, value -> form.copy(name = value) },
+                getter = { it.name.value },
+                setter = { form, value -> form.copy(name = TagCategoryName(value)) },
                 validator = { validateName(tagCategoryService, mode, category.id, it) }
             ),
             TextFormField(
                 name = "Description (Optional)",
                 description = "Describe characteristics of this tag category: what tags should be here and why.",
                 singleLine = false,
-                getter = { it.description ?: "" },
-                setter = { form, value -> form.copy(description = value.ifBlank { null }) },
+                getter = { it.description.value ?: "" },
+                setter = { form, value -> form.copy(description = TagCategoryDescription.of(value.ifBlank { null })) },
                 validator = ::validateDescription
             ),
             IntFormField(
@@ -94,8 +92,8 @@ private fun validateName(
             "Name can't be blank"
         }
 
-        name.length > TagCategory.MAX_NAME_LENGTH -> {
-            "Name length exceeded ${TagCategory.MAX_NAME_LENGTH} (${name.length})"
+        name.length > TagCategoryName.MAX_LENGTH -> {
+            "Name length exceeded ${TagCategoryName.MAX_LENGTH} (${name.length})"
         }
 
         mode == CREATE && tagCategoryService.getIdByName(name) != null -> {
@@ -114,8 +112,8 @@ private fun validateName(
 
 private fun validateDescription(description: String): ValidationResult {
     val error = when {
-        description.length > TagCategory.MAX_DESCRIPTION_LENGTH -> {
-            "Description length exceeded ${TagCategory.MAX_DESCRIPTION_LENGTH} (${description.length})"
+        description.length > TagCategoryDescription.MAX_LENGTH -> {
+            "Description length exceeded ${TagCategoryDescription.MAX_LENGTH} (${description.length})"
         }
 
         else -> null

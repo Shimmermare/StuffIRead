@@ -25,7 +25,10 @@ fun main(args: Array<String>) {
             Napier.i("Invoked close application request")
             exitApplication()
         }
-        Window(onCloseRequest = onCloseRequest) {
+        Window(
+            title = "Stuff I Read",
+            onCloseRequest = onCloseRequest
+        ) {
             window.minimumSize = Dimension(1280, 800)
             App(storiesFile)
         }

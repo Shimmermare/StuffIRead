@@ -13,7 +13,7 @@ import com.shimmermare.stuffiread.domain.tags.TagCategory
 import com.shimmermare.stuffiread.domain.tags.TagCategoryId
 import com.shimmermare.stuffiread.domain.tags.TagCategoryService
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
-import com.shimmermare.stuffiread.ui.components.searchbar.SearchBar
+import com.shimmermare.stuffiread.ui.components.search.SearchBar
 import com.shimmermare.stuffiread.ui.components.text.FilledNameText
 
 @Composable
@@ -60,7 +60,7 @@ private fun SelectorPopup(
     var searchText: String by remember { mutableStateOf("") }
     val filteredTagCategories: List<TagCategory> = remember(searchText) {
         val loweredSearchText = searchText.lowercase()
-        allTagCategories.filter { it.name.lowercase().contains(loweredSearchText) && filter(it) }
+        allTagCategories.filter { it.name.value.lowercase().contains(loweredSearchText) && filter(it) }
     }
 
     Popup(

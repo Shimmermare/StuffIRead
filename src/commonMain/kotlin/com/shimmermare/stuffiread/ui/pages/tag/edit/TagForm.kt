@@ -47,8 +47,8 @@ fun TagForm(
             TextFormField(
                 name = "Name",
                 description = "Unique tag name. Examples: \"Mystery\", \"Greentext\"",
-                getter = { it.name },
-                setter = { form, value -> form.copy(name = value) },
+                getter = { it.name.value },
+                setter = { form, value -> form.copy(name = TagName(value)) },
                 validator = { validateName(tagService, mode, tag.id, it) }
             ),
             CustomFormField<Tag, TagCategoryId?>(
@@ -69,8 +69,8 @@ fun TagForm(
                 name = "Description (Optional)",
                 description = "Describe characteristics of this tag: when it's applicable, what it means",
                 singleLine = false,
-                getter = { it.description ?: "" },
-                setter = { form, value -> form.copy(description = value.ifBlank { null }) },
+                getter = { it.description.value ?: "" },
+                setter = { form, value -> form.copy(description = TagDescription.of(value.ifBlank { null })) },
                 validator = ::validateDescription
             ),
             CustomFormField(
@@ -83,7 +83,6 @@ fun TagForm(
                 validator = { validateImpliedTags(tagService, tag.id, it) },
                 inputField = { value, onChange ->
                     MultiTagSelector(
-                        tagCategoryService,
                         tagService,
                         selectedIds = value.value,
                         filter = { it.id != tag.id },
@@ -106,8 +105,8 @@ private fun validateName(
             "Name can't be blank"
         }
 
-        name.length > TagCategory.MAX_NAME_LENGTH -> {
-            "Name length exceeded ${TagCategory.MAX_NAME_LENGTH} (${name.length})"
+        name.length > TagCategoryName.MAX_LENGTH -> {
+            "Name length exceeded ${TagCategoryName.MAX_LENGTH} (${name.length})"
         }
 
         mode == CREATE && tagService.getIdByName(name) != null -> {
@@ -125,8 +124,8 @@ private fun validateName(
 
 private fun validateDescription(description: String): ValidationResult {
     val error = when {
-        description.length > TagCategory.MAX_DESCRIPTION_LENGTH -> {
-            "Description length exceeded ${TagCategory.MAX_DESCRIPTION_LENGTH} (${description.length})"
+        description.length > TagCategoryDescription.MAX_LENGTH -> {
+            "Description length exceeded ${TagCategoryDescription.MAX_LENGTH} (${description.length})"
         }
 
         else -> null

@@ -12,7 +12,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.unit.dp
@@ -20,7 +19,7 @@ import androidx.compose.ui.window.Popup
 import com.shimmermare.stuffiread.domain.tags.*
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
 import com.shimmermare.stuffiread.ui.components.layout.PopupContent
-import com.shimmermare.stuffiread.ui.components.searchbar.SearchBar
+import com.shimmermare.stuffiread.ui.components.search.SearchBar
 
 /**
  * Input to select multiple unique tags from list of all tags.
@@ -29,17 +28,12 @@ import com.shimmermare.stuffiread.ui.components.searchbar.SearchBar
  */
 @Composable
 fun MultiTagSelector(
-    tagCategoryService: TagCategoryService,
     tagService: TagService,
     selectedIds: Set<TagId>,
     filter: (Tag) -> Boolean = { true },
     onValueChange: (Set<TagId>) -> Unit
 ) {
-    val selectedTags: List<Tag> = remember(selectedIds) { tagService.getTags(selectedIds) }
-    val colorsByCategoryId: Map<TagCategoryId, Color> = remember(selectedTags) {
-        tagCategoryService.getColorsByIds(selectedTags.map { it.categoryId })
-            .mapValues { Color(it.value) }
-    }
+    val selectedTags: List<TagWithCategory> = remember(selectedIds) { tagService.getByIdsWithCategory(selectedIds) }
 
     var showPopup: Boolean by remember { mutableStateOf(false) }
 
@@ -47,10 +41,9 @@ fun MultiTagSelector(
         if (showPopup) {
             Box {
                 SelectorPopup(
-                    tagCategoryService,
                     tagService,
                     selectedTags,
-                    filter,
+                    filter = { filter(it.tag) },
                     onDismissRequest = { showPopup = false },
                     onValueChange
                 )
@@ -58,7 +51,7 @@ fun MultiTagSelector(
         }
         ChipVerticalGrid {
             selectedTags.forEach {
-                SelectedTagName(it, colorsByCategoryId) { onValueChange(selectedIds - it.id) }
+                SelectedTagName(it) { onValueChange(selectedIds - it.tag.id) }
             }
 
             Box(modifier = Modifier.clickable { showPopup = true }) {
@@ -70,8 +63,8 @@ fun MultiTagSelector(
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-private fun SelectedTagName(tag: Tag, colorsByCategoryId: Map<TagCategoryId, Color>, onUnselect: () -> Unit) {
-    var pointerInside by remember(tag.id) { mutableStateOf(false) }
+private fun SelectedTagName(tag: TagWithCategory, onUnselect: () -> Unit) {
+    var pointerInside by remember(tag.tag.id) { mutableStateOf(false) }
 
     Row(
         modifier = Modifier
@@ -80,7 +73,7 @@ private fun SelectedTagName(tag: Tag, colorsByCategoryId: Map<TagCategoryId, Col
         horizontalArrangement = Arrangement.spacedBy(5.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        TagName(tag, colorsByCategoryId[tag.categoryId])
+        TagName(tag)
         if (pointerInside) {
             Box(modifier = Modifier.clickable(onClick = onUnselect)) {
                 Icon(Icons.Filled.Clear, null, modifier = Modifier.size(30.dp))
@@ -91,22 +84,21 @@ private fun SelectedTagName(tag: Tag, colorsByCategoryId: Map<TagCategoryId, Col
 
 @Composable
 private fun SelectorPopup(
-    tagCategoryService: TagCategoryService,
     tagService: TagService,
-    selectedTags: List<Tag>,
-    filter: (Tag) -> Boolean,
+    selectedTags: List<TagWithCategory>,
+    filter: (TagWithCategory) -> Boolean,
     onDismissRequest: () -> Unit,
     onValueChange: (Set<TagId>) -> Unit,
 ) {
-    val selectedTagIds: Set<TagId> = remember(selectedTags) { selectedTags.map { it.id }.toSet() }
-    val colorsByCategoryId: Map<TagCategoryId, Color> = remember {
-        tagCategoryService.getAll().associateBy({ it.id }) { Color(it.color) }
-    }
-    val allTags: List<Tag> = remember { tagService.getAll() }
+    val selectedTagIds: Set<TagId> = remember(selectedTags) { selectedTags.map { it.tag.id }.toSet() }
+    val allTags: List<TagWithCategory> = remember { tagService.getAllWithCategories() }
 
     var searchText: String by remember { mutableStateOf("") }
-    val filteredTags: List<Tag> = remember(selectedTags, searchText) {
-        allTags.filter { !selectedTagIds.contains(it.id) && filter(it) && it.name.lowercase().contains(searchText) }
+    val filteredTags: List<TagWithCategory> = remember(selectedTags, searchText) {
+        allTags.filter {
+            !selectedTagIds.contains(it.tag.id) && filter(it)
+                    && it.tag.name.value.lowercase().contains(searchText)
+        }
     }
 
     Popup(
@@ -126,8 +118,7 @@ private fun SelectorPopup(
                     selectedTags.forEach {
                         TagName(
                             tag = it,
-                            color = colorsByCategoryId[it.categoryId],
-                            onClick = { onValueChange(selectedTagIds - it.id) }
+                            onClick = { onValueChange(selectedTagIds - it.tag.categoryId) }
                         )
                     }
                 }
@@ -145,9 +136,8 @@ private fun SelectorPopup(
                     filteredTags.forEach {
                         TagName(
                             tag = it,
-                            color = colorsByCategoryId[it.categoryId],
                             onClick = {
-                                onValueChange(selectedTagIds + it.id)
+                                onValueChange(selectedTagIds + it.tag.id)
                             }
                         )
                     }

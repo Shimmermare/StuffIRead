@@ -22,13 +22,11 @@ fun TagCategoryName(
     fontSize: TextUnit? = null,
     height: Dp? = null,
 ) {
-    val modifier = Modifier.clickable { router.goTo(TagCategoryInfoPage, TagCategoryInfoPageData(category)) }
-    FilledNameText(
-        text = category.name,
-        color = Color(category.color),
+    TagCategoryName(
+        category = category,
         fontSize = fontSize,
         height = height,
-        modifier = modifier
+        onClick = { router.goTo(TagCategoryInfoPage, TagCategoryInfoPageData(category.id)) }
     )
 }
 
@@ -39,9 +37,8 @@ fun TagCategoryName(
     height: Dp? = null,
     onClick: () -> Unit
 ) {
-    FilledNameText(
-        text = category.name,
-        color = Color(category.color),
+    TagCategoryName(
+        category = category,
         fontSize = fontSize,
         height = height,
         modifier = Modifier.clickable(onClick = onClick)
@@ -56,7 +53,7 @@ fun TagCategoryName(
     modifier: Modifier? = null,
 ) {
     FilledNameText(
-        text = category.name,
+        text = category.name.value,
         color = Color(category.color),
         fontSize = fontSize,
         height = height,

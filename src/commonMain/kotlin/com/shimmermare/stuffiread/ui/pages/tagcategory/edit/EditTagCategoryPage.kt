@@ -7,7 +7,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.text.style.TextOverflow
 import com.shimmermare.stuffiread.domain.tags.TagCategory
+import com.shimmermare.stuffiread.domain.tags.TagCategoryName
 import com.shimmermare.stuffiread.ui.AppState
+import com.shimmermare.stuffiread.ui.components.animation.AnimatedFadeIn
 import com.shimmermare.stuffiread.ui.pages.tagcategories.TagCategoriesPage
 import com.shimmermare.stuffiread.ui.pages.tagcategory.edit.EditTagCategoryPageMode.CREATE
 import com.shimmermare.stuffiread.ui.pages.tagcategory.edit.EditTagCategoryPageMode.EDIT
@@ -23,7 +25,7 @@ object EditTagCategoryPage : Page<EditTagCategoryPageData> {
     override val name = "Tag category"
 
     @Composable
-    override fun renderTopBarTitle(app: AppState, data: EditTagCategoryPageData) {
+    override fun Title(app: AppState, data: EditTagCategoryPageData) {
         val title by remember(data.mode, data.category.id, data.category.name) {
             mutableStateOf(
                 when (data.mode) {
@@ -36,22 +38,24 @@ object EditTagCategoryPage : Page<EditTagCategoryPageData> {
     }
 
     @Composable
-    override fun renderBody(router: Router, app: AppState, data: EditTagCategoryPageData) {
-        TagCategoryForm(
-            tagCategoryService = app.tagCategoryService,
-            mode = data.mode,
-            category = data.category,
-            onCancel = {
-                when (data.mode) {
-                    CREATE -> router.goTo(TagCategoriesPage, EmptyData)
-                    EDIT -> router.goTo(TagCategoryInfoPage, TagCategoryInfoPageData(data.category))
+    override fun Body(router: Router, app: AppState, data: EditTagCategoryPageData) {
+        AnimatedFadeIn {
+            TagCategoryForm(
+                tagCategoryService = app.tagCategoryService,
+                mode = data.mode,
+                category = data.category,
+                onCancel = {
+                    when (data.mode) {
+                        CREATE -> router.goTo(TagCategoriesPage, EmptyData)
+                        EDIT -> router.goTo(TagCategoryInfoPage, TagCategoryInfoPageData(data.category.id))
+                    }
+                },
+                onSubmit = {
+                    val category = app.tagCategoryService.createOrUpdate(it)
+                    router.goTo(TagCategoryInfoPage, TagCategoryInfoPageData(category.id))
                 }
-            },
-            onSubmit = {
-                val category = app.tagCategoryService.createOrUpdate(it)
-                router.goTo(TagCategoryInfoPage, TagCategoryInfoPageData(category))
-            }
-        )
+            )
+        }
     }
 }
 
@@ -70,7 +74,7 @@ data class EditTagCategoryPageData(
         val Create = EditTagCategoryPageData(
             mode = CREATE,
             category = TagCategory(
-                name = "New tag category",
+                name = TagCategoryName("New tag category"),
                 color = TagCategory.DEFAULT_COLOR,
                 created = OffsetDateTime.MIN
             )
@@ -80,7 +84,7 @@ data class EditTagCategoryPageData(
             mode = CREATE,
             category = original.copy(
                 id = 0,
-                name = "Copy of " + original.name
+                name = TagCategoryName("Copy of " + original.name)
             )
         )
     }

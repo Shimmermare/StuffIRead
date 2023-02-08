@@ -1,36 +1,52 @@
 package com.shimmermare.stuffiread.ui.pages.tag.info
 
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.text.style.TextOverflow
-import com.shimmermare.stuffiread.domain.tags.Tag
+import com.shimmermare.stuffiread.domain.tags.ExtendedTag
+import com.shimmermare.stuffiread.domain.tags.TagId
 import com.shimmermare.stuffiread.ui.AppState
-import com.shimmermare.stuffiread.ui.routing.Page
+import com.shimmermare.stuffiread.ui.pages.LoadedPage
 import com.shimmermare.stuffiread.ui.routing.PageData
 import com.shimmermare.stuffiread.ui.routing.Router
+import io.github.aakira.napier.Napier
 
-object TagInfoPage : Page<TagInfoPageData> {
+object TagInfoPage : LoadedPage<TagInfoPageData, ExtendedTag>() {
     override val name = "Tag"
 
     @Composable
-    override fun renderTopBarTitle(app: AppState, data: TagInfoPageData) {
-        val title by remember(data.tag.id, data.tag.name) {
-            mutableStateOf("Tag - ${data.tag.name} [${data.tag.id}]")
+    override fun Title(app: AppState, data: TagInfoPageData) {
+        val title = remember(data.tagId) {
+            val tag = app.tagService.getById(data.tagId)
+            if (tag == null) {
+                "Tag ${data.tagId} not found!"
+            } else {
+                "Tag - ${tag.name} [${tag.id}]"
+            }
         }
         Text(text = title, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 
+    override suspend fun load(app: AppState, data: TagInfoPageData): ExtendedTag {
+        return app.tagService.getExtendedByIdOrThrow(data.tagId)
+    }
+
     @Composable
-    override fun renderBody(router: Router, app: AppState, data: TagInfoPageData) {
-        TagInfo(router, app, data.tag)
+    override fun LoadingError(data: TagInfoPageData, e: Exception?) {
+        Napier.e(e) { "Failed to load tag ${data.tagId}" }
+        Text("Failed to load tag ${data.tagId}", style = MaterialTheme.typography.h5)
+    }
+
+    @Composable
+    override fun LoadedContent(router: Router, app: AppState, loaded: ExtendedTag) {
+        TagInfo(router, app, loaded)
     }
 }
 
-data class TagInfoPageData(val tag: Tag) : PageData {
+data class TagInfoPageData(val tagId: TagId) : PageData {
     init {
-        if (tag.id == 0) throw IllegalArgumentException("Can't view info for non-existing tag")
+        require(tagId != 0) { "Can't view info for non-existing tag" }
     }
 }

@@ -36,11 +36,11 @@ class Router private constructor(
 
     @Suppress("UNCHECKED_CAST")
     @Composable
-    fun renderTitle() = (currentPage as Page<PageData>).renderTopBarTitle(app, currentData)
+    fun CurrentPageTitle() = (currentPage as Page<PageData>).Title(app, currentData)
 
     @Suppress("UNCHECKED_CAST")
     @Composable
-    fun renderBody() = (currentPage as Page<PageData>).renderBody(this, app, currentData)
+    fun CurrentPageBody() = (currentPage as Page<PageData>).Body(this, app, currentData)
 
     companion object {
         fun <P : Page<D>, D : PageData> create(app: AppState, startingPage: P, startingData: D): Router {

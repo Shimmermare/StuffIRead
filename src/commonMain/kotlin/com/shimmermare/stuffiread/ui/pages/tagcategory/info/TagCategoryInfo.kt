@@ -88,12 +88,17 @@ fun TagCategoryInfo(router: Router, app: AppState, category: TagCategory) {
     }
 
     if (showDeleteDialog) {
-        DeleteTagCategoryDialog(app.tagCategoryService, app.tagService, category) { deleted ->
-            showDeleteDialog = false
-            if (deleted) {
+        DeleteTagCategoryDialog(
+            app.tagCategoryService,
+            app.tagService,
+            category,
+            onConfirm = {
+                app.tagCategoryService.deleteById(category.id)
+                showDeleteDialog = false
                 router.goTo(TagCategoriesPage, EmptyData)
-            }
-        }
+            },
+            onDismiss = { showDeleteDialog = false }
+        )
     }
 }
 
@@ -109,8 +114,8 @@ private fun PropertiesBlock(router: Router, category: TagCategory) {
             }
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 Text(text = "Description", style = MaterialTheme.typography.h6)
-                if (category.description != null) {
-                    Text(text = category.description)
+                if (category.description.isPresent) {
+                    Text(text = category.description.value!!)
                 } else {
                     Text(text = "No description", fontStyle = FontStyle.Italic, color = Color.LightGray)
                 }

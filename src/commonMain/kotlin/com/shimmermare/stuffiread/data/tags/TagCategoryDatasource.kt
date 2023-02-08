@@ -5,6 +5,7 @@ import com.shimmermare.stuffiread.domain.tags.TagCategoryId
 
 interface TagCategoryDatasource {
     fun findById(id: TagCategoryId): TagCategory?
+    fun findByIds(ids: Collection<TagCategoryId>): List<TagCategory>
     fun findNameById(id: TagCategoryId): String?
     fun findColorsByIds(ids: Collection<TagCategoryId>): Map<TagCategoryId, Int>
     fun findByName(name: String): TagCategory?

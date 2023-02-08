@@ -8,6 +8,10 @@ Excel spreadsheet with all that you read is 10 screens long and searching is a n
 Also, you like to score stories and write reviews, even if only for yourself.
 Maybe you also like to re-read stories sometimes.
 
+## Development and support
+This app was created for personal usage and as a way to explore Compose framework.
+**That means support and further development is not guaranteed.**
+
 ## Features
 
 ### Review and score stories that you read

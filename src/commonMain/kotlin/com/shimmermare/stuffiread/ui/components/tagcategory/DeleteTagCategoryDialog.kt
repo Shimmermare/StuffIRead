@@ -21,13 +21,14 @@ fun DeleteTagCategoryDialog(
     tagCategoryService: TagCategoryService,
     tagService: TagService,
     category: TagCategory,
-    onClose: (deleted: Boolean) -> Unit
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
 ) {
     val tagsInCategoryCount = remember(category.id) { tagService.getCountInCategory(category.id) }
     var replacementCategoryId: TagCategoryId? by remember { mutableStateOf(null) }
 
     FixedAlertDialog(
-        onDismissRequest = { onClose(false) },
+        onDismissRequest = onDismiss,
         title = {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(5.dp),
@@ -63,15 +64,14 @@ fun DeleteTagCategoryDialog(
                             throw IllegalStateException("Failed to change category ${category.id} -> $replacementCategoryId")
                         }
                     }
-                    tagCategoryService.deleteById(category.id)
-                    onClose(true)
+                    onConfirm()
                 }
             ) {
                 Text("Confirm")
             }
         },
         dismissButton = {
-            Button(onClick = { onClose(false) }) {
+            Button(onClick = onDismiss) {
                 Text("Cancel")
             }
         }

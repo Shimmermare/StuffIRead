@@ -2,9 +2,7 @@ package com.shimmermare.stuffiread.data
 
 import com.shimmermare.stuffiread.data.tags.TagCategoryDatasource
 import com.shimmermare.stuffiread.data.tags.TagDatasource
-import com.shimmermare.stuffiread.domain.tags.Tag
-import com.shimmermare.stuffiread.domain.tags.TagCategory
-import com.shimmermare.stuffiread.domain.tags.TagCategoryId
+import com.shimmermare.stuffiread.domain.tags.*
 import java.awt.Color
 import java.time.OffsetDateTime
 
@@ -29,8 +27,8 @@ class DefaultDataInitializer(
     private fun tagCat(name: String, desc: String?, sortOrder: Int, color: Color): TagCategory {
         return tagCategoryDatasource.insert(
             TagCategory(
-                name = name,
-                description = desc,
+                name = TagCategoryName(name),
+                description = TagCategoryDescription.of(desc),
                 sortOrder = sortOrder,
                 color = color.rgb,
                 created = OffsetDateTime.now()
@@ -41,9 +39,9 @@ class DefaultDataInitializer(
     private fun tag(name: String, cat: TagCategoryId, desc: String?): Tag {
         return tagDatasource.insert(
             Tag(
-                name = name,
+                name = TagName(name),
                 categoryId = cat,
-                description = desc,
+                description = TagDescription.of(desc),
                 created = OffsetDateTime.now()
             )
         )

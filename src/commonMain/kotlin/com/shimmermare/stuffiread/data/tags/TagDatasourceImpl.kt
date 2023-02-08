@@ -1,9 +1,7 @@
 package com.shimmermare.stuffiread.data.tags
 
 import com.shimmermare.stuffiread.data.Database
-import com.shimmermare.stuffiread.domain.tags.Tag
-import com.shimmermare.stuffiread.domain.tags.TagCategoryId
-import com.shimmermare.stuffiread.domain.tags.TagId
+import com.shimmermare.stuffiread.domain.tags.*
 import com.shimmermare.stuffiread.data.tags.Tag as DbTag
 
 class TagDatasourceImpl(
@@ -65,14 +63,18 @@ class TagDatasourceImpl(
         return rows.map {
             Tag(
                 id = it.id,
+                name = TagName(it.name),
                 categoryId = it.categoryId,
-                name = it.name,
-                description = it.description,
+                description = TagDescription.of(it.description),
                 impliedTags = impliedByTagId[it.id] ?: emptySet(),
                 created = it.createdTs,
                 updated = it.updatedTs,
             )
         }
+    }
+
+    override fun findImplyingIds(tagId: TagId): Set<TagId> {
+        return tagImpliedQueries.selectImplyingForTag(tagId).executeAsList().toSet()
     }
 
     override fun findImplyingTags(tagId: TagId): List<Tag> {
@@ -102,9 +104,9 @@ class TagDatasourceImpl(
     override fun insert(tag: Tag): Tag {
         return db.transactionWithResult {
             tagQueries.insert(
-                name = tag.name,
+                name = tag.name.value,
                 categoryId = tag.categoryId,
-                description = tag.description,
+                description = tag.description.value,
                 createdTs = tag.created,
                 updatedTs = tag.updated,
             )
@@ -119,9 +121,9 @@ class TagDatasourceImpl(
         db.transaction {
             tagQueries.update(
                 id = tag.id,
-                name = tag.name,
+                name = tag.name.value,
                 categoryId = tag.categoryId,
-                description = tag.description,
+                description = tag.description.value,
                 createdTs = tag.created,
                 updatedTs = tag.updated,
             )
@@ -151,9 +153,9 @@ class TagDatasourceImpl(
     private fun toEntity(tag: DbTag, impliedTags: Set<Int>): Tag {
         return Tag(
             id = tag.id,
-            name = tag.name,
+            name = TagName(tag.name),
             categoryId = tag.categoryId,
-            description = tag.description,
+            description = TagDescription.of(tag.description),
             impliedTags = impliedTags,
             created = tag.createdTs,
             updated = tag.updatedTs,

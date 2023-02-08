@@ -17,6 +17,11 @@ SELECT *
 FROM tagCategory
 WHERE id = ?;
 
+selectByIds:
+SELECT *
+FROM tagCategory
+WHERE id IN ?;
+
 selectNameById:
 SELECT name
 FROM tagCategory
