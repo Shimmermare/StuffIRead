@@ -1,41 +1,84 @@
 package com.shimmermare.stuffiread.ui.pages
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import com.shimmermare.stuffiread.ui.AppState
 import com.shimmermare.stuffiread.ui.components.animation.AnimatedFadeIn
 import com.shimmermare.stuffiread.ui.routing.Page
-import com.shimmermare.stuffiread.ui.routing.PageData
-import com.shimmermare.stuffiread.ui.routing.Router
-import com.shimmermare.stuffiread.ui.util.LoadingContent
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.withTimeout
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Page with content that is asynchronously loaded.
  */
-abstract class LoadedPage<Data : PageData, Loadable> : Page<Data> {
+abstract class LoadedPage<Loadable>(
+    private val timeout: Duration = 5.seconds
+) : Page {
+    protected var status: Status by mutableStateOf(Status.LOADING)
+    protected var content: Loadable? by mutableStateOf(null)
+    protected var error: Exception? by mutableStateOf(null)
+
     @Composable
-    override fun Body(router: Router, app: AppState, data: Data) {
-        LoadingContent(
-            key = router.currentPage to router.currentData,
-            loader = { load(app, data) },
-            onError = { LoadingError(data, it) },
-        ) { loaded ->
-            AnimatedFadeIn {
-                LoadedContent(router, app, loaded)
+    override fun Body(app: AppState) {
+        LaunchedEffect(this) {
+            status = Status.LOADING
+            content = null
+            error = null
+
+            try {
+                content = withTimeout(timeout) { load(app) }
+                status = Status.LOADED
+            } catch (e: Exception) {
+                error = e
+                status = Status.FAILED
+            }
+        }
+
+        when (status) {
+            Status.LOADING -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
+
+            Status.LOADED -> {
+                AnimatedFadeIn(key = this) {
+                    LoadedContent(app)
+                }
+            }
+
+            Status.FAILED -> {
+                LoadingError(app)
             }
         }
     }
 
-    protected abstract suspend fun load(app: AppState, data: Data): Loadable
+    protected abstract suspend fun load(app: AppState): Loadable
 
     @Composable
-    protected open fun LoadingError(data: Data, e: Exception?) {
-        Napier.e(e) { "Failed to load page content" }
+    protected open fun LoadingError(app: AppState) {
+        Napier.e(error) { "Failed to load page content" }
         Text("Failed to load page content", style = MaterialTheme.typography.h5)
     }
 
     @Composable
-    protected abstract fun LoadedContent(router: Router, app: AppState, loaded: Loadable)
+    protected abstract fun LoadedContent(app: AppState)
+
+    enum class Status {
+        LOADING,
+        LOADED,
+        FAILED
+    }
 }

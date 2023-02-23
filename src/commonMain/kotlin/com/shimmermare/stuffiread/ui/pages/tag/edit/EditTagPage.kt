@@ -4,33 +4,30 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.text.style.TextOverflow
-import com.shimmermare.stuffiread.domain.tags.Tag
-import com.shimmermare.stuffiread.domain.tags.TagId
-import com.shimmermare.stuffiread.domain.tags.TagName
+import com.shimmermare.stuffiread.tags.Tag
+import com.shimmermare.stuffiread.tags.TagId
+import com.shimmermare.stuffiread.tags.TagName
 import com.shimmermare.stuffiread.ui.AppState
 import com.shimmermare.stuffiread.ui.components.animation.AnimatedFadeIn
 import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPageMode.CREATE
 import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPageMode.EDIT
 import com.shimmermare.stuffiread.ui.pages.tag.info.TagInfoPage
-import com.shimmermare.stuffiread.ui.pages.tag.info.TagInfoPageData
 import com.shimmermare.stuffiread.ui.pages.tags.TagsPage
-import com.shimmermare.stuffiread.ui.routing.EmptyData
 import com.shimmermare.stuffiread.ui.routing.Page
-import com.shimmermare.stuffiread.ui.routing.PageData
-import com.shimmermare.stuffiread.ui.routing.Router
-import java.time.OffsetDateTime
 
-object EditTagPage : Page<EditTagPageData> {
-    override val name = "Tag"
-
+class EditTagPage(
+    private val mode: EditTagPageMode,
+    private val editingTagId: TagId? = null,
+    private val prefillWith: Tag,
+) : Page {
     @Composable
-    override fun Title(app: AppState, data: EditTagPageData) {
-        val title = remember(data.mode, data.editingTagId) {
-            when (data.mode) {
+    override fun Title(app: AppState) {
+        val title = remember(mode, editingTagId) {
+            when (mode) {
                 CREATE -> "New tag"
                 EDIT -> {
-                    val tag = app.tagService.getById(data.editingTagId!!)!!
-                    "Tag (Editing) - ${tag.name} [${data.editingTagId}]"
+                    val tag = app.storyArchive!!.tagService.getTagById(editingTagId!!)!!
+                    "Tag (Editing) - ${tag.name} [${editingTagId}]"
                 }
             }
         }
@@ -38,45 +35,39 @@ object EditTagPage : Page<EditTagPageData> {
     }
 
     @Composable
-    override fun Body(router: Router, app: AppState, data: EditTagPageData) {
+    override fun Body(app: AppState) {
         AnimatedFadeIn {
             TagForm(
-                tagCategoryService = app.tagCategoryService,
-                tagService = app.tagService,
-                mode = data.mode,
-                tag = data.prefillWith,
+                tagService = app.storyArchive!!.tagService,
+                mode = mode,
+                tag = prefillWith,
                 onCancel = {
-                    when (data.mode) {
-                        CREATE -> router.goTo(TagsPage, EmptyData)
-                        EDIT -> router.goTo(TagInfoPage, TagInfoPageData(data.editingTagId!!))
+                    when (mode) {
+                        CREATE -> app.router.goTo(TagsPage())
+                        EDIT -> app.router.goTo(TagInfoPage(editingTagId!!))
                     }
                 },
                 onSubmit = {
-                    val tag = app.tagService.createOrUpdate(it)
-                    router.goTo(TagInfoPage, TagInfoPageData(tag.id))
+                    val tag = when (mode) {
+                        CREATE -> app.storyArchive!!.tagService.createTag(it)
+                        EDIT -> app.storyArchive!!.tagService.updateTag(it)
+                    }
+                    app.router.goTo(TagInfoPage(tag.id))
                 }
             )
         }
     }
-}
 
-
-data class EditTagPageData(
-    val mode: EditTagPageMode,
-    val editingTagId: TagId? = null,
-    val prefillWith: Tag,
-) : PageData {
     companion object {
-        val Create = EditTagPageData(
+        fun create() = EditTagPage(
             mode = CREATE,
             prefillWith = Tag(
                 name = TagName("New tag"),
                 categoryId = 0,
-                created = OffsetDateTime.MIN
             )
         )
 
-        fun createCopy(original: Tag) = EditTagPageData(
+        fun createCopy(original: Tag) = EditTagPage(
             mode = CREATE,
             prefillWith = original.copy(
                 id = 0,
@@ -84,9 +75,9 @@ data class EditTagPageData(
             )
         )
 
-        fun edit(tag: Tag): EditTagPageData {
+        fun edit(tag: Tag): EditTagPage {
             if (tag.id == 0) throw IllegalArgumentException("Can edit only existing tag")
-            return EditTagPageData(
+            return EditTagPage(
                 mode = EDIT,
                 editingTagId = tag.id,
                 prefillWith = tag

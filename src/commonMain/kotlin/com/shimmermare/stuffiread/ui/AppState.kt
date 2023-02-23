@@ -1,51 +1,32 @@
 package com.shimmermare.stuffiread.ui
 
-import com.shimmermare.stuffiread.data.StoryDatabase
-import com.shimmermare.stuffiread.domain.stories.StoryService
-import com.shimmermare.stuffiread.domain.tags.TagCategoryService
-import com.shimmermare.stuffiread.domain.tags.TagService
-import io.github.aakira.napier.Napier
-import java.nio.file.Files
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import com.shimmermare.stuffiread.StoryArchive
+import com.shimmermare.stuffiread.settings.SettingsService
+import com.shimmermare.stuffiread.settings.SettingsServiceImpl
+import com.shimmermare.stuffiread.ui.pages.openarchive.OpenArchivePage
+import com.shimmermare.stuffiread.ui.pages.stories.StoriesPage
+import com.shimmermare.stuffiread.ui.routing.Router
 import java.nio.file.Path
-import kotlin.io.path.extension
 
-class AppState(
-    private val dbFile: Path,
-    createIfNotExist: Boolean
-) : AutoCloseable {
-    private val storyDatabase: StoryDatabase
+class AppState {
+    val settingsService: SettingsService = SettingsServiceImpl()
 
-    val storyService: StoryService
-    val tagCategoryService: TagCategoryService
-    val tagService: TagService
+    val router: Router = Router(this, OpenArchivePage())
 
-    init {
-        if (dbFile.extension != STORY_DB_FILE_EXT) {
-            throw IllegalArgumentException("File $dbFile has wrong extension (expected .$STORY_DB_FILE_EXT)")
-        }
-        if (!createIfNotExist && !Files.exists(dbFile)) {
-            throw IllegalArgumentException("File $dbFile doesn't exist")
-        }
+    var storyArchive: StoryArchive? by mutableStateOf(null)
+        private set
 
-        Napier.i { "Opening story database '$dbFile'" }
-        try {
-            storyDatabase = StoryDatabase(dbFile)
-            storyService = StoryService(storyDatabase)
-            tagCategoryService = TagCategoryService(storyDatabase)
-            tagService = TagService(storyDatabase)
-        } catch (e: Exception) {
-            Napier.e(e) { "Failed to open story database '$dbFile'" }
-            throw e
-        }
+    fun openStoryArchive(archiveDirectory: Path, createIfNotExists: Boolean) {
+        storyArchive = StoryArchive(archiveDirectory, createIfNotExists)
+        router.goTo(StoriesPage())
     }
 
-    override fun close() {
-        Napier.i { "Closing story database: '$dbFile'" }
-        storyDatabase.close()
-    }
-
-    companion object {
-        const val STORY_DB_FILE_EXT = "stories"
+    fun closeStoryArchive() {
+        storyArchive = null
+        router.goTo(OpenArchivePage())
     }
 }
 

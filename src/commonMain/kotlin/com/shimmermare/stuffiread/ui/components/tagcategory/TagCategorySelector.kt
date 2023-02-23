@@ -1,31 +1,44 @@
 package com.shimmermare.stuffiread.ui.components.tagcategory
 
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.DisableSelection
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
-import com.shimmermare.stuffiread.domain.tags.TagCategory
-import com.shimmermare.stuffiread.domain.tags.TagCategoryId
-import com.shimmermare.stuffiread.domain.tags.TagCategoryService
+import com.shimmermare.stuffiread.tags.TagCategory
+import com.shimmermare.stuffiread.tags.TagCategoryId
+import com.shimmermare.stuffiread.tags.TagService
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
 import com.shimmermare.stuffiread.ui.components.search.SearchBar
 import com.shimmermare.stuffiread.ui.components.text.FilledNameText
 
 @Composable
 fun TagCategorySelector(
-    tagCategoryService: TagCategoryService,
+    tagService: TagService,
     categoryId: TagCategoryId? = null,
     filter: (TagCategory) -> Boolean = { true },
     onSelect: (TagCategoryId?) -> Unit
 ) {
-    val category: TagCategory? by remember(categoryId) {
-        mutableStateOf(categoryId?.let { tagCategoryService.getById(it) })
-    }
+    val category: TagCategory? = remember(categoryId) { categoryId?.let { tagService.getCategoryById(it) } }
 
     var showPopup: Boolean by remember { mutableStateOf(false) }
 
@@ -34,14 +47,14 @@ fun TagCategorySelector(
         Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
             Box(modifier = Modifier.clickable { showPopup = true }) {
                 if (category != null) {
-                    TagCategoryName(category!!)
+                    TagCategoryName(category)
                 } else {
                     FilledNameText("Not selected", MaterialTheme.colors.primary)
                 }
             }
             if (showPopup) {
                 Box {
-                    SelectorPopup(tagCategoryService, filter, onDismissRequest = { showPopup = false }, onSelect)
+                    SelectorPopup(tagService, filter, onDismissRequest = { showPopup = false }, onSelect)
                 }
             }
         }
@@ -50,17 +63,17 @@ fun TagCategorySelector(
 
 @Composable
 private fun SelectorPopup(
-    tagCategoryService: TagCategoryService,
+    tagService: TagService,
     filter: (TagCategory) -> Boolean,
     onDismissRequest: () -> Unit,
-    onSelect: (TagCategoryId) -> Unit
+    onSelect: (TagCategoryId) -> Unit,
 ) {
-    val allTagCategories = remember { tagCategoryService.getAll() }
+    val allCategories = remember { tagService.getCategories() }
 
     var searchText: String by remember { mutableStateOf("") }
     val filteredTagCategories: List<TagCategory> = remember(searchText) {
         val loweredSearchText = searchText.lowercase()
-        allTagCategories.filter { it.name.value.lowercase().contains(loweredSearchText) && filter(it) }
+        allCategories.filter { it.name.value.lowercase().contains(loweredSearchText) && filter(it) }
     }
 
     Popup(

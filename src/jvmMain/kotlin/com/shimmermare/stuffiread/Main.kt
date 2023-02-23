@@ -12,9 +12,9 @@ import javax.swing.UIManager
 fun main(args: Array<String>) {
     Napier.base(DebugAntilog())
 
-    val storiesFile = args.firstOrNull()?.let { Path.of(it) }
+    val archiveDirectory = args.firstOrNull()?.let { Path.of(it) }
 
-    Napier.i("Started app with args: storiesFile=$storiesFile")
+    Napier.i("Started app with args: archiveDirectory=$archiveDirectory")
 
     // Some swing elements are unfortunately used, e.g. JFileChooser
     // Replace with native Compose ones when available
@@ -30,7 +30,7 @@ fun main(args: Array<String>) {
             onCloseRequest = onCloseRequest
         ) {
             window.minimumSize = Dimension(1280, 800)
-            App(storiesFile)
+            App(archiveDirectory)
         }
     }
 }

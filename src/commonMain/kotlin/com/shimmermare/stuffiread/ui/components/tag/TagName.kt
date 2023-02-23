@@ -6,12 +6,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
-import com.shimmermare.stuffiread.domain.tags.ExtendedTag
-import com.shimmermare.stuffiread.domain.tags.Tag
-import com.shimmermare.stuffiread.domain.tags.TagWithCategory
+import com.shimmermare.stuffiread.tags.ExtendedTag
+import com.shimmermare.stuffiread.tags.Tag
+import com.shimmermare.stuffiread.tags.TagWithCategory
 import com.shimmermare.stuffiread.ui.components.text.FilledNameText
 import com.shimmermare.stuffiread.ui.pages.tag.info.TagInfoPage
-import com.shimmermare.stuffiread.ui.pages.tag.info.TagInfoPageData
 import com.shimmermare.stuffiread.ui.routing.Router
 
 @Composable
@@ -25,7 +24,7 @@ fun TagName(
         tag = tag,
         fontSize = fontSize,
         height = height,
-        onClick = { router.goTo(TagInfoPage, TagInfoPageData(tag.tag.id)) }
+        onClick = { router.goTo(TagInfoPage(tag.tag.id)) }
     )
 }
 
@@ -40,7 +39,7 @@ fun TagName(
         tag = tag,
         fontSize = fontSize,
         height = height,
-        onClick = { router.goTo(TagInfoPage, TagInfoPageData(tag.tag.id)) }
+        onClick = { router.goTo(TagInfoPage(tag.tag.id)) }
     )
 }
 
@@ -57,7 +56,7 @@ fun TagName(
         color = color,
         fontSize = fontSize,
         height = height,
-        onClick = { router.goTo(TagInfoPage, TagInfoPageData(tag.id)) }
+        onClick = { router.goTo(TagInfoPage(tag.id)) }
     )
 }
 

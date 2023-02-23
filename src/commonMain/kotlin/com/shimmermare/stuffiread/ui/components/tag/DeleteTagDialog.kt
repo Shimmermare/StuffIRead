@@ -9,7 +9,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
-import com.shimmermare.stuffiread.domain.tags.*
+import com.shimmermare.stuffiread.tags.ExtendedTag
 import com.shimmermare.stuffiread.ui.components.dialog.FixedAlertDialog
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
 

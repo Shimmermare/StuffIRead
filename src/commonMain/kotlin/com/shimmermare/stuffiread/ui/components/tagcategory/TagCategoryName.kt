@@ -6,10 +6,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
-import com.shimmermare.stuffiread.domain.tags.TagCategory
+import com.shimmermare.stuffiread.tags.TagCategory
 import com.shimmermare.stuffiread.ui.components.text.FilledNameText
 import com.shimmermare.stuffiread.ui.pages.tagcategory.info.TagCategoryInfoPage
-import com.shimmermare.stuffiread.ui.pages.tagcategory.info.TagCategoryInfoPageData
 import com.shimmermare.stuffiread.ui.routing.Router
 
 /**
@@ -26,7 +25,7 @@ fun TagCategoryName(
         category = category,
         fontSize = fontSize,
         height = height,
-        onClick = { router.goTo(TagCategoryInfoPage, TagCategoryInfoPageData(category.id)) }
+        onClick = { router.goTo(TagCategoryInfoPage(category.id)) }
     )
 }
 

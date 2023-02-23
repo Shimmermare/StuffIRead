@@ -1,32 +1,45 @@
 package com.shimmermare.stuffiread.ui.pages.tag.info
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material.*
+import androidx.compose.material.FloatingActionButton
+import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
-import com.shimmermare.stuffiread.domain.tags.ExtendedTag
+import com.shimmermare.stuffiread.tags.ExtendedTag
 import com.shimmermare.stuffiread.ui.AppState
 import com.shimmermare.stuffiread.ui.components.date.Date
 import com.shimmermare.stuffiread.ui.components.tag.DeleteTagDialog
 import com.shimmermare.stuffiread.ui.components.tag.TagName
 import com.shimmermare.stuffiread.ui.components.tagcategory.TagCategoryName
 import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPage
-import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPageData
 import com.shimmermare.stuffiread.ui.pages.tags.TagsPage
-import com.shimmermare.stuffiread.ui.routing.EmptyData
 import com.shimmermare.stuffiread.ui.routing.Router
 
 @Composable
-fun TagInfo(router: Router, app: AppState, tag: ExtendedTag) {
+fun TagInfo(app: AppState, tag: ExtendedTag) {
     var showDeleteDialog: Boolean by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -35,10 +48,10 @@ fun TagInfo(router: Router, app: AppState, tag: ExtendedTag) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                FloatingActionButton(onClick = { router.goTo(EditTagPage, EditTagPageData.createCopy(tag.tag)) }) {
+                FloatingActionButton(onClick = { app.router.goTo(EditTagPage.createCopy(tag.tag)) }) {
                     Icon(Icons.Filled.ContentCopy, null)
                 }
-                FloatingActionButton(onClick = { router.goTo(EditTagPage, EditTagPageData.edit(tag.tag)) }) {
+                FloatingActionButton(onClick = { app.router.goTo(EditTagPage.edit(tag.tag)) }) {
                     Icon(Icons.Filled.Edit, null)
                 }
                 FloatingActionButton(onClick = { showDeleteDialog = true }) {
@@ -57,7 +70,7 @@ fun TagInfo(router: Router, app: AppState, tag: ExtendedTag) {
                 Box(
                     modifier = Modifier.weight(0.5F)
                 ) {
-                    PropertiesBlock(router, tag)
+                    PropertiesBlock(app.router, tag)
                 }
                 Box(
                     modifier = Modifier.weight(0.5F)
@@ -72,9 +85,9 @@ fun TagInfo(router: Router, app: AppState, tag: ExtendedTag) {
         DeleteTagDialog(
             tag = tag,
             onConfirm = {
-                app.tagService.deleteById(tag.tag.id)
+                app.storyArchive!!.tagService.deleteTagById(tag.tag.id)
                 showDeleteDialog = false
-                router.goTo(TagsPage, EmptyData)
+                app.router.goTo(TagsPage())
             },
             onDismiss = { showDeleteDialog = false }
         )

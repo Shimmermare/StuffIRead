@@ -9,22 +9,25 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
-import com.shimmermare.stuffiread.domain.tags.TagCategory
-import com.shimmermare.stuffiread.domain.tags.TagCategoryId
-import com.shimmermare.stuffiread.domain.tags.TagCategoryService
-import com.shimmermare.stuffiread.domain.tags.TagService
+import com.shimmermare.stuffiread.tags.TagCategory
+import com.shimmermare.stuffiread.tags.TagCategoryId
+import com.shimmermare.stuffiread.tags.TagService
 import com.shimmermare.stuffiread.ui.components.dialog.FixedAlertDialog
 
+/**
+ * Dialog that presents to user option to safely delete tag category.
+ *
+ * If category has tags in it - user must provide replacement category before deleting current.
+ */
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun DeleteTagCategoryDialog(
-    tagCategoryService: TagCategoryService,
     tagService: TagService,
     category: TagCategory,
-    onConfirm: () -> Unit,
+    onDeleted: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val tagsInCategoryCount = remember(category.id) { tagService.getCountInCategory(category.id) }
+    val tagsInCategoryCount: UInt = remember(category.id) { tagService.getTagCountInCategory(category.id) }
     var replacementCategoryId: TagCategoryId? by remember { mutableStateOf(null) }
 
     FixedAlertDialog(
@@ -39,14 +42,14 @@ fun DeleteTagCategoryDialog(
             }
         },
         text = {
-            if (tagsInCategoryCount > 0) {
+            if (tagsInCategoryCount > 0u) {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Text("$tagsInCategoryCount tags in this category. Before deleting category you must provide a replacement: ")
                     TagCategorySelector(
-                        tagCategoryService = tagCategoryService,
+                        tagService = tagService,
                         categoryId = replacementCategoryId,
                         filter = { it.id != category.id },
                         onSelect = { replacementCategoryId = it }
@@ -56,15 +59,16 @@ fun DeleteTagCategoryDialog(
         },
         confirmButton = {
             Button(
-                enabled = tagsInCategoryCount == 0 || replacementCategoryId != null,
+                enabled = tagsInCategoryCount == 0u || replacementCategoryId != null,
                 onClick = {
-                    if (tagsInCategoryCount > 0) {
-                        tagService.changeTagCategory(category.id, replacementCategoryId!!)
-                        if (tagService.getCountInCategory(category.id) > 0) {
+                    if (tagsInCategoryCount > 0u) {
+                        tagService.changeTagsCategory(category.id, replacementCategoryId!!)
+                        if (tagService.getTagCountInCategory(category.id) > 0u) {
                             throw IllegalStateException("Failed to change category ${category.id} -> $replacementCategoryId")
                         }
                     }
-                    onConfirm()
+                    tagService.deleteTagById(category.id)
+                    onDeleted()
                 }
             ) {
                 Text("Confirm")

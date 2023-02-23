@@ -6,17 +6,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 
 abstract class FormField<T, V>(
     val name: String,
     val description: String? = null,
     val getter: (T) -> V,
     val setter: (T, V) -> T,
-    val validator: (V) -> ValidationResult = { ValidationResult.Valid }
+    val validator: suspend (V) -> ValidationResult = { ValidationResult.Valid }
 ) {
-    fun getAndValidateValue(formData: T): FormFieldValue<V> {
+    suspend fun getAndValidateValue(formData: T): FormFieldValue<V> {
         val value = getter(formData)
         val validation = validator(value)
         return FormFieldValue(value, validation.valid, validation.error)
@@ -34,7 +36,7 @@ abstract class FormField<T, V>(
         return setter(formData, value.value)
     }
 
-    fun validate(value: V): ValidationResult = validator(value)
+    suspend fun validate(value: V): ValidationResult = validator(value)
 
     @Suppress("UNCHECKED_CAST")
     @Composable
@@ -44,6 +46,7 @@ abstract class FormField<T, V>(
 
     @Composable
     fun render(value: FormFieldValue<V>, onValueChange: (FormFieldValue<V>) -> Unit) {
+        val coroutineScope = rememberCoroutineScope()
         Column(
             modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
@@ -62,12 +65,17 @@ abstract class FormField<T, V>(
                     color = MaterialTheme.colors.error
                 )
             }
-            renderInputField(value, onValueChange)
+            renderInputField(value) { value ->
+                coroutineScope.launch {
+                    val validationResult = validate(value)
+                    onValueChange(FormFieldValue(value, validationResult))
+                }
+            }
         }
     }
 
     @Composable
-    protected abstract fun renderInputField(value: FormFieldValue<V>, onValueChange: (FormFieldValue<V>) -> Unit)
+    protected abstract fun renderInputField(value: FormFieldValue<V>, onValueChange: (V) -> Unit)
 }
 
 data class FormFieldValue<V>(

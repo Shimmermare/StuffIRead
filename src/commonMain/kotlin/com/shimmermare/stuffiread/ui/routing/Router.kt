@@ -14,38 +14,21 @@ import io.github.aakira.napier.Napier
  * Q: Why write custom navigation instead of provided with Compose?
  * A: Compose navigation package (androidx.navigation:navigation-compose) is currently supported only on Android.
  */
-class Router private constructor(
+class Router(
     private val app: AppState,
-    startingPage: Page<out PageData>,
-    startingData: PageData
+    startingPage: Page,
 ) {
-    var currentPage: Page<out PageData> by mutableStateOf(startingPage)
+    var currentPage: Page by mutableStateOf(startingPage)
         private set
 
-    /**
-     * Type of [currentData] is derived from [currentPage].
-     */
-    var currentData: PageData by mutableStateOf(startingData)
-        private set
-
-    fun <P : Page<D>, D : PageData> goTo(page: P, data: D) {
+    fun <P : Page> goTo(page: P) {
         currentPage = page
-        currentData = data
-        Napier.i { "Going to page ${page::class} with data: $data" }
+        Napier.i { "Going to page $page" }
     }
 
-    @Suppress("UNCHECKED_CAST")
     @Composable
-    fun CurrentPageTitle() = (currentPage as Page<PageData>).Title(app, currentData)
+    fun CurrentPageTitle() = currentPage.Title(app)
 
-    @Suppress("UNCHECKED_CAST")
     @Composable
-    fun CurrentPageBody() = (currentPage as Page<PageData>).Body(this, app, currentData)
-
-    companion object {
-        fun <P : Page<D>, D : PageData> create(app: AppState, startingPage: P, startingData: D): Router {
-            @Suppress("UNCHECKED_CAST")
-            return Router(app, startingPage as Page<PageData>, startingData)
-        }
-    }
+    fun CurrentPageBody() = currentPage.Body(app)
 }

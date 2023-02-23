@@ -1,0 +1,29 @@
+{
+    "id": 2,
+    "author": "Example Author",
+    "name": "Example Sequel Story Name",
+    "url": "https://example.com/2",
+    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\nEget est lorem ipsum dolor sit amet consectetur.",
+    "published": "2023-01-01T00:00:00Z",
+    "changed": "2023-01-01T00:00:00Z",
+    "tags": [
+        1,
+        3
+    ],
+    "sequels": [],
+    "prequels": [
+        1
+    ],
+    "files": [
+        {
+            "format": "PDF",
+            "fileName": "example.pdf",
+            "sha256": "c41a74975962143429777f825391ba97c0892feeea555e041abf599db48c7d43",
+            "wordCount": 1088,
+            "size": 15588
+        }
+    ],
+    "score": 0.5,
+    "created": "2023-01-01T00:00:00Z",
+    "updated": "2023-01-01T00:00:00Z"
+}

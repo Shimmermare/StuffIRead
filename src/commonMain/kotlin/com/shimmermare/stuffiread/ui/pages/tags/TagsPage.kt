@@ -1,39 +1,44 @@
 package com.shimmermare.stuffiread.ui.pages.tags
 
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import com.shimmermare.stuffiread.domain.tags.ExtendedTag
-import com.shimmermare.stuffiread.domain.tags.TagId
+import androidx.compose.runtime.rememberCoroutineScope
+import com.shimmermare.stuffiread.tags.ExtendedTag
+import com.shimmermare.stuffiread.tags.TagId
 import com.shimmermare.stuffiread.ui.AppState
 import com.shimmermare.stuffiread.ui.components.tag.DeleteTagDialog
 import com.shimmermare.stuffiread.ui.pages.MutableTablePage
+import com.shimmermare.stuffiread.ui.pages.error.ErrorPage
 import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPage
-import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPageData
 import com.shimmermare.stuffiread.ui.pages.tag.info.TagInfoPage
-import com.shimmermare.stuffiread.ui.pages.tag.info.TagInfoPageData
-import com.shimmermare.stuffiread.ui.routing.EmptyData
 import com.shimmermare.stuffiread.ui.routing.Router
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.launch
 
 /**
  * Page with listing of all tags with search available.
  */
-object TagsPage : MutableTablePage<EmptyData, TagId, ExtendedTag>() {
-    override val name = "Tags"
-
+class TagsPage : MutableTablePage<TagId, ExtendedTag>() {
     override fun ExtendedTag.id(): TagId = tag.id
 
     override fun ExtendedTag.name(): String = tag.name.value
 
-    override suspend fun load(app: AppState, data: EmptyData): Map<TagId, ExtendedTag> {
-        return app.tagService.getAllExtended().associateBy { it.tag.id }
+    override suspend fun load(app: AppState): Map<TagId, ExtendedTag> {
+        return app.storyArchive!!.tagService.getTagsExtended().associateBy { it.tag.id }
     }
 
     @Composable
-    override fun LoadingError(data: EmptyData, e: Exception?) {
-        Napier.e(e) { "Failed to load tags" }
-        Text("Failed to load tags", style = MaterialTheme.typography.h5)
+    override fun LoadingError(app: AppState) {
+        Napier.e(error) { "Failed to load tags" }
+
+        app.router.goTo(
+            ErrorPage(
+                title = "Failed to load tags",
+                exception = error,
+                actions = listOf(ErrorPage.Action("Try Again") {
+                    app.router.goTo(TagsPage())
+                })
+            )
+        )
     }
 
     override fun getUnitName(count: Int): String {
@@ -41,16 +46,19 @@ object TagsPage : MutableTablePage<EmptyData, TagId, ExtendedTag>() {
     }
 
     override fun Router.goToCreatePage() {
-        goTo(EditTagPage, EditTagPageData.Create)
+        goTo(EditTagPage.create())
     }
 
     @Composable
     override fun DeleteDialog(app: AppState, item: ExtendedTag, onDeleted: () -> Unit, onDismiss: () -> Unit) {
+        val coroutineScope = rememberCoroutineScope()
         DeleteTagDialog(
             tag = item,
             onConfirm = {
-                app.tagService.deleteById(item.tag.id)
-                onDeleted()
+                coroutineScope.launch {
+                    app.storyArchive!!.tagService.deleteTagById(item.tag.id)
+                    onDeleted()
+                }
             },
             onDismiss = onDismiss
         )
@@ -58,15 +66,14 @@ object TagsPage : MutableTablePage<EmptyData, TagId, ExtendedTag>() {
 
     @Composable
     override fun TableContent(
-        router: Router,
         app: AppState,
         items: Collection<ExtendedTag>,
         onDeleteRequest: (ExtendedTag) -> Unit
     ) {
         TagTable(
             tags = items,
-            onRowClick = { router.goTo(TagInfoPage, TagInfoPageData(it.tag.id)) },
-            onEditRequest = { router.goTo(EditTagPage, EditTagPageData.edit(it.tag)) },
+            onRowClick = { app.router.goTo(TagInfoPage(it.tag.id)) },
+            onEditRequest = { app.router.goTo(EditTagPage.edit(it.tag)) },
             onDeleteRequest = onDeleteRequest
         )
     }

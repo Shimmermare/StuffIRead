@@ -2,8 +2,8 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
     kotlin("multiplatform")
+    kotlin("plugin.serialization") version "1.7.10"
     id("org.jetbrains.compose")
-    id("com.squareup.sqldelight")
 }
 
 group = "com.shimmermare.stuffiread"
@@ -25,18 +25,15 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:${extra["kotlinx-serialization-json.version"]}")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:${extra["kotlinx-datetime.version"]}")
                 implementation(compose.desktop.currentOs)
                 // For now exclude this lib bc it's too big if code stripping is not used
                 //implementation("org.jetbrains.compose.material:material-icons-extended-desktop:${extra["compose.version"]}")
                 implementation("com.godaddy.android.colorpicker:compose-color-picker:${extra["compose-color-picker.version"]}")
                 implementation("io.github.aakira:napier:${extra["napier.version"]}")
-                implementation("com.squareup.sqldelight:sqlite-driver:${extra["sqldelight.version"]}")
-                implementation("com.squareup.sqldelight:coroutines-extensions-jvm:${extra["sqldelight.version"]}")
-            }
-            sqldelight {
-                database("Database") {
-                    packageName = "com.shimmermare.stuffiread.data"
-                }
+                implementation("io.github.reactivecircus.cache4k:cache4k:${extra["cache4k.version"]}")
+                implementation("com.russhwolf:multiplatform-settings:${extra["multiplatform-settings.version"]}")
             }
         }
 

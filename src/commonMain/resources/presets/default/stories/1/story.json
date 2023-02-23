@@ -1,0 +1,34 @@
+{
+    "id": 1,
+    "author": "Example Author",
+    "name": "Example Story Name",
+    "url": "https://example.com/1",
+    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\nNulla facilisi etiam dignissim diam quis enim.\nScelerisque viverra mauris in aliquam sem fringilla ut morbi tincidunt.",
+    "published": "2023-01-01T00:00:00Z",
+    "changed": "2023-01-01T00:00:00Z",
+    "tags": [
+        1,
+        2,
+        3
+    ],
+    "sequels": [
+        1
+    ],
+    "prequels": [],
+    "files": [
+        {
+            "format": "TXT",
+            "fileName": "example.txt",
+            "sha256": "669d0938ce36d31e67eb0b12a7e00063d9cf44b7859ccf3070c32e365beaa3c6",
+            "wordCount": 1088,
+            "size": 7322
+        }
+    ],
+    "score": 0.75,
+    "review": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\nSem et tortor consequat id porta.",
+    "firstRead": "2023-01-01T00:00:00Z",
+    "lastRead": "2023-01-01T00:00:00Z",
+    "timesRead": 2,
+    "created": "2023-01-01T00:00:00Z",
+    "updated": "2023-01-01T00:00:00Z"
+}

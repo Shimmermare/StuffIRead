@@ -12,20 +12,18 @@ class TextFormField<T>(
     description: String? = null,
     getter: (T) -> String,
     setter: (T, String) -> T,
-    validator: (String) -> ValidationResult = { ValidationResult.Valid },
+    validator: suspend (String) -> ValidationResult = { ValidationResult.Valid },
     private val textInputModifier: Modifier = Modifier.fillMaxWidth().sizeIn(minHeight = 36.dp, maxHeight = 420.dp),
     private val singleLine: Boolean = true
 ) : FormField<T, String>(name, description, getter, setter, validator) {
     @Composable
-    override fun renderInputField(value: FormFieldValue<String>, onValueChange: (FormFieldValue<String>) -> Unit) {
+    override fun renderInputField(value: FormFieldValue<String>, onValueChange: (String) -> Unit) {
         FixedOutlinedTextField(
             value = value.value,
             modifier = textInputModifier,
             isError = !value.valid,
             singleLine = singleLine,
-            onValueChange = {
-                onValueChange(FormFieldValue(it, validate(it)))
-            }
+            onValueChange = onValueChange,
         )
     }
 }

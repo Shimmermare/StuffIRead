@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import com.shimmermare.stuffiread.domain.tags.ExtendedTag
+import com.shimmermare.stuffiread.tags.ExtendedTag
 import com.shimmermare.stuffiread.ui.components.table.Table
 import com.shimmermare.stuffiread.ui.components.tag.TagName
 import com.shimmermare.stuffiread.ui.components.tagcategory.TagCategoryName

@@ -13,7 +13,7 @@ class IntFormField<T>(
     getter: (T) -> Int,
     setter: (T, Int) -> T,
     range: IntRange = IntRange(Int.MIN_VALUE, Int.MAX_VALUE),
-    validator: (Int) -> ValidationResult = { ValidationResult.Valid },
+    validator: suspend (Int) -> ValidationResult = { ValidationResult.Valid },
     private val textInputModifier: Modifier = Modifier.fillMaxWidth().height(36.dp),
 ) : FormField<T, Int>(
     name,
@@ -30,7 +30,7 @@ class IntFormField<T>(
 ) {
 
     @Composable
-    override fun renderInputField(value: FormFieldValue<Int>, onValueChange: (FormFieldValue<Int>) -> Unit) {
+    override fun renderInputField(value: FormFieldValue<Int>, onValueChange: (Int) -> Unit) {
         FixedOutlinedTextField(
             value = value.value.toString(),
             modifier = textInputModifier,
@@ -49,7 +49,7 @@ class IntFormField<T>(
                     .max(Int.MIN_VALUE.toBigInteger())
                     .min(Int.MAX_VALUE.toBigInteger())
                     .intValueExact()
-                onValueChange(FormFieldValue(intValue, validate(intValue)))
+                onValueChange(intValue)
             }
         )
     }

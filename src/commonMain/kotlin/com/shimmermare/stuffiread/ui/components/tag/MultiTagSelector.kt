@@ -16,10 +16,14 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
-import com.shimmermare.stuffiread.domain.tags.*
+import com.shimmermare.stuffiread.tags.Tag
+import com.shimmermare.stuffiread.tags.TagId
+import com.shimmermare.stuffiread.tags.TagService
+import com.shimmermare.stuffiread.tags.TagWithCategory
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
 import com.shimmermare.stuffiread.ui.components.layout.PopupContent
 import com.shimmermare.stuffiread.ui.components.search.SearchBar
+import com.shimmermare.stuffiread.ui.util.LoadingContainer
 
 /**
  * Input to select multiple unique tags from list of all tags.
@@ -33,14 +37,32 @@ fun MultiTagSelector(
     filter: (Tag) -> Boolean = { true },
     onValueChange: (Set<TagId>) -> Unit
 ) {
-    val selectedTags: List<TagWithCategory> = remember(selectedIds) { tagService.getByIdsWithCategory(selectedIds) }
+    LoadingContainer(
+        key = selectedIds,
+        loader = { ids -> tagService.getTagsWithCategoryByTagIds(ids).associateBy { it.tag.id } }
+    ) { selectedTags ->
+        SelectorContent(
+            tagService,
+            selectedTags,
+            filter,
+            onValueChange
+        )
+    }
+}
 
+@Composable
+private fun SelectorContent(
+    tagService: TagService,
+    selectedTags: Map<TagId, TagWithCategory>,
+    filter: (Tag) -> Boolean,
+    onValueChange: (Set<TagId>) -> Unit
+) {
     var showPopup: Boolean by remember { mutableStateOf(false) }
 
     DisableSelection {
         if (showPopup) {
             Box {
-                SelectorPopup(
+                SelectorPopupContainer(
                     tagService,
                     selectedTags,
                     filter = { filter(it.tag) },
@@ -50,8 +72,8 @@ fun MultiTagSelector(
             }
         }
         ChipVerticalGrid {
-            selectedTags.forEach {
-                SelectedTagName(it) { onValueChange(selectedIds - it.tag.id) }
+            selectedTags.forEach { (id, tag) ->
+                SelectedTagName(tag) { onValueChange(selectedTags.keys - id) }
             }
 
             Box(modifier = Modifier.clickable { showPopup = true }) {
@@ -83,20 +105,39 @@ private fun SelectedTagName(tag: TagWithCategory, onUnselect: () -> Unit) {
 }
 
 @Composable
-private fun SelectorPopup(
+private fun SelectorPopupContainer(
     tagService: TagService,
-    selectedTags: List<TagWithCategory>,
+    selectedTags: Map<TagId, TagWithCategory>,
     filter: (TagWithCategory) -> Boolean,
     onDismissRequest: () -> Unit,
     onValueChange: (Set<TagId>) -> Unit,
 ) {
-    val selectedTagIds: Set<TagId> = remember(selectedTags) { selectedTags.map { it.tag.id }.toSet() }
-    val allTags: List<TagWithCategory> = remember { tagService.getAllWithCategories() }
+    LoadingContainer(
+        key = selectedTags,
+        loader = { tagService.getTagsWithCategory() }
+    ) { allTags ->
+        SelectorPopup(
+            selectedTags,
+            allTags,
+            filter,
+            onDismissRequest,
+            onValueChange
+        )
+    }
+}
 
+@Composable
+private fun SelectorPopup(
+    selectedTags: Map<TagId, TagWithCategory>,
+    allTags: List<TagWithCategory>,
+    filter: (TagWithCategory) -> Boolean,
+    onDismissRequest: () -> Unit,
+    onValueChange: (Set<TagId>) -> Unit,
+) {
     var searchText: String by remember { mutableStateOf("") }
     val filteredTags: List<TagWithCategory> = remember(selectedTags, searchText) {
         allTags.filter {
-            !selectedTagIds.contains(it.tag.id) && filter(it)
+            !selectedTags.containsKey(it.tag.id) && filter(it)
                     && it.tag.name.value.lowercase().contains(searchText)
         }
     }
@@ -115,10 +156,10 @@ private fun SelectorPopup(
             ) {
                 Text(text = "Selected ${selectedTags.size} tags:")
                 ChipVerticalGrid {
-                    selectedTags.forEach {
+                    selectedTags.forEach { (id, tag) ->
                         TagName(
-                            tag = it,
-                            onClick = { onValueChange(selectedTagIds - it.tag.categoryId) }
+                            tag = tag,
+                            onClick = { onValueChange(selectedTags.keys - id) }
                         )
                     }
                 }
@@ -137,7 +178,7 @@ private fun SelectorPopup(
                         TagName(
                             tag = it,
                             onClick = {
-                                onValueChange(selectedTagIds + it.tag.id)
+                                onValueChange(selectedTags.keys + it.tag.id)
                             }
                         )
                     }

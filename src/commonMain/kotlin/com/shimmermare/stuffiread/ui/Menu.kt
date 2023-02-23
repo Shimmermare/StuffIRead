@@ -6,7 +6,12 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 
 @Composable
-fun Menu(expanded: Boolean, onDismissRequest: () -> Unit, onResetAppStateRequest: () -> Unit) {
+fun Menu(
+    expanded: Boolean,
+    onDismissRequest: () -> Unit,
+    onResetAppStateRequest: () -> Unit,
+    onOpenSettingsRequest: () -> Unit
+) {
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismissRequest
@@ -14,7 +19,7 @@ fun Menu(expanded: Boolean, onDismissRequest: () -> Unit, onResetAppStateRequest
         DropdownMenuItem(onClick = onResetAppStateRequest) {
             Text("Close database")
         }
-        DropdownMenuItem(onClick = { /* TODO settings */ }) {
+        DropdownMenuItem(onClick = onOpenSettingsRequest) {
             Text("Settings")
         }
     }

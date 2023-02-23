@@ -6,28 +6,31 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.shimmermare.stuffiread.ui.AppState
 import com.shimmermare.stuffiread.ui.components.search.SearchList
-import com.shimmermare.stuffiread.ui.routing.PageData
 import com.shimmermare.stuffiread.ui.routing.Router
 
 /**
  * Base for page with mutable table of items.
  */
-abstract class MutableTablePage<Data : PageData, Id, Item> : LoadedPage<Data, Map<Id, Item>>() {
+abstract class MutableTablePage<Id, Item> : LoadedPage<Map<Id, Item>>() {
     @Composable
-    override fun LoadedContent(router: Router, app: AppState, loaded: Map<Id, Item>) {
+    override fun LoadedContent(app: AppState) {
         // SnapshotStateMap is either bugged or PITA to use, immutability FTW
-        var itemsById: Map<Id, Item> by remember { mutableStateOf(loaded) }
+        var itemsById: Map<Id, Item> by remember(this) { mutableStateOf(content!!) }
 
-        var showDeleteDialogFor: Item? by remember { mutableStateOf(null) }
+        var showDeleteDialogFor: Item? by remember(this) { mutableStateOf(null) }
 
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             floatingActionButton = {
-                FloatingActionButton(onClick = { router.goToCreatePage() }) {
+                FloatingActionButton(onClick = { app.router.goToCreatePage() }) {
                     Icon(Icons.Filled.Add, null)
                 }
             }
@@ -37,7 +40,7 @@ abstract class MutableTablePage<Data : PageData, Id, Item> : LoadedPage<Data, Ma
                 nameGetter = { it.name() },
                 unitNameProvider = ::getUnitName,
             ) { filtered ->
-                TableContent(router, app, filtered, onDeleteRequest = { showDeleteDialogFor = it })
+                TableContent(app, filtered, onDeleteRequest = { showDeleteDialogFor = it })
             }
         }
 
@@ -66,7 +69,6 @@ abstract class MutableTablePage<Data : PageData, Id, Item> : LoadedPage<Data, Ma
 
     @Composable
     protected abstract fun TableContent(
-        router: Router,
         app: AppState,
         items: Collection<Item>,
         onDeleteRequest: (Item) -> Unit

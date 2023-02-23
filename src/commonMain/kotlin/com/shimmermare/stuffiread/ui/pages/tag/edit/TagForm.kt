@@ -5,7 +5,14 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.shimmermare.stuffiread.domain.tags.*
+import com.shimmermare.stuffiread.tags.Tag
+import com.shimmermare.stuffiread.tags.TagCategoryDescription
+import com.shimmermare.stuffiread.tags.TagCategoryId
+import com.shimmermare.stuffiread.tags.TagCategoryName
+import com.shimmermare.stuffiread.tags.TagDescription
+import com.shimmermare.stuffiread.tags.TagId
+import com.shimmermare.stuffiread.tags.TagName
+import com.shimmermare.stuffiread.tags.TagService
 import com.shimmermare.stuffiread.ui.components.form.CustomFormField
 import com.shimmermare.stuffiread.ui.components.form.InputForm
 import com.shimmermare.stuffiread.ui.components.form.TextFormField
@@ -14,11 +21,9 @@ import com.shimmermare.stuffiread.ui.components.tag.MultiTagSelector
 import com.shimmermare.stuffiread.ui.components.tagcategory.TagCategorySelector
 import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPageMode.CREATE
 import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPageMode.EDIT
-import java.time.OffsetDateTime
 
 @Composable
 fun TagForm(
-    tagCategoryService: TagCategoryService,
     tagService: TagService,
     mode: EditTagPageMode,
     tag: Tag,
@@ -28,20 +33,15 @@ fun TagForm(
     InputForm(
         value = tag,
         modifier = Modifier.padding(20.dp).sizeIn(maxWidth = 800.dp),
-        showResetButton = mode == EDIT,
         onCancel = onCancel,
+        showResetButton = mode == EDIT,
         submitButtonText = when (mode) {
             CREATE -> "Create"
             EDIT -> "Save"
         },
         canSubmitWithoutChanges = mode == CREATE,
         onSubmit = {
-            onSubmit(
-                when (mode) {
-                    CREATE -> it.copy(created = OffsetDateTime.now(), updated = OffsetDateTime.now())
-                    EDIT -> it.copy(updated = OffsetDateTime.now())
-                }
-            )
+            onSubmit(it)
         },
         fields = listOf(
             TextFormField(
@@ -56,10 +56,10 @@ fun TagForm(
                 description = "Pick category that fits this tag the most.",
                 getter = { if (it.categoryId > 0) it.categoryId else 0 },
                 setter = { form, value -> form.copy(categoryId = value ?: 0) },
-                validator = { validateTagCategory(tagCategoryService, it ?: 0) },
+                validator = { validateTagCategory(tagService, it ?: 0) },
                 inputField = { value, onChange ->
                     TagCategorySelector(
-                        tagCategoryService = tagCategoryService,
+                        tagService = tagService,
                         categoryId = value.value,
                         onSelect = onChange
                     )
@@ -78,8 +78,8 @@ fun TagForm(
                 description = """Tags that are implied by this tag.
                     |Note that implied tags can form cycles. In that case all tags in cycle will be implied.
                 """.trimMargin(),
-                getter = { it.impliedTags },
-                setter = { form, value -> form.copy(impliedTags = value) },
+                getter = { it.impliedTagIds },
+                setter = { form, value -> form.copy(impliedTagIds = value) },
                 validator = { validateImpliedTags(tagService, tag.id, it) },
                 inputField = { value, onChange ->
                     MultiTagSelector(
@@ -109,11 +109,11 @@ private fun validateName(
             "Name length exceeded ${TagCategoryName.MAX_LENGTH} (${name.length})"
         }
 
-        mode == CREATE && tagService.getIdByName(name) != null -> {
+        mode == CREATE && tagService.getTagByName(TagName(name)) != null -> {
             "Name is already in use"
         }
 
-        mode == EDIT && tagService.getIdByName(name).let { it != null && it != currentId } -> {
+        mode == EDIT && tagService.getTagByName(TagName(name)).let { it != null && it.id != currentId } -> {
             "Name is already in use"
         }
 
@@ -133,10 +133,10 @@ private fun validateDescription(description: String): ValidationResult {
     return ValidationResult(error == null, error)
 }
 
-private fun validateTagCategory(tagCategoryService: TagCategoryService, categoryId: TagCategoryId): ValidationResult {
+private fun validateTagCategory(tagService: TagService, categoryId: TagCategoryId): ValidationResult {
     val error = when {
         categoryId == 0 -> "Category not selected"
-        !tagCategoryService.existsById(categoryId) -> "Category with ID $categoryId doesn't exist"
+        tagService.getCategoryById(categoryId) == null -> "Category with ID $categoryId doesn't exist"
         else -> null
     }
     return ValidationResult(error == null, error)
@@ -145,7 +145,7 @@ private fun validateTagCategory(tagCategoryService: TagCategoryService, category
 private fun validateImpliedTags(tagService: TagService, thisTagId: TagId, impliedTags: Set<TagId>): ValidationResult {
     val error = when {
         impliedTags.contains(thisTagId) -> "Tag can't imply itself"
-        !tagService.allExistByIds(impliedTags) -> "Tag(s) don't exist"
+        !tagService.doAllTagsWithIdsExist(impliedTags) -> "Tag(s) don't exist"
         else -> null
     }
     return ValidationResult(error == null, error)

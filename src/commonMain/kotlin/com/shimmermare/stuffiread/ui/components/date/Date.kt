@@ -2,21 +2,26 @@ package com.shimmermare.stuffiread.ui.components.date
 
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import java.time.OffsetDateTime
-import java.time.ZoneId
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toJavaLocalDateTime
+import kotlinx.datetime.toLocalDateTime
 import java.time.format.DateTimeFormatter
 
+// TODO kotlinx.datetime does not support formatting yet, java has to be used
 private val DEFAULT_FORMAT = DateTimeFormatter.ofPattern("YYYY-MM-DD HH:mm:ss")
 
 @Composable
 fun Date(
-    value: OffsetDateTime,
-    displayInLocalTime: Boolean = true,
+    value: Instant,
 ) {
-    val text = if (displayInLocalTime) {
-        value.atZoneSameInstant(ZoneId.systemDefault()).format(DEFAULT_FORMAT)
-    } else {
-        value.format(DEFAULT_FORMAT) + " (UTC)"
-    }
-    Text(text)
+    Date(localDateTime = value.toLocalDateTime(TimeZone.currentSystemDefault()))
+}
+
+@Composable
+fun Date(
+    localDateTime: LocalDateTime
+) {
+    Text(text = localDateTime.toJavaLocalDateTime().format(DEFAULT_FORMAT))
 }

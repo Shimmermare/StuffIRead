@@ -3,12 +3,14 @@
 Desktop app for keeping track of stories you read.
 
 ## When you may need this
+
 You are reading tons of stories, probably most of them are fanfics.
 Excel spreadsheet with all that you read is 10 screens long and searching is a nightmare.
 Also, you like to score stories and write reviews, even if only for yourself.
 Maybe you also like to re-read stories sometimes.
 
 ## Development and support
+
 This app was created for personal usage and as a way to explore Compose framework.
 **That means support and further development is not guaranteed.**
 
@@ -42,6 +44,7 @@ TODO: Currently supported:
 
 - [archiveofourown.org](https://archiveofourown.org/)
 - [pastebin.com](https://pastebin.com/)
+- [poneb.in](https://poneb.in/)
 - [FimFiction.net](https://fimfiction.net/) (MLP)
 - [ponepaste.org](https://ponepaste.org/) (MLP)
 - [ficbook.net](https://ficbook.net) (Russian)
@@ -54,3 +57,10 @@ TODO
 ### Stats and graphs
 
 TODO
+
+## Storage format
+
+Story archive is stored as collection JSON files: one for tags: `tags.json`, and individual directories for stories.
+
+Q: Why use separate files instead of something like SQLite database?  
+A: I wanted story archive to be usable with Git/other VCS.

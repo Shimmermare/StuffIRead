@@ -19,7 +19,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
-import com.shimmermare.stuffiread.domain.tags.TagCategory
+import com.shimmermare.stuffiread.tags.TagCategory
 import com.shimmermare.stuffiread.ui.components.table.Table
 import com.shimmermare.stuffiread.ui.components.tagcategory.TagCategoryName
 

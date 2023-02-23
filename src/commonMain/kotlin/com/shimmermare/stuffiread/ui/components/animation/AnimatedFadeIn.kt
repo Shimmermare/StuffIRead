@@ -10,9 +10,9 @@ import androidx.compose.runtime.remember
  * Fade-in once animation.
  */
 @Composable
-fun AnimatedFadeIn(content: @Composable () -> Unit) {
+fun AnimatedFadeIn(key: Any? = null, content: @Composable () -> Unit) {
     AnimatedVisibility(
-        visibleState = remember { MutableTransitionState(false) }.apply { targetState = true },
+        visibleState = remember(key) { MutableTransitionState(false) }.apply { targetState = true },
         enter = fadeIn()
     ) {
         content()

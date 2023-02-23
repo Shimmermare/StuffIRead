@@ -7,17 +7,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
-import com.shimmermare.stuffiread.domain.tags.*
+import com.shimmermare.stuffiread.tags.TagCategory
+import com.shimmermare.stuffiread.tags.TagCategoryDescription
+import com.shimmermare.stuffiread.tags.TagCategoryId
+import com.shimmermare.stuffiread.tags.TagCategoryName
+import com.shimmermare.stuffiread.tags.TagService
 import com.shimmermare.stuffiread.ui.components.colorpicker.PopupColorPicker
-import com.shimmermare.stuffiread.ui.components.form.*
+import com.shimmermare.stuffiread.ui.components.form.CustomFormField
+import com.shimmermare.stuffiread.ui.components.form.InputForm
+import com.shimmermare.stuffiread.ui.components.form.IntFormField
+import com.shimmermare.stuffiread.ui.components.form.TextFormField
+import com.shimmermare.stuffiread.ui.components.form.ValidationResult
 import com.shimmermare.stuffiread.ui.components.text.FilledNameText
 import com.shimmermare.stuffiread.ui.pages.tagcategory.edit.EditTagCategoryPageMode.CREATE
 import com.shimmermare.stuffiread.ui.pages.tagcategory.edit.EditTagCategoryPageMode.EDIT
-import java.time.OffsetDateTime
 
 @Composable
 fun TagCategoryForm(
-    tagCategoryService: TagCategoryService,
+    tagService: TagService,
     mode: EditTagCategoryPageMode,
     category: TagCategory,
     onCancel: () -> Unit,
@@ -26,28 +33,21 @@ fun TagCategoryForm(
     InputForm(
         value = category,
         modifier = Modifier.padding(20.dp).sizeIn(maxWidth = 800.dp),
-        showResetButton = mode == EDIT,
         onCancel = onCancel,
+        showResetButton = mode == EDIT,
         submitButtonText = when (mode) {
             CREATE -> "Create"
             EDIT -> "Save"
         },
         canSubmitWithoutChanges = mode == CREATE,
-        onSubmit = {
-            onSubmit(
-                when (mode) {
-                    CREATE -> it.copy(created = OffsetDateTime.now(), updated = OffsetDateTime.now())
-                    EDIT -> it.copy(updated = OffsetDateTime.now())
-                }
-            )
-        },
+        onSubmit = onSubmit,
         fields = listOf(
             TextFormField(
                 name = "Name",
                 description = "Unique tag category name. Examples: \"Characters\", \"Ships\"",
                 getter = { it.name.value },
                 setter = { form, value -> form.copy(name = TagCategoryName(value)) },
-                validator = { validateName(tagCategoryService, mode, category.id, it) }
+                validator = { validateName(tagService, mode, category.id, it) }
             ),
             TextFormField(
                 name = "Description (Optional)",
@@ -82,7 +82,7 @@ fun TagCategoryForm(
 }
 
 private fun validateName(
-    tagCategoryService: TagCategoryService,
+    tagService: TagService,
     mode: EditTagCategoryPageMode,
     currentId: TagCategoryId,
     name: String
@@ -96,12 +96,12 @@ private fun validateName(
             "Name length exceeded ${TagCategoryName.MAX_LENGTH} (${name.length})"
         }
 
-        mode == CREATE && tagCategoryService.getIdByName(name) != null -> {
+        mode == CREATE && tagService.getCategoryByName(TagCategoryName(name)) != null -> {
             "Name is already in use"
         }
 
-        mode == EDIT && tagCategoryService.getIdByName(name)
-            .let { it != null && it != currentId } -> {
+        mode == EDIT && tagService.getCategoryByName(TagCategoryName(name))
+            .let { it != null && it.id != currentId } -> {
             "Name is already in use"
         }
 

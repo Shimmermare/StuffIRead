@@ -1,0 +1,318 @@
+package com.shimmermare.stuffiread.tags
+
+import kotlinx.datetime.Clock
+
+/**
+ * Represents immutable valid tag tree.
+ * Tag categories are included in tag tree to ensure validity (e.g. tag can't be valid if category is missing).
+ *
+ * Tag tree is immutable because it's rarely edited.
+ */
+class TagTree private constructor(
+    private val categoriesById: Map<TagCategoryId, TagCategory> = emptyMap(),
+    private val tagsById: Map<TagId, Tag> = emptyMap(),
+) {
+    val categories: Collection<TagCategory> get() = categoriesById.values
+    val tags: Collection<Tag> get() = tagsById.values
+
+    private val categoriesByName: Map<TagCategoryName, TagCategory> by lazy { categories.associateBy { it.name } }
+
+    private val tagsWithCategoryByIdCache: MutableMap<TagId, TagWithCategory> = mutableMapOf()
+
+    private val extendedTagsByIdCache: MutableMap<TagId, ExtendedTag> = mutableMapOf()
+
+    // Including recursive
+    private val impliedTagsByTagId: Map<TagId, List<TagWithCategory>> by lazy { buildImpliedMapRecursive() }
+
+    // Including recursive
+    private val implyingTagsByTagId: Map<TagId, List<TagWithCategory>> by lazy { buildImplyingMapRecursive() }
+
+    private val tagsByName: Map<TagName, Tag> by lazy { tags.associateBy { it.name } }
+
+    private val tagsByCategoryId: Map<TagCategoryId, List<TagWithCategory>> by lazy {
+        tags.groupBy({ it.categoryId }) { getTagWithCategory(it.id)!! }
+    }
+
+    init {
+        categoriesById.forEach { (id, _) ->
+            require(id != 0) {
+                "Category can't have 0 ID"
+            }
+        }
+        tagsById.forEach { (id, tag) ->
+            require(id != 0) {
+                "Tag can't have 0 ID"
+            }
+            require(categoriesById.containsKey(tag.categoryId)) {
+                "Tag $id has missing category ${tag.categoryId}"
+            }
+            tag.impliedTagIds.forEach { impliedTagId ->
+                require(tagsById.containsKey(impliedTagId)) {
+                    "Tag $id is implying missing tag $impliedTagId"
+                }
+            }
+        }
+    }
+
+    constructor(
+        categories: Iterable<TagCategory> = emptyList(),
+        tags: Iterable<Tag> = emptyList()
+    ) : this(
+        categories.associateByTo(mutableMapOf()) { it.id },
+        tags.associateByTo(mutableMapOf()) { it.id }
+    )
+
+    fun getCategory(categoryId: TagCategoryId): TagCategory? = categoriesById[categoryId]
+
+    fun getCategoryByName(name: TagCategoryName): TagCategory? = categoriesByName[name]
+
+    fun getTagsInCategory(categoryId: TagCategoryId): List<TagWithCategory> =
+        tagsByCategoryId[categoryId] ?: emptyList()
+
+    fun getTagsInCategoryIncludingImplied(categoryId: TagCategoryId): List<TagWithCategory> {
+        val explicitTags = tagsByCategoryId[categoryId]
+        if (explicitTags.isNullOrEmpty()) return emptyList()
+        val result = mutableMapOf<TagId, TagWithCategory>()
+        explicitTags.forEach { result[it.tag.id] = it }
+        explicitTags.mapNotNull { getExtendedTag(it.tag.id) }.forEach {
+            it.impliedTags.forEach { impliedTag ->
+                result.putIfAbsent(impliedTag.tag.id, impliedTag)
+            }
+        }
+        return result.values.toList()
+    }
+
+    fun getTagCountInCategory(categoryId: TagCategoryId): UInt = tagsByCategoryId[categoryId]?.size?.toUInt() ?: 0u
+
+    fun doAllTagsWithIdsExist(tagIds: Iterable<TagId>): Boolean = tagIds.all { tagsById.containsKey(it) }
+
+    fun getTag(tagId: TagId): Tag? = tagsById[tagId]
+
+    fun getTagWithCategory(tagId: TagId): TagWithCategory? {
+        var result = tagsWithCategoryByIdCache[tagId]
+        if (result != null) return result
+
+        val tag = getTag(tagId) ?: return null
+        result = TagWithCategory(tag, getCategory(tag.categoryId)!!)
+        tagsWithCategoryByIdCache[tagId] = result
+        return result
+    }
+
+    fun getTagsWithCategoryByIds(tagIds: Iterable<TagId>): List<TagWithCategory> {
+        return tagIds.mapNotNull { getTagWithCategory(it) }
+    }
+
+    fun getExtendedTag(tagId: TagId): ExtendedTag? {
+        var result = extendedTagsByIdCache[tagId]
+        if (result != null) return result
+
+        val tag = getTag(tagId) ?: return null
+        result = ExtendedTag(
+            tag = tag,
+            category = getCategory(tag.categoryId)!!,
+            impliedTags = impliedTagsByTagId.getOrDefault(tagId, emptyList()),
+            implyingTags = implyingTagsByTagId.getOrDefault(tagId, emptyList()),
+        )
+        extendedTagsByIdCache[tagId] = result
+        return result
+    }
+
+    fun getTagByName(name: TagName): Tag? {
+        return tagsByName[name]
+    }
+
+    fun getTagsWithCategory(): List<TagWithCategory> {
+        return tags.mapNotNull { getTagWithCategory(it.id) }
+    }
+
+    fun getTagsExtended(): List<ExtendedTag> {
+        return tagsById.keys.mapNotNull { getExtendedTag(it) }
+    }
+
+    fun copyAndUpdateCategory(category: TagCategory): CopyTreeResult<TagCategory> {
+        require(categoriesById.containsKey(category.id)) {
+            "Category ${category.id} doesn't exist"
+        }
+        val updated = category.copy(updated = Clock.System.now())
+        return CopyTreeResult(
+            TagTree(
+                categoriesById + (updated.id to updated),
+                tagsById
+            ),
+            updated
+        )
+    }
+
+    fun copyAndCreateCategory(category: TagCategory): CopyTreeResult<TagCategory> {
+        require(category.id == 0) {
+            "Category to create already has ID ${category.id}"
+        }
+        val createdTs = Clock.System.now()
+        val created = category.copy(
+            id = nextFreeCategoryId(),
+            created = createdTs,
+            updated = createdTs,
+        )
+        return CopyTreeResult(
+            TagTree(
+                categoriesById + (created.id to created),
+                tagsById
+            ),
+            created
+        )
+    }
+
+    fun deleteCategory(categoryId: TagCategoryId): TagTree {
+        require(categoriesById.containsKey(categoryId)) {
+            "Category $categoryId doesn't exist"
+        }
+        require(tagsByCategoryId[categoryId].isNullOrEmpty()) {
+            val tagIds = tagsByCategoryId[categoryId]!!.map { it.tag.id }
+            "Category $categoryId can't be deleted because it contains tags: $tagIds"
+        }
+        return TagTree(
+            categoriesById - categoryId,
+            tagsById
+        )
+    }
+
+    fun copyAndUpdateTag(tag: Tag): CopyTreeResult<Tag> {
+        require(tagsById.containsKey(tag.id)) {
+            "Tag ${tag.id} doesn't exist"
+        }
+        val updated = tag.copy(updated = Clock.System.now())
+        return CopyTreeResult(
+            TagTree(
+                categoriesById,
+                tagsById + (updated.id to updated),
+            ),
+            updated
+        )
+    }
+
+    fun copyAndUpdateTags(tags: Iterable<Tag>): CopyTreeResult<List<Tag>> {
+        val updatedTags = tags.associate { tag ->
+            require(tagsById.containsKey(tag.id)) {
+                "Tag ${tag.id} doesn't exist"
+            }
+            tag.id to tag.copy(updated = Clock.System.now())
+        }
+        return CopyTreeResult(
+            TagTree(
+                categoriesById,
+                tagsById + updatedTags,
+            ),
+            updatedTags.values.toList()
+        )
+    }
+
+    fun copyAndCreateTag(tag: Tag): CopyTreeResult<Tag> {
+        require(tag.id == 0) {
+            "Tag to create already has ID ${tag.id}"
+        }
+        val createdTs = Clock.System.now()
+        val created = tag.copy(
+            id = nextFreeTagId(),
+            created = createdTs,
+            updated = createdTs,
+        )
+        return CopyTreeResult(
+            TagTree(
+                categoriesById,
+                tagsById + (created.id to created),
+            ),
+            created
+        )
+    }
+
+    fun deleteTag(tagId: TagId): TagTree {
+        require(categoriesById.containsKey(tagId)) {
+            "Tag $tagId doesn't exist"
+        }
+        return TagTree(
+            categoriesById,
+            tagsById - tagId
+        )
+    }
+
+    private fun nextFreeCategoryId(): TagCategoryId {
+        return categoriesById.maxOf { it.key } + 1
+    }
+
+    private fun nextFreeTagId(): TagId {
+        return tagsById.maxOf { it.key } + 1
+    }
+
+    private fun buildImpliedMapRecursive(): Map<TagId, List<TagWithCategory>> {
+        return tags.associate { tag ->
+            fun recursiveGetAllImplied(tagId: TagId, implied: MutableSet<TagId>) {
+                val implyingTag = getTag(tagId)!!
+                if (implyingTag.impliedTagIds.isEmpty()) return
+                implied.addAll(implyingTag.impliedTagIds)
+                implyingTag.impliedTagIds.forEach {
+                    // Prevent cycles
+                    if (!implied.contains(it)) {
+                        recursiveGetAllImplied(it, implied)
+                    }
+                }
+            }
+
+            val impliedIds = mutableSetOf<TagId>()
+            recursiveGetAllImplied(tag.id, impliedIds)
+            tag.id to impliedIds.map { getTagWithCategory(it)!! }
+        }
+    }
+
+    private fun buildImplyingMapRecursive(): Map<TagId, List<TagWithCategory>> {
+        val directlyImplying = mutableMapOf<TagId, MutableSet<TagId>>()
+        tags.forEach { tag ->
+            tag.impliedTagIds.forEach { impliedId ->
+                directlyImplying.computeIfAbsent(impliedId) { mutableSetOf() }.add(impliedId)
+            }
+        }
+        return tags.associate { tag ->
+            fun recursiveGetAllImplying(tagId: TagId, implying: MutableSet<TagId>) {
+                val direct = directlyImplying[tagId] ?: emptySet()
+                if (direct.isEmpty()) return
+                implying.addAll(direct)
+                direct.forEach {
+                    // Prevent cycles
+                    if (!implying.contains(it)) {
+                        recursiveGetAllImplying(it, implying)
+                    }
+                }
+            }
+
+            val implyingIds = mutableSetOf<TagId>()
+            recursiveGetAllImplying(tag.id, implyingIds)
+            tag.id to implyingIds.map { getTagWithCategory(it)!! }
+        }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as TagTree
+
+        if (categoriesById != other.categoriesById) return false
+        if (tagsById != other.tagsById) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = categoriesById.hashCode()
+        result = 31 * result + tagsById.hashCode()
+        return result
+    }
+
+    override fun toString(): String {
+        return "TagTree(categories=${categoriesById.values}, tags=${tagsById.values})"
+    }
+
+    data class CopyTreeResult<T>(
+        val tree: TagTree,
+        val result: T
+    )
+}
