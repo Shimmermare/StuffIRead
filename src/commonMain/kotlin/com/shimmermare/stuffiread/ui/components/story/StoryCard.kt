@@ -99,7 +99,7 @@ fun StoryCard(
                                     style = MaterialTheme.typography.subtitle1,
                                     maxLines = 1
                                 )
-                                StoryScore(story.score)
+                                StoryScore(app, story.score)
                             }
                         }
                     }

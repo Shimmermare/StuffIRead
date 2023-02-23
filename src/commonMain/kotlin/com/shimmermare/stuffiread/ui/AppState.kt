@@ -28,5 +28,9 @@ class AppState {
         storyArchive = null
         router.goTo(OpenArchivePage())
     }
+
+    companion object {
+        const val GITHUB_URL = "https://github.com/Shimmermare/StuffIRead"
+    }
 }
 

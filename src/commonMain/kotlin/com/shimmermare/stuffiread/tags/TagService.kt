@@ -16,6 +16,9 @@ interface TagService {
 
     fun updateCategory(category: TagCategory): TagCategory
 
+    /**
+     * Will fail if [categoryId] has any tags.
+     */
     fun deleteCategoryById(categoryId: TagCategoryId)
 
     fun doAllTagsWithIdsExist(tagIds: Iterable<TagId>): Boolean
@@ -46,6 +49,11 @@ interface TagService {
 
     fun updateTag(tag: Tag): Tag
 
+    fun updateTags(tags: Iterable<Tag>): List<Tag>
+
+    /**
+     * Will fail if any other tag is implying [tagId].
+     */
     fun deleteTagById(tagId: TagId)
 
     fun changeTagsCategory(currentCategoryId: TagCategoryId, newCategoryId: TagCategoryId)

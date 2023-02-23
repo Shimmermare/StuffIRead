@@ -9,6 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.settings.AppSettings
+import com.shimmermare.stuffiread.settings.ScoreDisplayType
 import com.shimmermare.stuffiread.settings.ThemeBehavior
 import com.shimmermare.stuffiread.ui.AppState
 import com.shimmermare.stuffiread.ui.components.form.EnumFormField
@@ -74,6 +75,20 @@ class SettingsPage : LoadedPage<AppSettings>() {
                                 ThemeBehavior.USE_SYSTEM -> "System default"
                                 ThemeBehavior.FORCE_LIGHT -> "Light"
                                 ThemeBehavior.FORCE_DARK -> "Dark"
+                            }
+                        }
+                    ),
+                    EnumFormField(
+                        name = "Score display",
+                        enumType = ScoreDisplayType::class,
+                        getter = { it.scoreDisplayType },
+                        setter = { form, value -> form.copy(scoreDisplayType = value) },
+                        displayNameProvider = {
+                            when (it) {
+                                ScoreDisplayType.STARS_5 -> "5 Stars"
+                                ScoreDisplayType.STARS_10 -> "10 Stars"
+                                ScoreDisplayType.NUMBERS_1_TO_10 -> "Numbers 1/10"
+                                ScoreDisplayType.NUMBERS_1_TO_100 -> "Numbers 1/100"
                             }
                         }
                     )

@@ -4,13 +4,12 @@ data class ExtendedTag(
     val tag: Tag,
     val category: TagCategory,
     val impliedTags: List<TagWithCategory>,
+    val indirectlyImpliedTags: List<TagWithCategory>,
     val implyingTags: List<TagWithCategory>,
+    val indirectlyImplyingTags: List<TagWithCategory>,
 ) {
     init {
         require(tag.categoryId == category.id) { "Category does not match tag (${tag.categoryId} vs ${category.id}" }
-        require(tag.impliedTagIds == impliedTags.map { it.tag.id }.toSet()) {
-            "Implied tags don't match: ${tag.impliedTagIds} vs ${impliedTags.map { it.tag.id }}"
-        }
     }
 
     companion object {

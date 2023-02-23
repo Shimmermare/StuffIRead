@@ -20,11 +20,8 @@ import kotlin.io.path.exists
 import kotlin.io.path.notExists
 
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ArchiveDirectorySelector(onSelected: ((archiveDirectory: Path, createIfNotExists: Boolean) -> Unit)) {
-    var currentErrorMessage: String? by remember { mutableStateOf(null) }
-
     Column(
         verticalArrangement = Arrangement.spacedBy(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -43,20 +40,6 @@ fun ArchiveDirectorySelector(onSelected: ((archiveDirectory: Path, createIfNotEx
         ) {
             ArchiveDirSelectorButtons(onSelected)
         }
-    }
-
-    if (currentErrorMessage != null) {
-        FixedAlertDialog(
-            title = { Text("Story archive error") },
-            text = { Text(currentErrorMessage ?: "") },
-            modifier = Modifier.widthIn(),
-            confirmButton = {
-                Button(onClick = { currentErrorMessage = null }) {
-                    Text("Ok")
-                }
-            },
-            onDismissRequest = { currentErrorMessage = null }
-        )
     }
 }
 

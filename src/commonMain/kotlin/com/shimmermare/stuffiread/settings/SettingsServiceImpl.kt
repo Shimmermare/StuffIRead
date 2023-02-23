@@ -40,17 +40,21 @@ class SettingsServiceImpl : SettingsService {
     private fun loadFromSource() {
         current = AppSettings(
             themeBehavior = settingsSource.get<String>(THEME_BEHAVIOR_KEY)?.let { ThemeBehavior.valueOf(it) }
-                ?: ThemeBehavior.USE_SYSTEM
+                ?: AppSettings.DEFAULT_THEME_BEHAVIOR,
+            scoreDisplayType = settingsSource.get<String>(SCORE_DISPLAY_TYPE_KEY)?.let { ScoreDisplayType.valueOf(it) }
+                ?: AppSettings.DEFAULT_SCORE_DISPLAY_TYPE
         )
     }
 
     private fun updateToSource() {
         current.let {
             settingsSource[THEME_BEHAVIOR_KEY] = it.themeBehavior.name
+            settingsSource[SCORE_DISPLAY_TYPE_KEY] = it.scoreDisplayType.name
         }
     }
 
     companion object {
-        private const val THEME_BEHAVIOR_KEY = "themeBehavior"
+        private const val THEME_BEHAVIOR_KEY = "theme_behavior"
+        private const val SCORE_DISPLAY_TYPE_KEY = "score_display_type"
     }
 }

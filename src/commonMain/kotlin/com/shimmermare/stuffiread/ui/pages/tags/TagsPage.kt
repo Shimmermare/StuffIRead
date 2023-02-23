@@ -1,7 +1,6 @@
 package com.shimmermare.stuffiread.ui.pages.tags
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import com.shimmermare.stuffiread.tags.ExtendedTag
 import com.shimmermare.stuffiread.tags.TagId
 import com.shimmermare.stuffiread.ui.AppState
@@ -12,7 +11,6 @@ import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPage
 import com.shimmermare.stuffiread.ui.pages.tag.info.TagInfoPage
 import com.shimmermare.stuffiread.ui.routing.Router
 import io.github.aakira.napier.Napier
-import kotlinx.coroutines.launch
 
 /**
  * Page with listing of all tags with search available.
@@ -51,14 +49,13 @@ class TagsPage : MutableTablePage<TagId, ExtendedTag>() {
 
     @Composable
     override fun DeleteDialog(app: AppState, item: ExtendedTag, onDeleted: () -> Unit, onDismiss: () -> Unit) {
-        val coroutineScope = rememberCoroutineScope()
         DeleteTagDialog(
+            tagService = app.storyArchive!!.tagService,
             tag = item,
-            onConfirm = {
-                coroutineScope.launch {
-                    app.storyArchive!!.tagService.deleteTagById(item.tag.id)
-                    onDeleted()
-                }
+            onDeleted = {
+                onDeleted()
+                // Reload whole table because other tags can be changed too
+                reload()
             },
             onDismiss = onDismiss
         )
@@ -71,6 +68,7 @@ class TagsPage : MutableTablePage<TagId, ExtendedTag>() {
         onDeleteRequest: (ExtendedTag) -> Unit
     ) {
         TagTable(
+            router = app.router,
             tags = items,
             onRowClick = { app.router.goTo(TagInfoPage(it.tag.id)) },
             onEditRequest = { app.router.goTo(EditTagPage.edit(it.tag)) },

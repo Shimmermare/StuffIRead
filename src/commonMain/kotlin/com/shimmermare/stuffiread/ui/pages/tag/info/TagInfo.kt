@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.tags.ExtendedTag
 import com.shimmermare.stuffiread.ui.AppState
 import com.shimmermare.stuffiread.ui.components.date.Date
+import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
 import com.shimmermare.stuffiread.ui.components.tag.DeleteTagDialog
 import com.shimmermare.stuffiread.ui.components.tag.TagName
 import com.shimmermare.stuffiread.ui.components.tagcategory.TagCategoryName
@@ -83,9 +84,9 @@ fun TagInfo(app: AppState, tag: ExtendedTag) {
 
     if (showDeleteDialog) {
         DeleteTagDialog(
+            tagService = app.storyArchive!!.tagService,
             tag = tag,
-            onConfirm = {
-                app.storyArchive!!.tagService.deleteTagById(tag.tag.id)
+            onDeleted = {
                 showDeleteDialog = false
                 app.router.goTo(TagsPage())
             },
@@ -114,29 +115,59 @@ private fun PropertiesBlock(router: Router, tag: ExtendedTag) {
                     Text(text = "No description", fontStyle = FontStyle.Italic, color = Color.LightGray)
                 }
             }
+            if (tag.implyingTags.isNotEmpty()) {
+                Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                    Text(
+                        text = "Implied by ${tag.implyingTags.size} tag(s)",
+                        style = MaterialTheme.typography.h6
+                    )
+                    ChipVerticalGrid {
+                        tag.implyingTags.forEach {
+                            TagName(router, it)
+                        }
+                    }
+                }
+            }
+            if (tag.indirectlyImplyingTags.isNotEmpty()) {
+                Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                    Text(
+                        text = "Indirectly implied by ${tag.indirectlyImplyingTags.size} tag(s)",
+                        style = MaterialTheme.typography.h6
+                    )
+                    ChipVerticalGrid {
+                        tag.indirectlyImplyingTags.forEach {
+                            TagName(router, it, indirect = true)
+                        }
+                    }
+                }
+            }
+            if (tag.impliedTags.isNotEmpty()) {
+                Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                    Text(
+                        text = "Implies ${tag.impliedTags.size} tag(s)",
+                        style = MaterialTheme.typography.h6
+                    )
+                    ChipVerticalGrid {
+                        tag.impliedTags.forEach {
+                            TagName(router, it)
+                        }
+                    }
+                }
+            }
+            if (tag.indirectlyImpliedTags.isNotEmpty()) {
+                Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                    Text(
+                        text = "Indirectly implies ${tag.indirectlyImpliedTags.size} tag(s)",
+                        style = MaterialTheme.typography.h6
+                    )
+                    ChipVerticalGrid {
+                        tag.indirectlyImpliedTags.forEach {
+                            TagName(router, it, indirect = true)
+                        }
+                    }
+                }
+            }
 
-            Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                val text = if (tag.implyingTags.isEmpty()) {
-                    "Not implied by other tags"
-                } else {
-                    "Implied by ${tag.implyingTags.size} tags"
-                }
-                Text(text = text, style = MaterialTheme.typography.h6)
-                tag.implyingTags.forEach {
-                    TagName(router, it)
-                }
-            }
-            Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                val text = if (tag.impliedTags.isEmpty()) {
-                    "Not implies other tags"
-                } else {
-                    "Implies ${tag.impliedTags.size} tags"
-                }
-                Text(text = text, style = MaterialTheme.typography.h6)
-                tag.impliedTags.forEach {
-                    TagName(router, it)
-                }
-            }
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 Text(text = "Created", style = MaterialTheme.typography.h6)
                 Date(tag.tag.created)

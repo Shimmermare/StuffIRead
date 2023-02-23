@@ -67,7 +67,7 @@ fun DeleteTagCategoryDialog(
                             throw IllegalStateException("Failed to change category ${category.id} -> $replacementCategoryId")
                         }
                     }
-                    tagService.deleteTagById(category.id)
+                    tagService.deleteCategoryById(category.id)
                     onDeleted()
                 }
             ) {

@@ -21,11 +21,11 @@ class TagTree private constructor(
 
     private val extendedTagsByIdCache: MutableMap<TagId, ExtendedTag> = mutableMapOf()
 
-    // Including recursive
-    private val impliedTagsByTagId: Map<TagId, List<TagWithCategory>> by lazy { buildImpliedMapRecursive() }
+    private val impliedTagsByTagId: Map<TagId, List<TagWithCategory>> by lazy { buildImpliedMap() }
+    private val indirectlyImpliedTagsByTagId: Map<TagId, List<TagWithCategory>> by lazy { buildIndirectlyImpliedMap() }
 
-    // Including recursive
-    private val implyingTagsByTagId: Map<TagId, List<TagWithCategory>> by lazy { buildImplyingMapRecursive() }
+    private val implyingTagsByTagId: Map<TagId, List<TagWithCategory>> by lazy { buildImplyingMap() }
+    private val indirectlyImplyingTagsByTagId: Map<TagId, List<TagWithCategory>> by lazy { buildIndirectlyImplyingMap() }
 
     private val tagsByName: Map<TagName, Tag> by lazy { tags.associateBy { it.name } }
 
@@ -111,7 +111,9 @@ class TagTree private constructor(
             tag = tag,
             category = getCategory(tag.categoryId)!!,
             impliedTags = impliedTagsByTagId.getOrDefault(tagId, emptyList()),
+            indirectlyImpliedTags = indirectlyImpliedTagsByTagId.getOrDefault(tagId, emptyList()),
             implyingTags = implyingTagsByTagId.getOrDefault(tagId, emptyList()),
+            indirectlyImplyingTags = indirectlyImplyingTagsByTagId.getOrDefault(tagId, emptyList())
         )
         extendedTagsByIdCache[tagId] = result
         return result
@@ -226,8 +228,11 @@ class TagTree private constructor(
     }
 
     fun deleteTag(tagId: TagId): TagTree {
-        require(categoriesById.containsKey(tagId)) {
+        require(tagsById.containsKey(tagId)) {
             "Tag $tagId doesn't exist"
+        }
+        require(!implyingTagsByTagId.containsKey(tagId)) {
+            "Tag $tagId can't be deleted because some tags are implying it: ${implyingTagsByTagId[tagId]!!.map { it.tag.id }}"
         }
         return TagTree(
             categoriesById,
@@ -243,50 +248,66 @@ class TagTree private constructor(
         return tagsById.maxOf { it.key } + 1
     }
 
-    private fun buildImpliedMapRecursive(): Map<TagId, List<TagWithCategory>> {
+    private fun buildImpliedMap(): Map<TagId, List<TagWithCategory>> {
+        return tags.associateBy({ it.id }) { tag ->
+            tag.impliedTagIds.map { getTagWithCategory(it)!! }
+        }.filterValues { it.isNotEmpty() }
+    }
+
+    private fun buildIndirectlyImpliedMap(): Map<TagId, List<TagWithCategory>> {
         return tags.associate { tag ->
             fun recursiveGetAllImplied(tagId: TagId, implied: MutableSet<TagId>) {
                 val implyingTag = getTag(tagId)!!
                 if (implyingTag.impliedTagIds.isEmpty()) return
-                implied.addAll(implyingTag.impliedTagIds)
-                implyingTag.impliedTagIds.forEach {
-                    // Prevent cycles
-                    if (!implied.contains(it)) {
-                        recursiveGetAllImplied(it, implied)
-                    }
-                }
+
+                // Prevent cycles
+                val toVisit = implyingTag.impliedTagIds.filter { !implied.contains(it) && tag.id != it }
+                // Exclude directly implied and itself
+                implied.addAll(implyingTag.impliedTagIds - tag.impliedTagIds - tag.id)
+                toVisit.forEach { recursiveGetAllImplied(it, implied) }
             }
 
             val impliedIds = mutableSetOf<TagId>()
             recursiveGetAllImplied(tag.id, impliedIds)
             tag.id to impliedIds.map { getTagWithCategory(it)!! }
-        }
+        }.filterValues { it.isNotEmpty() }
     }
 
-    private fun buildImplyingMapRecursive(): Map<TagId, List<TagWithCategory>> {
+    private fun buildImplyingMap(): Map<TagId, List<TagWithCategory>> {
         val directlyImplying = mutableMapOf<TagId, MutableSet<TagId>>()
         tags.forEach { tag ->
             tag.impliedTagIds.forEach { impliedId ->
-                directlyImplying.computeIfAbsent(impliedId) { mutableSetOf() }.add(impliedId)
+                directlyImplying.computeIfAbsent(impliedId) { mutableSetOf() }.add(tag.id)
+            }
+        }
+        return directlyImplying.mapValues { (_, value) -> value.map { getTagWithCategory(it)!! } }
+    }
+
+    private fun buildIndirectlyImplyingMap(): Map<TagId, List<TagWithCategory>> {
+        val directlyImplying = mutableMapOf<TagId, MutableSet<TagId>>()
+        tags.forEach { tag ->
+            tag.impliedTagIds.forEach { impliedId ->
+                directlyImplying.computeIfAbsent(impliedId) { mutableSetOf() }.add(tag.id)
             }
         }
         return tags.associate { tag ->
+            val tagDirectlyImplying = directlyImplying[tag.id] ?: emptySet()
+
             fun recursiveGetAllImplying(tagId: TagId, implying: MutableSet<TagId>) {
                 val direct = directlyImplying[tagId] ?: emptySet()
                 if (direct.isEmpty()) return
-                implying.addAll(direct)
-                direct.forEach {
-                    // Prevent cycles
-                    if (!implying.contains(it)) {
-                        recursiveGetAllImplying(it, implying)
-                    }
-                }
+
+                // Prevent cycles
+                val toVisit = direct.filter { !implying.contains(it) && tag.id != it }
+                // Exclude directly implying and itself
+                implying.addAll(direct - tagDirectlyImplying - tag.id)
+                toVisit.forEach { recursiveGetAllImplying(it, implying) }
             }
 
             val implyingIds = mutableSetOf<TagId>()
             recursiveGetAllImplying(tag.id, implyingIds)
             tag.id to implyingIds.map { getTagWithCategory(it)!! }
-        }
+        }.filterValues { it.isNotEmpty() }
     }
 
     override fun equals(other: Any?): Boolean {

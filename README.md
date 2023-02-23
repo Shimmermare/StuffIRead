@@ -64,3 +64,6 @@ Story archive is stored as collection JSON files: one for tags: `tags.json`, and
 
 Q: Why use separate files instead of something like SQLite database?  
 A: I wanted story archive to be usable with Git/other VCS.
+
+## Attributions
+App Icon: [Books free icon by Freepik - Flaticon](https://www.flaticon.com/free-icon/books_4890961)

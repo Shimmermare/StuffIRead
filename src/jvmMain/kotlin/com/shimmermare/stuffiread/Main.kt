@@ -1,5 +1,8 @@
 package com.shimmermare.stuffiread
 
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.res.loadImageBitmap
+import androidx.compose.ui.res.useResource
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.shimmermare.stuffiread.ui.App
@@ -27,7 +30,8 @@ fun main(args: Array<String>) {
         }
         Window(
             title = "Stuff I Read",
-            onCloseRequest = onCloseRequest
+            onCloseRequest = onCloseRequest,
+            icon = BitmapPainter(useResource("icons/icon.png", ::loadImageBitmap)),
         ) {
             window.minimumSize = Dimension(1280, 800)
             App(archiveDirectory)

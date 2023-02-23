@@ -26,13 +26,20 @@ import kotlin.time.Duration.Companion.seconds
 abstract class LoadedPage<Loadable>(
     private val timeout: Duration = 5.seconds
 ) : Page {
+    private var reloadNeeded: Boolean by mutableStateOf(false)
+
     protected var status: Status by mutableStateOf(Status.LOADING)
     protected var content: Loadable? by mutableStateOf(null)
     protected var error: Exception? by mutableStateOf(null)
 
     @Composable
     override fun Body(app: AppState) {
-        LaunchedEffect(this) {
+        LaunchedEffect(this, reloadNeeded) {
+            if (status != Status.LOADING && !reloadNeeded) {
+                return@LaunchedEffect
+            }
+
+            reloadNeeded = false
             status = Status.LOADING
             content = null
             error = null
@@ -75,6 +82,10 @@ abstract class LoadedPage<Loadable>(
 
     @Composable
     protected abstract fun LoadedContent(app: AppState)
+
+    protected fun reload() {
+        reloadNeeded = true
+    }
 
     enum class Status {
         LOADING,

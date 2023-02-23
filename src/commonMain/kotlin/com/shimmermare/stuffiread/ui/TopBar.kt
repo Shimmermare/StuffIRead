@@ -17,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.shimmermare.stuffiread.ui.pages.openarchive.OpenArchivePage
 import com.shimmermare.stuffiread.ui.pages.settings.SettingsPage
 import com.shimmermare.stuffiread.ui.pages.stories.StoriesPage
 import com.shimmermare.stuffiread.ui.pages.tagcategories.TagCategoriesPage
@@ -35,6 +36,7 @@ fun TopBar(app: AppState, onResetAppStateRequest: () -> Unit) {
                     Icon(Icons.Filled.Menu, null)
                 }
                 Menu(
+                    app,
                     menuOpened,
                     onDismissRequest = { menuOpened = false },
                     onResetAppStateRequest = onResetAppStateRequest,
@@ -47,6 +49,8 @@ fun TopBar(app: AppState, onResetAppStateRequest: () -> Unit) {
                 GoToPageActionButton(app, "Stories") { StoriesPage() }
                 GoToPageActionButton(app, "Tags") { TagsPage() }
                 GoToPageActionButton(app, "Tag categories") { TagCategoriesPage() }
+            } else if (app.router.currentPage !is OpenArchivePage) {
+                GoToPageActionButton(app, "Open archive") { OpenArchivePage() }
             }
         }
     )

@@ -23,9 +23,9 @@ abstract class MutableTablePage<Id, Item> : LoadedPage<Map<Id, Item>>() {
     @Composable
     override fun LoadedContent(app: AppState) {
         // SnapshotStateMap is either bugged or PITA to use, immutability FTW
-        var itemsById: Map<Id, Item> by remember(this) { mutableStateOf(content!!) }
+        var itemsById: Map<Id, Item> by remember(this, content) { mutableStateOf(content!!) }
 
-        var showDeleteDialogFor: Item? by remember(this) { mutableStateOf(null) }
+        var showDeleteDialogFor: Item? by remember(this, itemsById) { mutableStateOf(null) }
 
         Scaffold(
             modifier = Modifier.fillMaxSize(),

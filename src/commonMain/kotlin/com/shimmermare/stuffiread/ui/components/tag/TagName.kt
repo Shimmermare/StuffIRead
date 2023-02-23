@@ -17,11 +17,13 @@ import com.shimmermare.stuffiread.ui.routing.Router
 fun TagName(
     router: Router,
     tag: ExtendedTag,
+    indirect: Boolean = false,
     fontSize: TextUnit? = null,
     height: Dp? = null,
 ) {
     TagName(
         tag = tag,
+        indirect = indirect,
         fontSize = fontSize,
         height = height,
         onClick = { router.goTo(TagInfoPage(tag.tag.id)) }
@@ -32,11 +34,13 @@ fun TagName(
 fun TagName(
     router: Router,
     tag: TagWithCategory,
+    indirect: Boolean = false,
     fontSize: TextUnit? = null,
     height: Dp? = null,
 ) {
     TagName(
         tag = tag,
+        indirect = indirect,
         fontSize = fontSize,
         height = height,
         onClick = { router.goTo(TagInfoPage(tag.tag.id)) }
@@ -47,6 +51,7 @@ fun TagName(
 fun TagName(
     router: Router,
     tag: Tag,
+    indirect: Boolean = false,
     color: Color? = null,
     fontSize: TextUnit? = null,
     height: Dp? = null,
@@ -54,6 +59,7 @@ fun TagName(
     TagName(
         tag = tag,
         color = color,
+        indirect = indirect,
         fontSize = fontSize,
         height = height,
         onClick = { router.goTo(TagInfoPage(tag.id)) }
@@ -63,12 +69,14 @@ fun TagName(
 @Composable
 fun TagName(
     tag: ExtendedTag,
+    indirect: Boolean = false,
     fontSize: TextUnit? = null,
     height: Dp? = null,
     onClick: () -> Unit
 ) {
     TagName(
         tag = tag,
+        indirect = indirect,
         fontSize = fontSize,
         height = height,
         modifier = Modifier.clickable(onClick = onClick)
@@ -78,12 +86,14 @@ fun TagName(
 @Composable
 fun TagName(
     tag: TagWithCategory,
+    indirect: Boolean = false,
     fontSize: TextUnit? = null,
     height: Dp? = null,
     onClick: () -> Unit
 ) {
     TagName(
         tag = tag,
+        indirect = indirect,
         fontSize = fontSize,
         height = height,
         modifier = Modifier.clickable(onClick = onClick)
@@ -93,6 +103,7 @@ fun TagName(
 @Composable
 fun TagName(
     tag: Tag,
+    indirect: Boolean = false,
     color: Color? = null,
     fontSize: TextUnit? = null,
     height: Dp? = null,
@@ -101,6 +112,7 @@ fun TagName(
     TagName(
         tag = tag,
         color = color,
+        indirect = indirect,
         fontSize = fontSize,
         height = height,
         modifier = Modifier.clickable(onClick = onClick)
@@ -110,6 +122,7 @@ fun TagName(
 @Composable
 fun TagName(
     tag: ExtendedTag,
+    indirect: Boolean = false,
     fontSize: TextUnit? = null,
     height: Dp? = null,
     modifier: Modifier? = null,
@@ -117,6 +130,7 @@ fun TagName(
     TagName(
         tag = tag.tag,
         color = Color(tag.category.color),
+        indirect = indirect,
         fontSize = fontSize,
         height = height,
         modifier = modifier
@@ -126,6 +140,7 @@ fun TagName(
 @Composable
 fun TagName(
     tag: TagWithCategory,
+    indirect: Boolean = false,
     fontSize: TextUnit? = null,
     height: Dp? = null,
     modifier: Modifier? = null,
@@ -133,6 +148,7 @@ fun TagName(
     TagName(
         tag = tag.tag,
         color = Color(tag.category.color),
+        indirect = indirect,
         fontSize = fontSize,
         height = height,
         modifier = modifier
@@ -143,13 +159,14 @@ fun TagName(
 fun TagName(
     tag: Tag,
     color: Color? = null,
+    indirect: Boolean = false,
     fontSize: TextUnit? = null,
     height: Dp? = null,
     modifier: Modifier? = null,
 ) {
     FilledNameText(
         text = tag.name.value,
-        color = color ?: Color.Black,
+        color = (color ?: Color.Black).let { if (indirect) it.copy(alpha = 0.6F) else it },
         fontSize = fontSize,
         height = height,
         modifier = modifier

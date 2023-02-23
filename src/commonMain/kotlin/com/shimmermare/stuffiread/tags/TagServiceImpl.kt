@@ -107,6 +107,13 @@ class TagServiceImpl(
         return updated
     }
 
+    override fun updateTags(tags: Iterable<Tag>): List<Tag> {
+        val (tree, updated) = tree.copyAndUpdateTags(tags)
+        this.tree = tree
+        saveTreeAsync()
+        return updated
+    }
+
     override fun deleteTagById(tagId: TagId) {
         tree = tree.deleteTag(tagId)
         saveTreeAsync()
