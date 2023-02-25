@@ -21,7 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import com.shimmermare.stuffiread.ui.components.text.FixedOutlinedTextField
+import com.shimmermare.stuffiread.ui.components.input.FixedOutlinedTextField
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable

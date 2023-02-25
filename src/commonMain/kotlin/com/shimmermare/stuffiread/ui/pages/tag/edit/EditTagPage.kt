@@ -41,7 +41,7 @@ class EditTagPage(
                 tagService = app.storyArchive!!.tagService,
                 mode = mode,
                 tag = prefillWith,
-                onCancel = {
+                onBack = {
                     when (mode) {
                         CREATE -> app.router.goTo(TagsPage())
                         EDIT -> app.router.goTo(TagInfoPage(editingTagId!!))

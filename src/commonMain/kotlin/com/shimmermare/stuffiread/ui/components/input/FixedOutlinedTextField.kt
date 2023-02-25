@@ -1,4 +1,4 @@
-package com.shimmermare.stuffiread.ui.components.text
+package com.shimmermare.stuffiread.ui.components.input
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource

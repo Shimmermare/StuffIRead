@@ -10,6 +10,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.shimmermare.stuffiread.ui.pages.error.ErrorPage
 import java.nio.file.Path
 
 @Composable
@@ -19,9 +20,17 @@ fun App(initialArchiveDirectory: Path? = null) {
 
     LaunchedEffect(initialArchiveDirectory) {
         if (initialArchiveDirectory != null) {
-            app.openStoryArchive(initialArchiveDirectory, false)
-        } else {
-            app.closeStoryArchive()
+            try {
+                app.openStoryArchive(initialArchiveDirectory, false)
+            } catch (e: Exception) {
+                app.router.goTo(
+                    ErrorPage(
+                        title = "Failed to open story archive passed with CLI args",
+                        description = "Story archive: $initialArchiveDirectory",
+                        exception = e,
+                    )
+                )
+            }
         }
     }
 

@@ -5,23 +5,33 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.shimmermare.stuffiread.ui.components.text.FixedOutlinedTextField
+import com.shimmermare.stuffiread.ui.components.input.FixedOutlinedTextField
 
-class TextFormField<T>(
+@Composable
+fun <FormData> TextFormField(
+    id: String,
+    state: InputFormState<FormData>,
     name: String,
     description: String? = null,
-    getter: (T) -> String,
-    setter: (T, String) -> T,
+    getter: (FormData) -> String,
+    setter: (FormData, String) -> FormData,
+    textInputModifier: Modifier = Modifier.fillMaxWidth().sizeIn(minHeight = 36.dp, maxHeight = 420.dp),
+    singleLine: Boolean = true,
     validator: suspend (String) -> ValidationResult = { ValidationResult.Valid },
-    private val textInputModifier: Modifier = Modifier.fillMaxWidth().sizeIn(minHeight = 36.dp, maxHeight = 420.dp),
-    private val singleLine: Boolean = true
-) : FormField<T, String>(name, description, getter, setter, validator) {
-    @Composable
-    override fun renderInputField(value: FormFieldValue<String>, onValueChange: (String) -> Unit) {
+) {
+    FormField(
+        id = id,
+        state = state,
+        name = name,
+        description =description,
+        getter = getter,
+        setter = setter,
+        validator = validator,
+    ) { value, valid, onValueChange ->
         FixedOutlinedTextField(
-            value = value.value,
+            value = value,
             modifier = textInputModifier,
-            isError = !value.valid,
+            isError = !valid,
             singleLine = singleLine,
             onValueChange = onValueChange,
         )

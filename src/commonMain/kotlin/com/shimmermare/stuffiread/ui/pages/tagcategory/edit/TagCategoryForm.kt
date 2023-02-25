@@ -1,7 +1,10 @@
 package com.shimmermare.stuffiread.ui.pages.tagcategory.edit
 
+import ResetFormButton
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.material.Button
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -12,12 +15,12 @@ import com.shimmermare.stuffiread.tags.TagCategoryDescription
 import com.shimmermare.stuffiread.tags.TagCategoryId
 import com.shimmermare.stuffiread.tags.TagCategoryName
 import com.shimmermare.stuffiread.tags.TagService
-import com.shimmermare.stuffiread.ui.components.colorpicker.PopupColorPicker
-import com.shimmermare.stuffiread.ui.components.form.CustomFormField
-import com.shimmermare.stuffiread.ui.components.form.InputForm
+import com.shimmermare.stuffiread.ui.components.form.FormField
 import com.shimmermare.stuffiread.ui.components.form.IntFormField
+import com.shimmermare.stuffiread.ui.components.form.SubmittableInputForm
 import com.shimmermare.stuffiread.ui.components.form.TextFormField
 import com.shimmermare.stuffiread.ui.components.form.ValidationResult
+import com.shimmermare.stuffiread.ui.components.input.PopupColorPicker
 import com.shimmermare.stuffiread.ui.components.text.FilledNameText
 import com.shimmermare.stuffiread.ui.pages.tagcategory.edit.EditTagCategoryPageMode.CREATE
 import com.shimmermare.stuffiread.ui.pages.tagcategory.edit.EditTagCategoryPageMode.EDIT
@@ -27,58 +30,70 @@ fun TagCategoryForm(
     tagService: TagService,
     mode: EditTagCategoryPageMode,
     category: TagCategory,
-    onCancel: () -> Unit,
+    onBack: () -> Unit,
     onSubmit: (TagCategory) -> Unit
 ) {
-    InputForm(
-        value = category,
+    SubmittableInputForm(
+        data = category,
         modifier = Modifier.padding(20.dp).sizeIn(maxWidth = 800.dp),
-        onCancel = onCancel,
-        showResetButton = mode == EDIT,
         submitButtonText = when (mode) {
             CREATE -> "Create"
             EDIT -> "Save"
         },
         canSubmitWithoutChanges = mode == CREATE,
         onSubmit = onSubmit,
-        fields = listOf(
-            TextFormField(
-                name = "Name",
-                description = "Unique tag category name. Examples: \"Characters\", \"Ships\"",
-                getter = { it.name.value },
-                setter = { form, value -> form.copy(name = TagCategoryName(value)) },
-                validator = { validateName(tagService, mode, category.id, it) }
-            ),
-            TextFormField(
-                name = "Description (Optional)",
-                description = "Describe characteristics of this tag category: what tags should be here and why.",
-                singleLine = false,
-                getter = { it.description.value ?: "" },
-                setter = { form, value -> form.copy(description = TagCategoryDescription.of(value.ifBlank { null })) },
-                validator = ::validateDescription
-            ),
-            IntFormField(
-                name = "Sort Order",
-                description = "Order in which tags are displayed on story.",
-                getter = { it.sortOrder },
-                setter = { form, value -> form.copy(sortOrder = value) },
-                range = 0..Int.MAX_VALUE
-            ),
-            CustomFormField(
-                name = "Color",
-                description = "Color of tags in this category.",
-                getter = { Color(it.color) },
-                setter = { form, value -> form.copy(color = value.toArgb()) }
-            )
-            { value, onValueChange ->
-                PopupColorPicker(
-                    color = value.value,
-                    button = { FilledNameText("Pick color", it) },
-                    onPick = { onValueChange(it) }
-                )
+        actions = { state ->
+            Button(onClick = onBack) {
+                Text("Back")
             }
+            if (mode == EDIT) {
+                ResetFormButton(state, category)
+            }
+        },
+    ) { state ->
+        TextFormField(
+            id = "name",
+            state = state,
+            name = "Name",
+            description = "Unique tag category name. Examples: \"Characters\", \"Ships\"",
+            getter = { it.name.value },
+            setter = { form, value -> form.copy(name = TagCategoryName(value)) },
+            validator = { validateName(tagService, mode, category.id, it) },
         )
-    )
+        TextFormField(
+            id = "description",
+            state = state,
+            name = "Description (Optional)",
+            description = "Describe characteristics of this tag category: what tags should be here and why.",
+            getter = { it.description.value ?: "" },
+            setter = { form, value -> form.copy(description = TagCategoryDescription.of(value.ifBlank { null })) },
+            validator = ::validateDescription,
+            singleLine = false
+        )
+        IntFormField(
+            id = "sortOrder",
+            state = state,
+            name = "Sort Order",
+            description = "Order in which tags are displayed on story.",
+            getter = { it.sortOrder },
+            setter = { form, value -> form.copy(sortOrder = value) },
+            range = 0..Int.MAX_VALUE
+        )
+        FormField(
+            id = "color",
+            state = state,
+            name = "Color",
+            description = "Color of tags in this category.",
+            getter = { Color(it.color) },
+            setter = { form, value -> form.copy(color = value.toArgb()) }
+        ) { value, _, onValueChange ->
+            PopupColorPicker(
+                color = value,
+                button = { FilledNameText("Pick color", it) },
+                onPick = { onValueChange(it) }
+            )
+        }
+    }
 }
 
 private fun validateName(

@@ -1,4 +1,4 @@
-package com.shimmermare.stuffiread.ui.components.colorpicker
+package com.shimmermare.stuffiread.ui.components.input
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -28,7 +28,6 @@ import androidx.compose.ui.window.Popup
 import com.godaddy.android.colorpicker.ClassicColorPicker
 import com.godaddy.android.colorpicker.HsvColor
 import com.shimmermare.stuffiread.ui.components.layout.PopupContent
-import com.shimmermare.stuffiread.ui.components.text.FixedOutlinedTextField
 import com.shimmermare.stuffiread.ui.util.ColorUtils.blueInt
 import com.shimmermare.stuffiread.ui.util.ColorUtils.greenInt
 import com.shimmermare.stuffiread.ui.util.ColorUtils.parseHexColor

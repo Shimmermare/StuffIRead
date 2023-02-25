@@ -47,7 +47,7 @@ class EditTagCategoryPage(
                 tagService = app.storyArchive!!.tagService,
                 mode = mode,
                 category = category,
-                onCancel = {
+                onBack = {
                     when (mode) {
                         CREATE -> app.router.goTo(TagCategoriesPage())
                         EDIT -> app.router.goTo(TagCategoryInfoPage(category.id))

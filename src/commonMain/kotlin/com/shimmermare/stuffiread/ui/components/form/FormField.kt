@@ -6,82 +6,57 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
 
-abstract class FormField<T, V>(
-    val name: String,
-    val description: String? = null,
-    val getter: (T) -> V,
-    val setter: (T, V) -> T,
-    val validator: suspend (V) -> ValidationResult = { ValidationResult.Valid }
+@Composable
+fun <FormData, FieldValue> FormField(
+    id: String,
+    state: InputFormState<FormData>,
+    name: String,
+    description: String? = null,
+    getter: (FormData) -> FieldValue,
+    setter: (FormData, FieldValue) -> FormData,
+    validator: suspend (FieldValue) -> ValidationResult = { ValidationResult.Valid },
+    input: @Composable (value: FieldValue, valid: Boolean, onValueChange: (FieldValue) -> Unit) -> Unit
 ) {
-    suspend fun getAndValidateValue(formData: T): FormFieldValue<V> {
-        val value = getter(formData)
-        val validation = validator(value)
-        return FormFieldValue(value, validation.valid, validation.error)
-    }
+    var value: FieldValue by remember(getter(state.data)) { mutableStateOf(getter(state.data)) }
+    var valid: Boolean by remember { mutableStateOf(false) }
+    var error: String? by remember { mutableStateOf(null) }
 
-    @Suppress("UNCHECKED_CAST")
-    fun setValidValueRaw(formData: T, value: FormFieldValue<*>): T {
-        return setValidValue(formData, value as FormFieldValue<V>)
-    }
+    LaunchedEffect(value) {
+        val validationResult = validator(value)
+        valid = validationResult.valid
+        error = validationResult.error
 
-    fun setValidValue(formData: T, value: FormFieldValue<V>): T {
-        if (!value.valid) {
-            throw IllegalArgumentException("Value of field '$name' is invalid: ${value.error}")
+        if (validationResult.valid) {
+            state.data = setter(state.data, value)
+            state.invalidFields.remove(id)
+        } else {
+            state.invalidFields[id] = validationResult.error ?: "Invalid value"
         }
-        return setter(formData, value.value)
     }
 
-    suspend fun validate(value: V): ValidationResult = validator(value)
+    Column(
+        modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(5.dp)
+    ) {
+        Text(text = name, style = MaterialTheme.typography.h6)
+        if (description != null) {
+            Text(text = description, style = MaterialTheme.typography.body1)
+        }
 
-    @Suppress("UNCHECKED_CAST")
-    @Composable
-    fun renderRaw(value: FormFieldValue<*>, onValueChange: (FormFieldValue<*>) -> Unit) {
-        render(value as FormFieldValue<V>, onValueChange)
-    }
-
-    @Composable
-    fun render(value: FormFieldValue<V>, onValueChange: (FormFieldValue<V>) -> Unit) {
-        val coroutineScope = rememberCoroutineScope()
-        Column(
-            modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(5.dp)
-        ) {
+        if (!valid) {
             Text(
-                text = name, style = MaterialTheme.typography.h6
+                text = error ?: "Invalid value",
+                style = MaterialTheme.typography.body1,
+                color = MaterialTheme.colors.error
             )
-            if (description != null) {
-                Text(
-                    text = description, style = MaterialTheme.typography.body1
-                )
-            }
-            if (!value.valid && value.error != null) {
-                Text(
-                    text = value.error,
-                    style = MaterialTheme.typography.body1,
-                    color = MaterialTheme.colors.error
-                )
-            }
-            renderInputField(value) { value ->
-                coroutineScope.launch {
-                    val validationResult = validate(value)
-                    onValueChange(FormFieldValue(value, validationResult))
-                }
-            }
         }
+        input(value, valid) { value = it }
     }
-
-    @Composable
-    protected abstract fun renderInputField(value: FormFieldValue<V>, onValueChange: (V) -> Unit)
-}
-
-data class FormFieldValue<V>(
-    val value: V,
-    val valid: Boolean = true,
-    val error: String? = null,
-) {
-    constructor(value: V, validation: ValidationResult): this(value, validation.valid, validation.error)
 }

@@ -1,40 +1,65 @@
 package com.shimmermare.stuffiread.ui.components.form
 
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.shimmermare.stuffiread.ui.components.text.FixedOutlinedTextField
+import com.shimmermare.stuffiread.ui.components.input.FixedOutlinedTextField
 
-class IntFormField<T>(
+@Composable
+fun <FormData> IntFormField(
+    id: String,
+    state: InputFormState<FormData>,
     name: String,
     description: String? = null,
-    getter: (T) -> Int,
-    setter: (T, Int) -> T,
+    getter: (FormData) -> Int,
+    setter: (FormData, Int) -> FormData,
+    inputModifier: Modifier = Modifier.fillMaxWidth().sizeIn(minHeight = 36.dp, maxHeight = 420.dp),
     range: IntRange = IntRange(Int.MIN_VALUE, Int.MAX_VALUE),
-    validator: suspend (Int) -> ValidationResult = { ValidationResult.Valid },
-    private val textInputModifier: Modifier = Modifier.fillMaxWidth().height(36.dp),
-) : FormField<T, Int>(
-    name,
-    description,
-    getter,
-    setter,
-    validator = {
-        if (it !in range) {
-            ValidationResult(false, "Value is out of range $range")
-        } else {
-            validator(it)
-        }
-    }
 ) {
+    IntFormField(
+        id = id,
+        state = state,
+        name = name,
+        description = description,
+        getter = getter,
+        setter = setter,
+        textInputModifier = inputModifier,
+        validator = {
+            if (it !in range) {
+                ValidationResult(false, "Value is out of range $range")
+            } else {
+                ValidationResult.Valid
+            }
+        }
+    )
+}
 
-    @Composable
-    override fun renderInputField(value: FormFieldValue<Int>, onValueChange: (Int) -> Unit) {
+@Composable
+fun <FormData> IntFormField(
+    id: String,
+    state: InputFormState<FormData>,
+    name: String,
+    description: String? = null,
+    getter: (FormData) -> Int,
+    setter: (FormData, Int) -> FormData,
+    textInputModifier: Modifier = Modifier.fillMaxWidth().sizeIn(minHeight = 36.dp, maxHeight = 420.dp),
+    validator: suspend (Int) -> ValidationResult = { ValidationResult.Valid },
+) {
+    FormField(
+        id = id,
+        state = state,
+        name = name,
+        description = description,
+        getter = getter,
+        setter = setter,
+        validator = validator,
+    ) { value, valid, onValueChange ->
         FixedOutlinedTextField(
-            value = value.value.toString(),
+            value = value.toString(),
             modifier = textInputModifier,
-            isError = !value.valid,
+            isError = !valid,
             singleLine = true,
             onValueChange = {
                 val negative = it.startsWith('-')
@@ -49,7 +74,7 @@ class IntFormField<T>(
                     .max(Int.MIN_VALUE.toBigInteger())
                     .min(Int.MAX_VALUE.toBigInteger())
                     .intValueExact()
-                onValueChange(intValue)
+                if (value != intValue) onValueChange(intValue)
             }
         )
     }

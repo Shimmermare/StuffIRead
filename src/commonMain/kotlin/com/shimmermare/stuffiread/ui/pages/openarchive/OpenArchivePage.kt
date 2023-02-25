@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.shimmermare.stuffiread.ui.AppState
+import com.shimmermare.stuffiread.ui.pages.error.ErrorPage
 import com.shimmermare.stuffiread.ui.routing.Page
 
 class OpenArchivePage : Page {
@@ -21,7 +22,17 @@ class OpenArchivePage : Page {
             modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
         ) {
             ArchiveDirectorySelector { archiveDirectory, createIfNotExists ->
-                app.openStoryArchive(archiveDirectory, createIfNotExists)
+                try {
+                    app.openStoryArchive(archiveDirectory, createIfNotExists)
+                } catch (e: Exception) {
+                    app.router.goTo(
+                        ErrorPage(
+                            title = "Failed to open story archive",
+                            description = "Story archive: $archiveDirectory",
+                            exception = e,
+                        )
+                    )
+                }
             }
         }
     }

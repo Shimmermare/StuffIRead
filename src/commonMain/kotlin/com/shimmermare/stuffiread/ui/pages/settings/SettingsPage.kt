@@ -3,6 +3,8 @@ package com.shimmermare.stuffiread.ui.pages.settings
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.material.Button
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -13,7 +15,7 @@ import com.shimmermare.stuffiread.settings.ScoreDisplayType
 import com.shimmermare.stuffiread.settings.ThemeBehavior
 import com.shimmermare.stuffiread.ui.AppState
 import com.shimmermare.stuffiread.ui.components.form.EnumFormField
-import com.shimmermare.stuffiread.ui.components.form.InputForm
+import com.shimmermare.stuffiread.ui.components.form.SubmittableInputForm
 import com.shimmermare.stuffiread.ui.pages.LoadedPage
 import com.shimmermare.stuffiread.ui.pages.error.ErrorPage
 import io.github.aakira.napier.Napier
@@ -55,8 +57,9 @@ class SettingsPage : LoadedPage<AppSettings>() {
             modifier = Modifier.padding(20.dp).sizeIn(maxWidth = 600.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            InputForm(
-                value = content!!,
+            SubmittableInputForm(
+                data = content!!,
+                modifier = Modifier.padding(20.dp).sizeIn(maxWidth = 800.dp),
                 submitButtonText = "Save",
                 onSubmit = {
                     coroutineScope.launch {
@@ -64,36 +67,50 @@ class SettingsPage : LoadedPage<AppSettings>() {
                         app.router.goTo(SettingsPage())
                     }
                 },
-                fields = listOf(
-                    EnumFormField(
-                        name = "Theme",
-                        enumType = ThemeBehavior::class,
-                        getter = { it.themeBehavior },
-                        setter = { form, value -> form.copy(themeBehavior = value) },
-                        displayNameProvider = {
-                            when (it) {
-                                ThemeBehavior.USE_SYSTEM -> "System default"
-                                ThemeBehavior.FORCE_LIGHT -> "Light"
-                                ThemeBehavior.FORCE_DARK -> "Dark"
+                actions = { state ->
+                    Button(
+                        onClick = {
+                            coroutineScope.launch {
+                                content = app.settingsService.resetSettings()
                             }
                         }
-                    ),
-                    EnumFormField(
-                        name = "Score display",
-                        enumType = ScoreDisplayType::class,
-                        getter = { it.scoreDisplayType },
-                        setter = { form, value -> form.copy(scoreDisplayType = value) },
-                        displayNameProvider = {
-                            when (it) {
-                                ScoreDisplayType.STARS_5 -> "5 Stars"
-                                ScoreDisplayType.STARS_10 -> "10 Stars"
-                                ScoreDisplayType.NUMBERS_1_TO_10 -> "Numbers 1/10"
-                                ScoreDisplayType.NUMBERS_1_TO_100 -> "Numbers 1/100"
-                            }
+                    ) {
+                        Text("Reset to default")
+                    }
+                },
+            ) { state ->
+                EnumFormField(
+                    id = "theme",
+                    state = state,
+                    name = "Theme (NOT IMPLEMENTED)",
+                    enumType = ThemeBehavior::class,
+                    getter = { it.themeBehavior },
+                    setter = { form, value -> form.copy(themeBehavior = value) },
+                    displayNameProvider = {
+                        when (it) {
+                            ThemeBehavior.USE_SYSTEM -> "System default"
+                            ThemeBehavior.FORCE_LIGHT -> "Light"
+                            ThemeBehavior.FORCE_DARK -> "Dark"
                         }
-                    )
+                    }
                 )
-            )
+                EnumFormField(
+                    id = "scoreDisplay",
+                    state = state,
+                    name = "Score display",
+                    enumType = ScoreDisplayType::class,
+                    getter = { it.scoreDisplayType },
+                    setter = { form, value -> form.copy(scoreDisplayType = value) },
+                    displayNameProvider = {
+                        when (it) {
+                            ScoreDisplayType.STARS_5 -> "5 Stars"
+                            ScoreDisplayType.STARS_10 -> "10 Stars"
+                            ScoreDisplayType.NUMBERS_1_TO_10 -> "Numbers 1/10"
+                            ScoreDisplayType.NUMBERS_1_TO_100 -> "Numbers 1/100"
+                        }
+                    }
+                )
+            }
         }
     }
 }
