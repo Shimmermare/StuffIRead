@@ -6,5 +6,14 @@ data class ValidationResult(
 ) {
     companion object {
         val Valid = ValidationResult(true)
+
+        fun fromException(validate: () -> Unit): ValidationResult {
+            return try {
+                validate()
+                Valid
+            } catch (e: Exception) {
+                ValidationResult(false, e.message)
+            }
+        }
     }
 }

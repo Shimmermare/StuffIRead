@@ -87,7 +87,7 @@ fun TagForm(
             validator = { validateImpliedTags(tagService, tag.id, it) },
         ) { value, _, onChange ->
             MultiTagSelector(
-                tagService, selectedIds = value, filter = { it.id != tag.id }, onValueChange = onChange
+                tagService, selectedIds = value, filter = { it.id != tag.id }, onSelect = onChange
             )
         }
     }

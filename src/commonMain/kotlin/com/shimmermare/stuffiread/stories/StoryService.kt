@@ -18,4 +18,6 @@ interface StoryService {
     suspend fun createStory(story: Story): Story
 
     suspend fun updateStory(story: Story): Story
+
+    suspend fun deleteStoryById(storyId: StoryId)
 }

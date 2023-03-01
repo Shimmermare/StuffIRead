@@ -56,6 +56,11 @@ class CachedStoryService(
         return updated
     }
 
+    override suspend fun deleteStoryById(storyId: StoryId) {
+        source.deleteStoryById(storyId)
+        cache.invalidate(storyId)
+    }
+
     companion object {
         private const val CACHE_SIZE: Long = 1000
         private val EXPIRE_AFTER: Duration = 10.minutes

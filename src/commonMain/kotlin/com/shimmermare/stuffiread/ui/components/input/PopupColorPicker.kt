@@ -129,7 +129,7 @@ private fun HexColorInput(color: Color, modifier: Modifier = Modifier, onColorCh
     var overrideText by remember(focused) { mutableStateOf(color.toHexColor().uppercase()) }
     var error by remember(focused, color) { mutableStateOf(false) }
 
-    FixedOutlinedTextField(
+    ExtendedOutlinedTextField(
         value = if (focused) overrideText else color.toHexColor().uppercase(),
         modifier = modifier.onFocusChanged { focused = it.isFocused },
         isError = error,
@@ -152,7 +152,7 @@ private fun RGBColorInput(color: Int, modifier: Modifier = Modifier, onColorChan
     var overrideText by remember(focused) { mutableStateOf(color.toString()) }
     var error by remember(focused, color) { mutableStateOf(false) }
 
-    FixedOutlinedTextField(
+    ExtendedOutlinedTextField(
         value = if (focused) overrideText else color.toString(),
         modifier = modifier.onFocusChanged { focused = it.isFocused },
         isError = error,

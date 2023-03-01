@@ -46,7 +46,7 @@ private fun StarsScore(score: Score, starCount: Int) {
             Icon(
                 Icons.Filled.Star,
                 null,
-                modifier = Modifier.size(max(120.dp / starCount, 18.dp)),
+                modifier = Modifier.size(max(120.dp / starCount, 20.dp)),
                 tint = color,
             )
         }

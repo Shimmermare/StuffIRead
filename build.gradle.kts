@@ -33,13 +33,22 @@ kotlin {
                 implementation("io.github.aakira:napier:${extra["napier.version"]}")
                 implementation("io.github.reactivecircus.cache4k:cache4k:${extra["cache4k.version"]}")
                 implementation("com.russhwolf:multiplatform-settings:${extra["multiplatform-settings.version"]}")
+                implementation("io.ktor:ktor-client-core:${extra["ktor-client.version"]}")
+                implementation("io.ktor:ktor-client-cio:${extra["ktor-client.version"]}")
             }
         }
 
-        val commonTest by getting
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+            }
+        }
 
         val jvmMain by getting {
-
+            dependencies {
+                implementation("org.jsoup:jsoup:${extra["jsoup.version"]}")
+                implementation("com.github.lgooddatepicker:LGoodDatePicker:${extra["lgooddatepicker.version"]}")
+            }
         }
 
         val jvmTest by getting

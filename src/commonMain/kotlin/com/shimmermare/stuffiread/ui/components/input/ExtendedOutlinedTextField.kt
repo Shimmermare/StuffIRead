@@ -23,14 +23,14 @@ import androidx.compose.ui.unit.dp
  */
 @Composable
 @OptIn(ExperimentalMaterialApi::class)
-fun FixedOutlinedTextField(
+fun ExtendedOutlinedTextField(
     value: String,
     onValueChange: (String) -> Unit = {},
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     readOnly: Boolean = false,
     textStyle: TextStyle = LocalTextStyle.current,
-    contentPadding: PaddingValues = PaddingValues(horizontal = 8.dp, vertical = 1.dp),
+    contentPadding: PaddingValues = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
     placeholder: @Composable (() -> Unit)? = null,
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
@@ -40,6 +40,7 @@ fun FixedOutlinedTextField(
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     singleLine: Boolean = false,
     maxLines: Int = Int.MAX_VALUE,
+    maxLength: Int = Int.MAX_VALUE,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     shape: Shape = MaterialTheme.shapes.small,
     colors: TextFieldColors = TextFieldDefaults.outlinedTextFieldColors()
@@ -58,7 +59,7 @@ fun FixedOutlinedTextField(
                 minWidth = TextFieldDefaults.MinWidth,
                 minHeight = TextFieldDefaults.MinHeight
             ),
-        onValueChange = onValueChange,
+        onValueChange = { if (it.length <= maxLength) onValueChange(it) },
         enabled = enabled,
         readOnly = readOnly,
         textStyle = mergedTextStyle,

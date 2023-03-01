@@ -73,7 +73,8 @@ class SettingsPage : LoadedPage<AppSettings>() {
                             coroutineScope.launch {
                                 content = app.settingsService.resetSettings()
                             }
-                        }
+                        },
+                        enabled = state.data != AppSettings()
                     ) {
                         Text("Reset to default")
                     }

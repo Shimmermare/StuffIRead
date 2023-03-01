@@ -11,7 +11,7 @@ class StorySearchServiceImpl(
         }
 
         if (filter.nameContains != null) {
-            stories = stories.filter { it.name.contains(filter.nameContains, ignoreCase = true) }
+            stories = stories.filter { it.name.value.contains(filter.nameContains, ignoreCase = true) }
         }
 
         if (filter.tagsPresent != null) {

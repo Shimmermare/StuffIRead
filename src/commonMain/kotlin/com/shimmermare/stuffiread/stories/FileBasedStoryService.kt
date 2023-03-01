@@ -9,7 +9,6 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import java.nio.file.Path
-import java.nio.file.StandardOpenOption
 import kotlin.io.path.*
 
 /**
@@ -84,17 +83,29 @@ class FileBasedStoryService(
 
     override suspend fun updateStory(story: Story): Story {
         return withContext(Dispatchers.IO) {
-            if (storiesDirectory.notExists()) storiesDirectory.createDirectories()
+            require(storyFilePath(story.id).exists()) {
+                "Can't update non-existing story ${story.id}"
+            }
             writeStory(story)
             return@withContext story
         }
     }
 
+    @OptIn(ExperimentalPathApi::class)
+    override suspend fun deleteStoryById(storyId: StoryId) {
+        withContext(Dispatchers.IO) {
+            val storyDirectory = storiesDirectory.resolve(storyId.toString())
+            storyDirectory.walk(PathWalkOption.INCLUDE_DIRECTORIES)
+                .sortedDescending()
+                .forEach(Path::deleteIfExists)
+        }
+    }
+
     private fun readStory(storyId: StoryId): Story? {
-        val storyFile = storiesDirectory.resolve(storyId.toString()).resolve(STORY_FILE_NAME)
+        val storyFile = storyFilePath(storyId)
         if (storyFile.notExists()) return null
 
-        val story = storyFile.inputStream(StandardOpenOption.READ).use { Json.decodeFromStream<Story>(it) }
+        val story = storyFile.inputStream().use { Json.decodeFromStream<Story>(it) }
         require(story.id == storyId) {
             "Story ID in file (${story.id}) doesn't match location ($storyId)"
         }
@@ -109,7 +120,7 @@ class FileBasedStoryService(
         } catch (e: NumberFormatException) {
             error("Story folder name is not valid ID: '${storyFile.parent.fileName}'")
         }
-        val story = storyFile.inputStream(StandardOpenOption.READ).use { Json.decodeFromStream<Story>(it) }
+        val story = storyFile.inputStream().use { Json.decodeFromStream<Story>(it) }
         require(story.id == storyId) {
             "Story ID in file (${story.id}) doesn't match location ($storyId)"
         }
@@ -120,10 +131,10 @@ class FileBasedStoryService(
         require(story.id != 0u) {
             "0 story ID is not allowed"
         }
-        val storyFile = storiesDirectory.resolve(story.id.toString()).resolve(STORY_FILE_NAME)
-        storyFile.outputStream(
-            StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE
-        ).use {
+        val storyDir = storiesDirectory.resolve(story.id.toString())
+        if (storyDir.notExists()) storyDir.createDirectories()
+
+        storyDir.resolve(STORY_FILE_NAME).outputStream().use {
             AppJson.encodeToStream(story, it)
         }
     }
@@ -134,8 +145,12 @@ class FileBasedStoryService(
         return entries.mapNotNull { it.fileName.toString().toUIntOrNull() }.max() + 1u
     }
 
+    private fun storyFilePath(storyId: StoryId): Path {
+        return storiesDirectory.resolve(Path(storyId.toString(), STORY_FILE_NAME))
+    }
+
     companion object {
-        private const val STORIES_DIR_NAME = "stories"
+        const val STORIES_DIR_NAME = "stories"
         private const val STORY_FILE_NAME = "story.json"
     }
 }

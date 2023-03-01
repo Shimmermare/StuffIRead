@@ -14,15 +14,6 @@
     "prequels": [
         1
     ],
-    "files": [
-        {
-            "format": "PDF",
-            "fileName": "example.pdf",
-            "sha256": "c41a74975962143429777f825391ba97c0892feeea555e041abf599db48c7d43",
-            "wordCount": 1088,
-            "size": 15588
-        }
-    ],
     "score": 0.5,
     "created": "2023-01-01T00:00:00Z",
     "updated": "2023-01-01T00:00:00Z"

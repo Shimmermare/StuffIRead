@@ -39,7 +39,7 @@ import kotlin.reflect.KClass
  * [onValueChange] - if [canBeCleared] is false - value is guaranteed to not be null.
  */
 @Composable
-fun <E : Enum<E>> EnumOutlinedField(
+fun <E : Enum<E>> OutlinedEnumField(
     value: E? = null,
     enumType: KClass<E>,
     allowedValues: Set<E> = enumType.java.enumConstants.toSet(),
@@ -59,7 +59,7 @@ fun <E : Enum<E>> EnumOutlinedField(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            FixedOutlinedTextField(
+            ExtendedOutlinedTextField(
                 value = value?.let { displayNameProvider(it) } ?: "",
                 modifier = inputFieldModifier
                     .onGloballyPositioned { textFieldSize = it.size.toSize() }

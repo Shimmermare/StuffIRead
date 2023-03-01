@@ -23,6 +23,7 @@ import com.shimmermare.stuffiread.ui.components.search.SearchList
 import com.shimmermare.stuffiread.ui.components.story.StoryCard
 import com.shimmermare.stuffiread.ui.pages.LoadedPage
 import com.shimmermare.stuffiread.ui.pages.error.ErrorPage
+import com.shimmermare.stuffiread.ui.pages.story.create.CreateStoryPage
 import io.github.aakira.napier.Napier
 
 class StoriesPage(
@@ -69,9 +70,7 @@ class StoriesPage(
                         )
                     }
                     FloatingActionButton(
-                        onClick = {
-                            // TODO: goTo create story page
-                        }
+                        onClick = { app.router.goTo(CreateStoryPage()) }
                     ) {
                         Icon(Icons.Filled.Add, null)
                     }
@@ -80,7 +79,7 @@ class StoriesPage(
         ) {
             SearchList(
                 items = content!!,
-                nameGetter = { it.name },
+                nameGetter = { it.name.value },
                 unitNameProvider = { if (it == 1) "story" else "stories" }
             ) { filtered ->
                 // TODO: Add vertical scrollbar when updated to Compose 1.4

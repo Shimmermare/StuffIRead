@@ -28,14 +28,16 @@ import com.shimmermare.stuffiread.ui.util.LoadingContainer
 /**
  * Input to select multiple unique tags from list of all tags.
  *
+ *
  * @param filter additional filter for tags available for selection.
+ * @param onSelect will be called when popup is dismissed.
  */
 @Composable
 fun MultiTagSelector(
     tagService: TagService,
     selectedIds: Set<TagId>,
     filter: (Tag) -> Boolean = { true },
-    onValueChange: (Set<TagId>) -> Unit
+    onSelect: (Set<TagId>) -> Unit
 ) {
     LoadingContainer(
         key = selectedIds,
@@ -45,7 +47,7 @@ fun MultiTagSelector(
             tagService,
             selectedTags,
             filter,
-            onValueChange
+            onSelect
         )
     }
 }
@@ -53,11 +55,12 @@ fun MultiTagSelector(
 @Composable
 private fun SelectorContent(
     tagService: TagService,
-    selectedTags: Map<TagId, TagWithCategory>,
+    initiallySelectedTags: Map<TagId, TagWithCategory>,
     filter: (Tag) -> Boolean,
-    onValueChange: (Set<TagId>) -> Unit
+    onSelect: (Set<TagId>) -> Unit
 ) {
-    var showPopup: Boolean by remember { mutableStateOf(false) }
+    var selectedTags: Map<TagId, TagWithCategory> by remember { mutableStateOf(initiallySelectedTags) }
+    var showPopup: Boolean by remember(initiallySelectedTags) { mutableStateOf(false) }
 
     DisableSelection {
         if (showPopup) {
@@ -66,14 +69,21 @@ private fun SelectorContent(
                     tagService,
                     selectedTags,
                     filter = { filter(it.tag) },
-                    onDismissRequest = { showPopup = false },
-                    onValueChange
+                    onDismissRequest = {
+                        if (initiallySelectedTags != selectedTags) {
+                            onSelect(selectedTags.keys)
+                        }
+                        showPopup = false
+                    },
+                    onValueChange = {
+                        selectedTags = it
+                    }
                 )
             }
         }
         ChipVerticalGrid {
             selectedTags.forEach { (id, tag) ->
-                SelectedTagName(tag) { onValueChange(selectedTags.keys - id) }
+                SelectedTagName(tag) { onSelect(selectedTags.keys - id) }
             }
 
             Box(modifier = Modifier.clickable { showPopup = true }) {
@@ -110,7 +120,7 @@ private fun SelectorPopupContainer(
     selectedTags: Map<TagId, TagWithCategory>,
     filter: (TagWithCategory) -> Boolean,
     onDismissRequest: () -> Unit,
-    onValueChange: (Set<TagId>) -> Unit,
+    onValueChange: (Map<TagId, TagWithCategory>) -> Unit,
 ) {
     LoadingContainer(
         key = selectedTags,
@@ -132,7 +142,7 @@ private fun SelectorPopup(
     allTags: List<TagWithCategory>,
     filter: (TagWithCategory) -> Boolean,
     onDismissRequest: () -> Unit,
-    onValueChange: (Set<TagId>) -> Unit,
+    onValueChange: (Map<TagId, TagWithCategory>) -> Unit,
 ) {
     var searchText: String by remember { mutableStateOf("") }
     val filteredTags: List<TagWithCategory> = remember(selectedTags, searchText) {
@@ -159,7 +169,7 @@ private fun SelectorPopup(
                     selectedTags.forEach { (id, tag) ->
                         TagName(
                             tag = tag,
-                            onClick = { onValueChange(selectedTags.keys - id) }
+                            onClick = { onValueChange(selectedTags - id) }
                         )
                     }
                 }
@@ -177,9 +187,7 @@ private fun SelectorPopup(
                     filteredTags.forEach {
                         TagName(
                             tag = it,
-                            onClick = {
-                                onValueChange(selectedTags.keys + it.tag.id)
-                            }
+                            onClick = { onValueChange(selectedTags + (it.tag.id to it)) }
                         )
                     }
                 }

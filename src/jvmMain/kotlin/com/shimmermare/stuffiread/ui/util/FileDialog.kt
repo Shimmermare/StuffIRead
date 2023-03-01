@@ -1,4 +1,4 @@
-package com.shimmermare.stuffiread.util
+package com.shimmermare.stuffiread.ui.util
 
 import java.io.File
 import java.nio.file.Path

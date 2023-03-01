@@ -49,5 +49,6 @@ class StoryInfoPage(val storyId: StoryId) : LoadedPage<Story>() {
 
     @Composable
     override fun LoadedContent(app: AppState) {
+        StoryInfo(app, content!!)
     }
 }

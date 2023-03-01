@@ -1,0 +1,3 @@
+package com.shimmermare.stuffiread.importer
+
+interface ImportSettings

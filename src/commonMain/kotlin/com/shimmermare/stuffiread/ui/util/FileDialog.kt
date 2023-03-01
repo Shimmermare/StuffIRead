@@ -1,4 +1,4 @@
-package com.shimmermare.stuffiread.util
+package com.shimmermare.stuffiread.ui.util
 
 import java.nio.file.Path
 import kotlin.io.path.isDirectory

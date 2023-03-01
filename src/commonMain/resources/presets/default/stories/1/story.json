@@ -15,15 +15,6 @@
         1
     ],
     "prequels": [],
-    "files": [
-        {
-            "format": "TXT",
-            "fileName": "example.txt",
-            "sha256": "669d0938ce36d31e67eb0b12a7e00063d9cf44b7859ccf3070c32e365beaa3c6",
-            "wordCount": 1088,
-            "size": 7322
-        }
-    ],
     "score": 0.75,
     "review": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\nSem et tortor consequat id porta.",
     "firstRead": "2023-01-01T00:00:00Z",

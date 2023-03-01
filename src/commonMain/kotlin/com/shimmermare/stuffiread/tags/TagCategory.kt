@@ -83,7 +83,6 @@ value class TagCategoryDescription private constructor(val value: String?) : Com
 
     init {
         if (value != null) {
-            require(value.isNotBlank()) { "Description can't be blank" }
             require(value.length <= MAX_LENGTH) { "Description length exceeded $MAX_LENGTH (${value.length})" }
         }
     }

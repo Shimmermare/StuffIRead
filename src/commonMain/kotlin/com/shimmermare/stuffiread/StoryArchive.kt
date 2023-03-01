@@ -5,6 +5,8 @@ import com.shimmermare.stuffiread.stories.FileBasedStoryService
 import com.shimmermare.stuffiread.stories.StorySearchService
 import com.shimmermare.stuffiread.stories.StorySearchServiceImpl
 import com.shimmermare.stuffiread.stories.StoryService
+import com.shimmermare.stuffiread.stories.file.StoryFilesService
+import com.shimmermare.stuffiread.stories.file.StoryFilesServiceImpl
 import com.shimmermare.stuffiread.tags.FileBasedTagTreeService
 import com.shimmermare.stuffiread.tags.TagService
 import com.shimmermare.stuffiread.tags.TagServiceImpl
@@ -19,6 +21,7 @@ class StoryArchive(
     createIfNotExist: Boolean
 ) {
     val storyService: StoryService
+    val storyFilesService: StoryFilesService
     val storySearchService: StorySearchService
     val tagService: TagService
 
@@ -35,6 +38,7 @@ class StoryArchive(
         }
 
         storyService = CachedStoryService(FileBasedStoryService(directory))
+        storyFilesService = StoryFilesServiceImpl(directory)
         storySearchService = StorySearchServiceImpl(storyService)
         tagService = TagServiceImpl(FileBasedTagTreeService(directory))
     }

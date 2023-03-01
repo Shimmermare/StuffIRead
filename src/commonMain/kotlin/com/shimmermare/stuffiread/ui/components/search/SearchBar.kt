@@ -21,7 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import com.shimmermare.stuffiread.ui.components.input.FixedOutlinedTextField
+import com.shimmermare.stuffiread.ui.components.input.ExtendedOutlinedTextField
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -39,7 +39,7 @@ fun SearchBar(
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusRequester = remember { FocusRequester() }
 
-    FixedOutlinedTextField(
+    ExtendedOutlinedTextField(
         modifier = Modifier
             .onFocusChanged { focusState ->
                 showClearButton = (focusState.isFocused)

@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 fun <FormData, FieldValue> FormField(
     id: String,
     state: InputFormState<FormData>,
-    name: String,
+    name: String? = null,
     description: String? = null,
     getter: (FormData) -> FieldValue,
     setter: (FormData, FieldValue) -> FormData,
@@ -42,11 +42,54 @@ fun <FormData, FieldValue> FormField(
         }
     }
 
+    FormFieldContent(
+        value = value,
+        onValueChange = { value = it },
+        name = name,
+        description = description,
+        valid = valid,
+        error = error,
+        input = input
+    )
+}
+
+@Composable
+fun <FieldValue> FormFieldContent(
+    value: FieldValue,
+    onValueChange: (FieldValue) -> Unit,
+    name: String? = null,
+    description: String? = null,
+    valid: Boolean = true,
+    error: String? = null,
+    input: @Composable (value: FieldValue, valid: Boolean, onValueChange: (FieldValue) -> Unit) -> Unit
+) {
     Column(
         modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(5.dp)
     ) {
-        Text(text = name, style = MaterialTheme.typography.h6)
-        if (description != null) {
+        FormFieldInfo(
+            name = name,
+            description = description,
+            valid = valid,
+            error = error,
+        )
+        input(value, valid, onValueChange)
+    }
+}
+
+@Composable
+fun FormFieldInfo(
+    name: String? = null,
+    description: String? = null,
+    valid: Boolean = true,
+    error: String? = null,
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(5.dp)
+    ) {
+        if (!name.isNullOrEmpty()) {
+            Text(text = name, style = MaterialTheme.typography.h6)
+        }
+        if (!description.isNullOrEmpty()) {
             Text(text = description, style = MaterialTheme.typography.body1)
         }
 
@@ -57,6 +100,5 @@ fun <FormData, FieldValue> FormField(
                 color = MaterialTheme.colors.error
             )
         }
-        input(value, valid) { value = it }
     }
 }

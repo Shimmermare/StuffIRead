@@ -11,10 +11,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.shimmermare.stuffiread.ui.components.dialog.FixedAlertDialog
-import com.shimmermare.stuffiread.util.DirectoriesOnlyFileFilter
-import com.shimmermare.stuffiread.util.FileDialog
-import com.shimmermare.stuffiread.util.FileFilter
-import com.shimmermare.stuffiread.util.SelectionMode
+import com.shimmermare.stuffiread.ui.util.DirectoriesOnlyFileFilter
+import com.shimmermare.stuffiread.ui.util.FileDialog
+import com.shimmermare.stuffiread.ui.util.FileFilter
+import com.shimmermare.stuffiread.ui.util.SelectionMode
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.notExists

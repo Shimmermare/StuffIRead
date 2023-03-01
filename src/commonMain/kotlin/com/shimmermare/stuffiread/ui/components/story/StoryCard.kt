@@ -56,13 +56,13 @@ fun StoryCard(
                     ) {
                         Column {
                             Text(
-                                text = story.name,
+                                text = story.name.value,
                                 style = MaterialTheme.typography.h6,
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis
                             )
                             Text(
-                                text = story.author ?: "Unknown author",
+                                text = story.author.value ?: "Unknown author",
                                 style = MaterialTheme.typography.subtitle1,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
@@ -108,8 +108,8 @@ fun StoryCard(
                     modifier = Modifier.weight(1F),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    if (story.description != null) {
-                        Text(story.description)
+                    if (story.description.isPresent) {
+                        Text(story.description.toString())
                     }
                 }
             }

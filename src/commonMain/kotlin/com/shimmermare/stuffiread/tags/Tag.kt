@@ -78,8 +78,7 @@ value class TagDescription private constructor(val value: String?) : Comparable<
 
     init {
         if (value != null) {
-            require(value.isNotBlank()) { "Name can't be blank" }
-            require(value.length <= MAX_LENGTH) { "Name length exceeded $MAX_LENGTH (${value.length})" }
+            require(value.length <= MAX_LENGTH) { "Description length exceeded $MAX_LENGTH (${value.length})" }
         }
     }
 

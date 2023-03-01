@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.shimmermare.stuffiread.ui.components.input.EnumOutlinedField
+import com.shimmermare.stuffiread.ui.components.input.OutlinedEnumField
 import kotlin.reflect.KClass
 
 /**
@@ -33,7 +33,7 @@ fun <FormData, E : Enum<E>> EnumFormField(
         getter = getter,
         setter = setter,
     ) { value, _, onValueChange ->
-        EnumOutlinedField(
+        OutlinedEnumField(
             value = value,
             enumType = enumType,
             allowedValues = allowedValues,
