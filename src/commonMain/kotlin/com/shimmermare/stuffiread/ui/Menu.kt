@@ -21,7 +21,7 @@ fun Menu(
     ) {
         if (app.storyArchive != null) {
             DropdownMenuItem(onClick = onResetAppStateRequest) {
-                Text("Close database")
+                Text("Close archive")
             }
         }
         DropdownMenuItem(onClick = onOpenSettingsRequest) {

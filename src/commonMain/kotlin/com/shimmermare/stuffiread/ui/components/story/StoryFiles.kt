@@ -1,5 +1,7 @@
 package com.shimmermare.stuffiread.ui.components.story
 
+import androidx.compose.foundation.ContextMenuArea
+import androidx.compose.foundation.ContextMenuItem
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,6 +21,8 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -36,6 +40,7 @@ import com.shimmermare.stuffiread.ui.util.toHumanReadableBytes
 import com.shimmermare.stuffiread.util.dropAt
 import com.shimmermare.stuffiread.util.replaceAt
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import kotlin.io.path.extension
 import kotlin.io.path.name
 import kotlin.io.path.readBytes
@@ -82,8 +87,16 @@ fun StoryFiles(files: List<StoryFile>, onValueChange: (List<StoryFile>) -> Unit)
             itemsIndexed(files) { index, file ->
                 StoryFileCard(
                     meta = file.meta,
+                    index = index,
+                    filesTotal = files.size,
                     onDeleteRequest = {
                         onValueChange(files.dropAt(index))
+                    },
+                    onIndexChangeRequest = { newIndex ->
+                        val result = files.toMutableList()
+                        result.removeAt(index)
+                        result.add(newIndex, file)
+                        onValueChange(result)
                     }
                 )
             }
@@ -92,44 +105,97 @@ fun StoryFiles(files: List<StoryFile>, onValueChange: (List<StoryFile>) -> Unit)
 }
 
 @Composable
-private fun StoryFileCard(meta: StoryFileMeta, onDeleteRequest: () -> Unit) {
+private fun StoryFileCard(
+    meta: StoryFileMeta,
+    index: Int,
+    filesTotal: Int,
+    onDeleteRequest: () -> Unit,
+    onIndexChangeRequest: (Int) -> Unit
+) {
     Box(
         modifier = Modifier.padding(start = 5.dp, end = 10.dp, top = 5.dp, bottom = 10.dp)
     ) {
-        Surface(
-            modifier = Modifier.border(1.dp, Color.LightGray),
-            elevation = 6.dp
-        ) {
-            Row(
-                modifier = Modifier.padding(10.dp).fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top,
-            ) {
-                Column(
-                    modifier = Modifier.weight(1F),
-                    horizontalAlignment = Alignment.Start,
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
-                ) {
-                    Text(meta.originalName, style = MaterialTheme.typography.h6)
-                    Text("File: " + meta.fileName)
-                    if (meta.format != StoryFileFormat.OTHER) {
-                        Text("Format: ${meta.format.name} (${meta.format.extension})")
-                        Text("Word count: " + meta.wordCount)
-                    } else {
-                        Text("Unrecognized format", color = MaterialTheme.colors.error, fontWeight = FontWeight.Bold)
+        ContextMenuArea(
+            items = {
+                buildList {
+                    if (index > 0) {
+                        add(ContextMenuItem("Move up") { onIndexChangeRequest(index - 1) })
                     }
-                    Text("Size: " + meta.size.toHumanReadableBytes())
-                }
-                Column(
-                    horizontalAlignment = Alignment.Start,
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    IconButton(onClick = onDeleteRequest) {
-                        Icon(Icons.Filled.Clear, null)
+                    if (index < filesTotal - 1) {
+                        add(ContextMenuItem("Move down") { onIndexChangeRequest(index + 1) })
+                    }
+                    if (index > 0) {
+                        add(ContextMenuItem("Move to top") { onIndexChangeRequest(0) })
+                    }
+                    if (index < filesTotal - 1) {
+                        add(ContextMenuItem("Move to bottom") { onIndexChangeRequest(filesTotal - 1) })
                     }
                 }
             }
+        ) {
+            Surface(
+                modifier = Modifier.border(1.dp, Color.LightGray),
+                elevation = 6.dp
+            ) {
+                StoryFileCardContent(
+                    meta = meta,
+                    index = index,
+                    lastFile = index == filesTotal - 1,
+                    onDeleteRequest = onDeleteRequest,
+                    onIndexChangeRequest = onIndexChangeRequest
+                )
+            }
+        }
+    }
+}
 
+@Composable
+private fun StoryFileCardContent(
+    meta: StoryFileMeta,
+    index: Int,
+    lastFile: Boolean,
+    onDeleteRequest: () -> Unit,
+    onIndexChangeRequest: (Int) -> Unit
+) {
+    Row(
+        modifier = Modifier.padding(10.dp).fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.Top,
+    ) {
+        Column(
+            modifier = Modifier.weight(1F),
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            Text(meta.originalName, style = MaterialTheme.typography.h6)
+            Text("File: " + meta.fileName)
+            if (meta.format != StoryFileFormat.OTHER) {
+                Text("Format: ${meta.format.name} (${meta.format.extension})")
+                Text("Word count: " + meta.wordCount)
+            } else {
+                Text("Unrecognized format", color = MaterialTheme.colors.error, fontWeight = FontWeight.Bold)
+            }
+            Text("Size: " + meta.size.toHumanReadableBytes())
+        }
+        Column(
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            IconButton(onClick = onDeleteRequest) {
+                Icon(Icons.Filled.Clear, null)
+            }
+            IconButton(
+                onClick = { onIndexChangeRequest(index - 1) },
+                enabled = index > 0
+            ) {
+                Icon(Icons.Filled.ArrowUpward, null)
+            }
+            IconButton(
+                onClick = { onIndexChangeRequest(index + 1) },
+                enabled = !lastFile
+            ) {
+                Icon(Icons.Filled.ArrowDownward, null)
+            }
         }
     }
 }
@@ -149,6 +215,7 @@ private fun openAndLoadStoryFile(): StoryFile? {
             fileName = filePath.name,
             format = format,
             originalName = filePath.name,
+            added = Clock.System.now(),
             wordCount = countWords(content),
             size = content.size.toUInt()
         ),

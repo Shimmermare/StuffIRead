@@ -1,6 +1,7 @@
 package com.shimmermare.stuffiread.ui.util
 
 import java.nio.file.Path
+import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
 
 /**
@@ -44,5 +45,13 @@ abstract class FileFilter(
 class DirectoriesOnlyFileFilter(description: String? = null) : FileFilter(description) {
     override fun filter(path: Path): Boolean {
         return path.isDirectory()
+    }
+}
+
+class ExtensionFileFilter(description: String? = null, vararg extensions: String) : FileFilter(description) {
+    private val extensions = extensions.toSet()
+
+    override fun filter(path: Path): Boolean {
+        return path.isDirectory() || extensions.contains(path.extension.lowercase())
     }
 }

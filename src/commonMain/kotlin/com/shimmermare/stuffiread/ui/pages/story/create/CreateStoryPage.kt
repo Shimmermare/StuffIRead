@@ -59,9 +59,12 @@ class CreateStoryPage : Page {
                             prefillData = formData!!,
                             onSubmit = {
                                 coroutineScope.launch {
-                                    val created = app.storyArchive!!.storyService.createStory(it.story)
-                                    app.storyArchive!!.storyFilesService.updateStoryFiles(created.id, it.files)
-                                    app.router.goTo(StoryInfoPage(created.id))
+                                    app.storyArchive!!.apply {
+                                        val created = storyService.createStory(it.story)
+                                        storyCoverService.updateStoryCover(created.id, it.cover)
+                                        storyFilesService.updateStoryFiles(created.id, it.files)
+                                        app.router.goTo(StoryInfoPage(created.id))
+                                    }
                                 }
                             },
                             onBack = { formData = null },
@@ -95,7 +98,16 @@ class CreateStoryPage : Page {
             }
             StoryImportForm(
                 onOpenStateChange = { importFormOpen = it },
-                { onSelected(StoryFormData(it.story, it.files)) })
+                onImported = {
+                    onSelected(
+                        StoryFormData(
+                            story = it.story,
+                            cover = it.cover,
+                            files = it.files
+                        )
+                    )
+                }
+            )
         }
     }
 }

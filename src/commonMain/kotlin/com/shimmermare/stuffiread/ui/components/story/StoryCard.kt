@@ -1,5 +1,6 @@
 package com.shimmermare.stuffiread.ui.components.story
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -8,10 +9,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -19,13 +20,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.res.loadImageBitmap
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.stories.Story
-import com.shimmermare.stuffiread.tags.Tag
-import com.shimmermare.stuffiread.tags.TagCategory
+import com.shimmermare.stuffiread.stories.StoryId
+import com.shimmermare.stuffiread.stories.cover.StoryCoverService
 import com.shimmermare.stuffiread.ui.AppState
 import com.shimmermare.stuffiread.ui.pages.story.info.StoryInfoPage
+import com.shimmermare.stuffiread.ui.util.OptionalLoadingContainer
+import io.github.aakira.napier.Napier
 
 @Composable
 fun StoryCard(
@@ -68,11 +73,9 @@ fun StoryCard(
                                 overflow = TextOverflow.Ellipsis
                             )
                         }
-                        Box(
-                            modifier = Modifier
-                                .background(Color.Black, RoundedCornerShape(2))
-                                .width(100.dp)
-                                .height(120.dp)
+                        Cover(
+                            storyCoverService = app.storyArchive!!.storyCoverService,
+                            storyId = story.id
                         )
                     }
                     Column(
@@ -117,14 +120,40 @@ fun StoryCard(
     }
 }
 
-data class StoryCardData(
-    val story: Story,
-    val previewImage: Nothing,
-    val previewTags: List<PreviewTag>,
-)
-
-data class PreviewTag(
-    val tag: Tag,
-    val category: TagCategory,
-    val explicit: Boolean
-)
+@Composable
+private fun Cover(
+    storyCoverService: StoryCoverService,
+    storyId: StoryId
+) {
+    Box(
+        modifier = Modifier.height(150.dp).widthIn(min = 100.dp, max = 250.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        OptionalLoadingContainer(
+            key = storyId,
+            loader = {
+                storyCoverService.getStoryCover(storyId)?.let {
+                    BitmapPainter(loadImageBitmap(it.data.inputStream()))
+                }
+            },
+            onError = {
+                Box(
+                    modifier = Modifier.fillMaxSize()
+                        .background(Color.LightGray),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("Failed to load cover", color = MaterialTheme.colors.error)
+                }
+                Napier.e(it) { "Failed to load cover for $storyId" }
+            }
+        ) { cover ->
+            if (cover != null) {
+                Image(
+                    painter = cover,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxHeight()
+                )
+            }
+        }
+    }
+}

@@ -78,7 +78,8 @@ object PastebinImporter : StoryImporter<PastebinImportSettings> {
                     // Newest date for changed
                     changed = pastes.maxOf { it.addedDate },
                 ),
-                files = files
+                cover = null,
+                files = files,
             )
         }
     }

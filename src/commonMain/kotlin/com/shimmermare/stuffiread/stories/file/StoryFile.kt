@@ -1,5 +1,7 @@
 package com.shimmermare.stuffiread.stories.file
 
+import kotlinx.datetime.Clock
+
 /**
  * File with story content.
  * Usually there is single file per story, but user may choose to save file in multiple formats
@@ -53,6 +55,7 @@ data class StoryFile(
                 fileName = createFileName(name, StoryFileFormat.TXT),
                 format = StoryFileFormat.TXT,
                 originalName = name,
+                added = Clock.System.now(),
                 wordCount = countWords(text),
                 size = bytes.size.toUInt()
             )

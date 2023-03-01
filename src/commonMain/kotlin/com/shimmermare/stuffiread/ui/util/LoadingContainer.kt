@@ -1,7 +1,6 @@
 package com.shimmermare.stuffiread.ui.util
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -12,23 +11,52 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.withTimeout
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 /**
+ * Same as [OptionalLoadingContainer] but [loader] is not allowed to return null.
+ */
+@Composable
+inline fun <K, V> LoadingContainer(
+    key: K,
+    timeout: Duration = 5.seconds,
+    crossinline loader: suspend CoroutineScope.(K) -> V,
+    crossinline onError: @Composable (Exception) -> Unit = {
+        Text(
+            text = "Loading failed. Key: $key",
+            color = MaterialTheme.colors.error
+        )
+    },
+    crossinline content: @Composable (V) -> Unit
+) {
+    OptionalLoadingContainer<K, V>(
+        key = key,
+        timeout = timeout,
+        loader = { loader(it) ?: throw IllegalStateException("Loaded value is null") },
+        onError = onError,
+        content = { content(it!!) }
+    )
+}
+
+/**
  * Async load a value and then use it to display [content].
  * Will show loading indicator while in loading and error if loading failed.
  */
 @Composable
-fun <K, V> LoadingContainer(
+inline fun <K, V> OptionalLoadingContainer(
     key: K,
     timeout: Duration = 5.seconds,
-    loader: suspend CoroutineScope.(K) -> V,
-    onError: @Composable (Exception?) -> Unit = { Text("Loading failed. Key: $key", style = MaterialTheme.typography.h5) },
-    content: @Composable (V) -> Unit
+    crossinline loader: suspend CoroutineScope.(K) -> V?,
+    crossinline onError: @Composable (Exception) -> Unit = {
+        Text(
+            text = "Loading failed. Key: $key",
+            color = MaterialTheme.colors.error
+        )
+    },
+    crossinline content: @Composable (V?) -> Unit
 ) {
     var loading: Boolean by remember(key) { mutableStateOf(true) }
     var error: Exception? by remember(key) { mutableStateOf(null) }
@@ -41,20 +69,21 @@ fun <K, V> LoadingContainer(
             }
         } catch (e: Exception) {
             error = e
+            value = null
         }
 
         loading = false
     }
 
     if (loading) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Box(contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
         }
     } else {
-        if (value == null) {
-            onError(error)
+        if (error != null) {
+            onError(error!!)
         } else {
-            content(value!!)
+            content(value)
         }
     }
 }

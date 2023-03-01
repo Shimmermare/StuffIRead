@@ -3,6 +3,8 @@ package com.shimmermare.stuffiread.stories.file
 import com.shimmermare.stuffiread.stories.StoryId
 
 /**
+ * File order is preserved.
+ *
  * Story files with be deleted when story is deleted, no need to delete them separately.
  */
 interface StoryFilesService {

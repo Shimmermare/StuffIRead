@@ -40,9 +40,11 @@ class EditStoryPage(
     override suspend fun load(app: AppState): StoryFormData {
         return withContext(coroutineContext) {
             val story = async { app.storyArchive!!.storyService.getStoryByIdOrThrow(storyId) }
+            val cover = async { app.storyArchive!!.storyCoverService.getStoryCover(storyId) }
             val files = async { app.storyArchive!!.storyFilesService.getStoryFiles(storyId) }
             StoryFormData(
                 story = story.await(),
+                cover = cover.await(),
                 files = files.await()
             )
         }
@@ -62,9 +64,12 @@ class EditStoryPage(
                 prefillData = content!!,
                 onSubmit = {
                     coroutineScope.launch {
-                        val updated = app.storyArchive!!.storyService.updateStory(it.story)
-                        app.storyArchive!!.storyFilesService.updateStoryFiles(updated.id, it.files)
-                        app.router.goTo(StoryInfoPage(updated.id))
+                        app.storyArchive!!.apply {
+                            val updated = storyService.updateStory(it.story)
+                            storyCoverService.updateStoryCover(updated.id, it.cover)
+                            storyFilesService.updateStoryFiles(updated.id, it.files)
+                            app.router.goTo(StoryInfoPage(updated.id))
+                        }
                     }
                 },
                 onBack = { app.router.goTo(StoryInfoPage(storyId)) },

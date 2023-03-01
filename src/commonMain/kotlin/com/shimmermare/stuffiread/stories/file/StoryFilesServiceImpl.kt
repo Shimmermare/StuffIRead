@@ -6,12 +6,13 @@ import com.shimmermare.stuffiread.util.AppJson
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import java.nio.file.Path
-import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteIfExists
@@ -25,7 +26,7 @@ import kotlin.io.path.readBytes
 import kotlin.io.path.useDirectoryEntries
 import kotlin.io.path.writeBytes
 
-@OptIn(ExperimentalPathApi::class, ExperimentalSerializationApi::class)
+@OptIn(ExperimentalSerializationApi::class)
 class StoryFilesServiceImpl(
     archiveDirectory: Path,
 ) : StoryFilesService {
@@ -37,14 +38,18 @@ class StoryFilesServiceImpl(
             if (filesDir.notExists()) return@withContext emptyList()
 
             filesDir.useDirectoryEntries { entries ->
-                entries.filter { it.extension != "json" }.map { contentFile ->
-                    try {
-                        readFileMeta(storyId, contentFile.name)
-                    } catch (e: Exception) {
-                        Napier.e(e) { "Failed to read story file meta storyId=$storyId fileName='${contentFile.name}'" }
-                        throw e
+                entries.filter { it.extension != "json" }
+                    .map { contentFile ->
+                        try {
+                            readFileMeta(storyId, contentFile.name)
+                        } catch (e: Exception) {
+                            Napier.e(e) { "Failed to read story file meta storyId=$storyId fileName='${contentFile.name}'" }
+                            throw e
+                        }
                     }
-                }.toList()
+                    .sortedBy { it.order }
+                    .map { it.value }
+                    .toList()
             }
         }
     }
@@ -55,14 +60,18 @@ class StoryFilesServiceImpl(
             if (filesDir.notExists()) return@withContext emptyList()
 
             filesDir.useDirectoryEntries { entries ->
-                entries.filter { it.extension != "json" }.map { contentFile ->
-                    try {
-                        readFile(storyId, contentFile.name)
-                    } catch (e: Exception) {
-                        Napier.e(e) { "Failed to read story file storyId=$storyId fileName='${contentFile.name}'" }
-                        throw e
+                entries.filter { it.extension != "json" }
+                    .map { contentFile ->
+                        try {
+                            readFile(storyId, contentFile.name)
+                        } catch (e: Exception) {
+                            Napier.e(e) { "Failed to read story file storyId=$storyId fileName='${contentFile.name}'" }
+                            throw e
+                        }
                     }
-                }.toList()
+                    .sortedBy { it.order }
+                    .map { it.value }
+                    .toList()
             }
         }
     }
@@ -85,9 +94,9 @@ class StoryFilesServiceImpl(
                 }
             }
 
-            files.forEach { file ->
+            files.forEachIndexed { index, file ->
                 try {
-                    writeFile(storyId, file)
+                    writeFile(storyId, file, index.toUInt())
                 } catch (e: Exception) {
                     Napier.e(e) { "Failed to write story file storyId=$storyId fileName='${file.meta.fileName}'" }
                     throw e
@@ -96,16 +105,22 @@ class StoryFilesServiceImpl(
         }
     }
 
-    private fun readFile(storyId: StoryId, fileName: String): StoryFile {
+    private fun readFile(storyId: StoryId, fileName: String): WithOrder<StoryFile> {
         val filesDir = getFilesDir(storyId)
         val contentFile = filesDir.resolve(fileName)
         val metaFile = filesDir.resolve("$fileName.json")
 
         val meta = readFileMeta(contentFile, metaFile)
-        return StoryFile(meta = meta, content = contentFile.readBytes())
+        return WithOrder(
+            value = StoryFile(
+                meta = meta.value,
+                content = contentFile.readBytes()
+            ),
+            order = meta.order
+        )
     }
 
-    private fun readFileMeta(storyId: StoryId, fileName: String): StoryFileMeta {
+    private fun readFileMeta(storyId: StoryId, fileName: String): WithOrder<StoryFileMeta> {
         val filesDir = getFilesDir(storyId)
         return readFileMeta(
             contentFile = filesDir.resolve(fileName),
@@ -113,20 +128,24 @@ class StoryFilesServiceImpl(
         )
     }
 
-    private fun readFileMeta(contentFile: Path, metaFile: Path): StoryFileMeta {
+    private fun readFileMeta(contentFile: Path, metaFile: Path): WithOrder<StoryFileMeta> {
         val storedMeta = metaFile.inputStream().use { AppJson.decodeFromStream<StoredStoryFileMeta>(it) }
         val fileSize = contentFile.fileSize()
 
-        return StoryFileMeta(
-            fileName = contentFile.name,
-            format = storedMeta.format,
-            originalName = storedMeta.originalName,
-            wordCount = storedMeta.wordCount,
-            size = fileSize.toUInt()
+        return WithOrder(
+            value = StoryFileMeta(
+                fileName = contentFile.name,
+                format = storedMeta.format,
+                originalName = storedMeta.originalName,
+                added = storedMeta.added,
+                wordCount = storedMeta.wordCount,
+                size = fileSize.toUInt()
+            ),
+            order = storedMeta.order
         )
     }
 
-    private fun writeFile(storyId: StoryId, file: StoryFile) {
+    private fun writeFile(storyId: StoryId, file: StoryFile, order: UInt) {
         val filesDir = getFilesDir(storyId)
         val metaFile = filesDir.resolve("${file.meta.fileName}.json")
         val contentFile = filesDir.resolve(file.meta.fileName)
@@ -136,7 +155,9 @@ class StoryFilesServiceImpl(
                 value = StoredStoryFileMeta(
                     format = file.meta.format,
                     originalName = file.meta.originalName,
-                    wordCount = file.meta.wordCount
+                    wordCount = file.meta.wordCount,
+                    added = file.meta.added,
+                    order = order,
                 ),
                 stream = it
             )
@@ -160,6 +181,13 @@ class StoryFilesServiceImpl(
     private data class StoredStoryFileMeta(
         val format: StoryFileFormat,
         val originalName: String,
-        val wordCount: UInt,
+        val added: Instant = Clock.System.now(),
+        val wordCount: UInt = 0u,
+        val order: UInt = 0u,
+    )
+
+    private data class WithOrder<T>(
+        val value: T,
+        val order: UInt
     )
 }
