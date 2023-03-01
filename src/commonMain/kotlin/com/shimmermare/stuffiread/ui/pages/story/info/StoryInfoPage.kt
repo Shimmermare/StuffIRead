@@ -7,6 +7,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import com.shimmermare.stuffiread.stories.Story
 import com.shimmermare.stuffiread.stories.StoryId
 import com.shimmermare.stuffiread.ui.AppState
+import com.shimmermare.stuffiread.ui.components.story.StoryInfo
 import com.shimmermare.stuffiread.ui.pages.LoadedPage
 import com.shimmermare.stuffiread.ui.pages.error.ErrorPage
 import io.github.aakira.napier.Napier

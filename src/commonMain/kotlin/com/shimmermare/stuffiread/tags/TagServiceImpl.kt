@@ -61,6 +61,15 @@ class TagServiceImpl(
         return tree.getTag(tagId)
     }
 
+    override fun getAllTagIdsByExplicitTagIds(tagIds: Iterable<TagId>): Set<TagId> {
+        val result = mutableSetOf<TagId>()
+        tagIds.forEach { tagId ->
+            val extendedTag = tree.getExtendedTag(tagId)
+            extendedTag?.impliedTags?.forEach { result.add(it.tag.id) }
+        }
+        return result
+    }
+
     override fun getExtendedTagById(tagId: TagId): ExtendedTag? {
         return tree.getExtendedTag(tagId)
     }

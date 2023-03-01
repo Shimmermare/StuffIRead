@@ -1,4 +1,4 @@
-package com.shimmermare.stuffiread.ui.pages.story.create.importing
+package com.shimmermare.stuffiread.ui.components.story.importing
 
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable

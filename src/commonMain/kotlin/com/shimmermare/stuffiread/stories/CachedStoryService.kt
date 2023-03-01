@@ -1,6 +1,11 @@
 package com.shimmermare.stuffiread.stories
 
 import io.github.reactivecircus.cache4k.Cache
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.onEach
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
@@ -24,8 +29,8 @@ class CachedStoryService(
     /**
      * Return stories present in cache and retrieve missing ones from source.
      */
-    override suspend fun getStoriesByIds(storyIds: Collection<StoryId>, ignoreInvalid: Boolean): List<Story> {
-        if (storyIds.isEmpty()) return emptyList()
+    override suspend fun getStoriesByIds(storyIds: Collection<StoryId>, ignoreInvalid: Boolean): Flow<Story> {
+        if (storyIds.isEmpty()) return emptyFlow()
 
         val storyIdsSet = if (storyIds is Set<StoryId>) storyIds else storyIds.toSet()
 
@@ -33,15 +38,13 @@ class CachedStoryService(
         val fromCacheIds = fromCache.mapTo(mutableSetOf()) { it.id }
 
         val fromSource = source.getStoriesByIds((storyIdsSet - fromCacheIds), ignoreInvalid)
-        fromCache.forEach { cache.put(it.id, it) }
+            .onEach { cache.put(it.id, it) }
 
-        return fromCache + fromSource
+        return merge(fromCache.asFlow(), fromSource)
     }
 
-    override suspend fun getAllStories(ignoreInvalid: Boolean): List<Story> {
-        return source.getAllStories(ignoreInvalid).onEach {
-            cache.put(it.id, it)
-        }
+    override suspend fun getAllStories(ignoreInvalid: Boolean): Flow<Story> {
+        return source.getAllStories(ignoreInvalid).onEach { cache.put(it.id, it) }
     }
 
     override suspend fun createStory(story: Story): Story {

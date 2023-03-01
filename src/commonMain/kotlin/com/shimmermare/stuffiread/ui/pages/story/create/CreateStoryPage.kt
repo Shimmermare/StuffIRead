@@ -25,7 +25,7 @@ import com.shimmermare.stuffiread.ui.AppState
 import com.shimmermare.stuffiread.ui.components.animation.AnimatedFadeIn
 import com.shimmermare.stuffiread.ui.components.story.StoryForm
 import com.shimmermare.stuffiread.ui.components.story.StoryFormData
-import com.shimmermare.stuffiread.ui.pages.story.create.importing.StoryImportForm
+import com.shimmermare.stuffiread.ui.components.story.importing.StoryImportForm
 import com.shimmermare.stuffiread.ui.pages.story.info.StoryInfoPage
 import com.shimmermare.stuffiread.ui.routing.Page
 import kotlinx.coroutines.launch

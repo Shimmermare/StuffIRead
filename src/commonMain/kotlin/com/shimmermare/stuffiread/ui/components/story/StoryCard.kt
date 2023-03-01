@@ -36,84 +36,96 @@ import io.github.aakira.napier.Napier
 fun StoryCard(
     app: AppState,
     story: Story,
+    visible: Boolean
 ) {
     Box(
         modifier = Modifier
             .padding(start = 5.dp, end = 10.dp, top = 5.dp, bottom = 10.dp)
+            .let { if (visible) it else it.background(Color.LightGray) }
             .height(300.dp)
     ) {
-        Surface(
+        if (visible) {
+            VisibleStoryCard(app, story)
+        }
+    }
+}
+
+@Composable
+private fun VisibleStoryCard(
+    app: AppState,
+    story: Story,
+) {
+    Surface(
+        modifier = Modifier
+            .border(1.dp, Color.LightGray)
+            .clickable { app.router.goTo(StoryInfoPage(storyId = story.id)) },
+        elevation = 6.dp
+    ) {
+        Row(
             modifier = Modifier
-                .border(1.dp, Color.LightGray)
-                .clickable { app.router.goTo(StoryInfoPage(storyId = story.id)) },
-            elevation = 6.dp
+                .fillMaxHeight()
+                .padding(10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .padding(10.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Box(modifier = Modifier.fillMaxHeight().weight(1F).padding(end = 10.dp)) {
-                    Column(
-                        modifier = Modifier.align(Alignment.TopStart),
-                        verticalArrangement = Arrangement.spacedBy(10.dp),
-                    ) {
-                        Column {
-                            Text(
-                                text = story.name.value,
-                                style = MaterialTheme.typography.h6,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            Text(
-                                text = story.author.value ?: "Unknown author",
-                                style = MaterialTheme.typography.subtitle1,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                        Cover(
-                            storyCoverService = app.storyArchive!!.storyCoverService,
-                            storyId = story.id
+            Box(modifier = Modifier.fillMaxHeight().weight(1F).padding(end = 10.dp)) {
+                Column(
+                    modifier = Modifier.align(Alignment.TopStart),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Column {
+                        Text(
+                            text = story.name.value,
+                            style = MaterialTheme.typography.h6,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = story.author.value ?: "Unknown author",
+                            style = MaterialTheme.typography.subtitle1,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
-                    Column(
-                        modifier = Modifier.align(Alignment.BottomStart),
-                    ) {
-                        if (story.published != null) {
+                    Cover(
+                        storyCoverService = app.storyArchive!!.storyCoverService,
+                        storyId = story.id
+                    )
+                }
+                Column(
+                    modifier = Modifier.align(Alignment.BottomStart),
+                ) {
+                    if (story.published != null) {
+                        Text(
+                            text = "Published: " + story.published,
+                            style = MaterialTheme.typography.subtitle1,
+                            maxLines = 1
+                        )
+                    }
+                    if (story.changed != null) {
+                        Text(
+                            text = "Last changed: " + story.changed,
+                            style = MaterialTheme.typography.subtitle1,
+                            maxLines = 1
+                        )
+                    }
+                    if (story.score != null) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = "Published: " + story.published,
+                                text = "Score: ",
                                 style = MaterialTheme.typography.subtitle1,
                                 maxLines = 1
                             )
-                        }
-                        if (story.changed != null) {
-                            Text(
-                                text = "Last changed: " + story.changed,
-                                style = MaterialTheme.typography.subtitle1,
-                                maxLines = 1
-                            )
-                        }
-                        if (story.score != null) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = "Score: ",
-                                    style = MaterialTheme.typography.subtitle1,
-                                    maxLines = 1
-                                )
-                                StoryScore(app, story.score)
-                            }
+                            StoryScore(app, story.score)
                         }
                     }
                 }
-                Column(
-                    modifier = Modifier.weight(1F),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                ) {
-                    if (story.description.isPresent) {
-                        Text(story.description.toString())
-                    }
+            }
+            Column(
+                modifier = Modifier.weight(1F),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                if (story.description.isPresent) {
+                    Text(story.description.toString())
                 }
             }
         }

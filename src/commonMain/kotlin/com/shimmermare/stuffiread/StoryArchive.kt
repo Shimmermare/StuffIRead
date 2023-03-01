@@ -25,8 +25,10 @@ class StoryArchive(
     val storyService: StoryService
     val storyCoverService: StoryCoverService
     val storyFilesService: StoryFilesService
-    val storySearchService: StorySearchService
+
     val tagService: TagService
+
+    val storySearchService: StorySearchService
 
     init {
         Napier.i { "Opening $directory as story archive" }
@@ -43,8 +45,10 @@ class StoryArchive(
         storyService = CachedStoryService(FileBasedStoryService(directory))
         storyCoverService = StoryCoverServiceImpl(directory)
         storyFilesService = StoryFilesServiceImpl(directory)
-        storySearchService = StorySearchServiceImpl(storyService)
+
         tagService = TagServiceImpl(FileBasedTagTreeService(directory))
+
+        storySearchService = StorySearchServiceImpl(storyService, tagService)
     }
 
     private fun usePreset(presetName: String) {

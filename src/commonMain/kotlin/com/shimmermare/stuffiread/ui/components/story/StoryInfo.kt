@@ -1,4 +1,4 @@
-package com.shimmermare.stuffiread.ui.pages.story.info
+package com.shimmermare.stuffiread.ui.components.story
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box

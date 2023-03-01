@@ -71,18 +71,24 @@ fun StoryForm(
     val scrollState = rememberScrollState()
     Box {
         Column(
-            modifier = Modifier.verticalScroll(scrollState).width(1000.dp).padding(end = 12.dp)
+            modifier = Modifier.verticalScroll(scrollState).padding(end = 12.dp)
         ) {
-            FormContainer(
-                app = app,
-                prefillData = prefillData,
-                onSubmit = onSubmit,
-                onBack = onBack,
-                submitButtonText = submitButtonText,
-                canSubmitWithoutChanges = canSubmitWithoutChanges,
-            )
+            Row {
+                Box(
+                    modifier = Modifier.width(1000.dp)
+                ) {
+                    FormContainer(
+                        app = app,
+                        prefillData = prefillData,
+                        onSubmit = onSubmit,
+                        onBack = onBack,
+                        submitButtonText = submitButtonText,
+                        canSubmitWithoutChanges = canSubmitWithoutChanges,
+                    )
+                }
+                Spacer(modifier = Modifier.fillMaxWidth())
+            }
         }
-        Spacer(modifier = Modifier.fillMaxWidth())
         VerticalScrollbar(
             modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
             adapter = rememberScrollbarAdapter(scrollState)

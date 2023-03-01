@@ -25,6 +25,8 @@ interface TagService {
 
     fun getTagById(tagId: TagId): Tag?
 
+    fun getAllTagIdsByExplicitTagIds(tagIds: Iterable<TagId>): Set<TagId>
+
     fun getExtendedTagById(tagId: TagId): ExtendedTag?
 
     fun getExtendedTagByIdOrThrow(tagId: TagId) = getExtendedTagById(tagId) ?: error("Tag $tagId not found")

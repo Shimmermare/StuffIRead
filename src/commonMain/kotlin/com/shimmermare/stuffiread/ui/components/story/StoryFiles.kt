@@ -3,6 +3,8 @@ package com.shimmermare.stuffiread.ui.components.story
 import androidx.compose.foundation.ContextMenuArea
 import androidx.compose.foundation.ContextMenuItem
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,13 +12,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Button
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
+import androidx.compose.material.LocalContentAlpha
+import androidx.compose.material.LocalContentColor
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -24,11 +28,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.stories.file.StoryFile
@@ -75,14 +82,14 @@ fun StoryFiles(files: List<StoryFile>, onValueChange: (List<StoryFile>) -> Unit)
                 Text("Add from file")
             }
         }
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(1),
+        LazyColumn(
             modifier = Modifier
-                .heightIn(max = 2000.dp)
+                .heightIn(max = 10000.dp)
                 .width(800.dp)
                 .padding(start = 2.dp, end = 10.dp, top = 20.dp, bottom = 20.dp),
+            horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.spacedBy(20.dp),
-            horizontalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterHorizontally),
+            userScrollEnabled = false,
         ) {
             itemsIndexed(files) { index, file ->
                 StoryFileCard(
@@ -181,23 +188,35 @@ private fun StoryFileCardContent(
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            IconButton(onClick = onDeleteRequest) {
-                Icon(Icons.Filled.Clear, null)
-            }
-            IconButton(
-                onClick = { onIndexChangeRequest(index - 1) },
-                enabled = index > 0
-            ) {
-                Icon(Icons.Filled.ArrowUpward, null)
-            }
-            IconButton(
-                onClick = { onIndexChangeRequest(index + 1) },
-                enabled = !lastFile
-            ) {
-                Icon(Icons.Filled.ArrowDownward, null)
-            }
+            StoryFileCardActionButton(Icons.Filled.Clear, onClick = onDeleteRequest)
+            StoryFileCardActionButton(Icons.Filled.ArrowUpward, index > 0) { onIndexChangeRequest(index - 1) }
+            StoryFileCardActionButton(Icons.Filled.ArrowDownward, !lastFile) { onIndexChangeRequest(index + 1) }
         }
     }
+}
+
+@Composable
+private fun StoryFileCardActionButton(imageVector: ImageVector, enabled: Boolean = true, onClick: () -> Unit) {
+    Icon(
+        imageVector = imageVector,
+        contentDescription = null,
+        modifier = Modifier
+            .size(24.dp)
+            .let {
+                if (enabled) {
+                    it.clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = rememberRipple(bounded = false, radius = 16.dp),
+                        onClick = onClick,
+                    )
+                } else {
+                    it
+                }
+            },
+        tint = LocalContentColor.current.copy(
+            alpha = if (enabled) LocalContentAlpha.current else ContentAlpha.disabled
+        )
+    )
 }
 
 private fun openAndLoadStoryFile(): StoryFile? {
