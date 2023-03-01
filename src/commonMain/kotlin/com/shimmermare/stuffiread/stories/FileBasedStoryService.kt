@@ -69,7 +69,7 @@ class FileBasedStoryService(
     }
 
     override suspend fun createStory(story: Story): Story {
-        require(story.id != 0u) {
+        require(story.id == 0u) {
             "Story can't be created with predefined ID (${story.id})"
         }
         return withContext(Dispatchers.IO) {

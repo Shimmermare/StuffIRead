@@ -13,43 +13,42 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Instant
+import kotlin.time.Duration.Companion.milliseconds
 
 
 object PastebinImporter : StoryImporter<PastebinImportSettings> {
+    // Pastebin ratelimits hard, slowdown everything
+    private val REQUEST_DELAY = 500.milliseconds
+
     override suspend fun import(settings: PastebinImportSettings): ImportedStory {
         return withContext(Dispatchers.IO) {
             val pastes = settings.pasteKeys
                 .map { key ->
-                    async {
-                        try {
-                            PastebinMetadataProvider.get(key)
-                        } catch (e: Exception) {
-                            throw RuntimeException("Failed to get paste metadata for $key", e)
-                        }
+                    try {
+                        if (settings.pasteKeys.size > 1) delay(REQUEST_DELAY)
+                        PastebinMetadataProvider.get(key)
+                    } catch (e: Exception) {
+                        throw RuntimeException("Failed to get paste metadata for $key", e)
                     }
                 }
-                .awaitAll()
                 .map { meta ->
-                    async {
-                        val content = try {
-                            getRawContent(meta.key)
-                        } catch (e: Exception) {
-                            throw RuntimeException("Failed to get paste content for ${meta.key}", e)
-                        }
-                        PastebinPaste(
-                            key = meta.key,
-                            author = meta.author,
-                            name = meta.name,
-                            addedDate = meta.addedDate,
-                            content = content
-                        )
+                    val content = try {
+                        if (settings.pasteKeys.size > 1) delay(REQUEST_DELAY)
+                        getRawContent(meta.key)
+                    } catch (e: Exception) {
+                        throw RuntimeException("Failed to get paste content for ${meta.key}", e)
                     }
+                    PastebinPaste(
+                        key = meta.key,
+                        author = meta.author,
+                        name = meta.name,
+                        addedDate = meta.addedDate,
+                        content = content
+                    )
                 }
-                .awaitAll()
 
             val files = pastes.map { StoryFile.fromText(it.name, it.content) }
 

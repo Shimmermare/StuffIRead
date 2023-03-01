@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -31,6 +32,7 @@ import kotlinx.coroutines.launch
 fun PastebinImportForm(onImported: (ImportedStory) -> Unit) {
     val coroutineScope = rememberCoroutineScope()
 
+    var inProcess: Boolean by remember { mutableStateOf(false) }
     var error: String? by remember { mutableStateOf(null) }
 
     Column(
@@ -42,25 +44,33 @@ fun PastebinImportForm(onImported: (ImportedStory) -> Unit) {
             Text(text = error, color = MaterialTheme.colors.error)
         }
 
-        SubmittableInputForm(
-            data = PastebinImportFormData(),
-            modifier = Modifier.width(600.dp),
-            submitButtonText = "Import",
-            canSubmitWithoutChanges = true,
-            onSubmit = { data ->
-                coroutineScope.launch {
-                    val importSettings = data.toImportSettings()
-                    try {
-                        val story = PastebinImporter.import(importSettings)
-                        onImported(story)
-                    } catch (e: Throwable) {
-                        Napier.e(e) { "Failed to import story from Pastebin with settings: $importSettings" }
-                        error = "Import failed: $e"
+        if (inProcess) {
+            Text("Importing...")
+            CircularProgressIndicator()
+        } else {
+            SubmittableInputForm(
+                data = PastebinImportFormData(),
+                modifier = Modifier.width(600.dp),
+                submitButtonText = "Import",
+                canSubmitWithoutChanges = true,
+                onSubmit = { data ->
+                    coroutineScope.launch {
+                        val importSettings = data.toImportSettings()
+                        inProcess = true
+                        try {
+                            val story = PastebinImporter.import(importSettings)
+                            inProcess = false
+                            onImported(story)
+                        } catch (e: Throwable) {
+                            Napier.e(e) { "Failed to import story from Pastebin with settings: $importSettings" }
+                            inProcess = false
+                            error = "Import failed: $e"
+                        }
                     }
                 }
+            ) { state ->
+                PasteUrlsFormField(state)
             }
-        ) { state ->
-            PasteUrlsFormField(state)
         }
     }
 }

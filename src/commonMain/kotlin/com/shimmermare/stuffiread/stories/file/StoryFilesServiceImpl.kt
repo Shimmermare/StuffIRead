@@ -13,11 +13,13 @@ import kotlinx.serialization.json.encodeToStream
 import java.nio.file.Path
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.Path
+import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.extension
 import kotlin.io.path.fileSize
 import kotlin.io.path.inputStream
 import kotlin.io.path.name
+import kotlin.io.path.notExists
 import kotlin.io.path.outputStream
 import kotlin.io.path.readBytes
 import kotlin.io.path.useDirectoryEntries
@@ -32,6 +34,8 @@ class StoryFilesServiceImpl(
     override suspend fun getStoryFilesMeta(storyId: StoryId): List<StoryFileMeta> {
         val filesDir = getFilesDir(storyId)
         return withContext(Dispatchers.IO) {
+            if (filesDir.notExists()) return@withContext emptyList()
+
             filesDir.useDirectoryEntries { entries ->
                 entries.filter { it.extension != "json" }.map { contentFile ->
                     try {
@@ -48,6 +52,8 @@ class StoryFilesServiceImpl(
     override suspend fun getStoryFiles(storyId: StoryId): List<StoryFile> {
         val filesDir = getFilesDir(storyId)
         return withContext(Dispatchers.IO) {
+            if (filesDir.notExists()) return@withContext emptyList()
+
             filesDir.useDirectoryEntries { entries ->
                 entries.filter { it.extension != "json" }.map { contentFile ->
                     try {
@@ -64,12 +70,17 @@ class StoryFilesServiceImpl(
     override suspend fun updateStoryFiles(storyId: StoryId, files: List<StoryFile>) {
         val filesDir = getFilesDir(storyId)
         withContext(Dispatchers.IO) {
+            Napier.i { "Updating story files storyId=$storyId files=${files.map { it.meta.fileName }}" }
+
+            if (filesDir.notExists()) filesDir.createDirectories()
+
             val filesToUpdate = files.map { it.meta.fileName }.toSet()
             filesDir.useDirectoryEntries { entries ->
                 entries.filter { it.extension != "json" }.forEach { contentFile ->
                     if (!filesToUpdate.contains(contentFile.name)) {
                         contentFile.deleteIfExists()
                         contentFile.resolveSibling("${contentFile.name}.json").deleteIfExists()
+                        Napier.i { "Deleted '$contentFile' and meta file" }
                     }
                 }
             }
