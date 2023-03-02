@@ -12,6 +12,7 @@ import java.awt.Dimension
 import java.nio.file.Path
 import javax.swing.UIManager
 
+
 fun main(args: Array<String>) {
     Napier.base(DebugAntilog())
 

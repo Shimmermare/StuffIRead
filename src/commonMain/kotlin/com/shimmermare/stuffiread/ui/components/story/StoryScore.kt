@@ -19,7 +19,7 @@ import kotlin.math.roundToInt
 
 @Composable
 fun StoryScore(app: AppState, score: Score) {
-    StoryScore(app.settingsService.getSettings().scoreDisplayType, score)
+    StoryScore(app.settings.scoreDisplayType, score)
 }
 
 @Composable

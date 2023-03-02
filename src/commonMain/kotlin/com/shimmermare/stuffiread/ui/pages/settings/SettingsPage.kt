@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -16,63 +15,26 @@ import com.shimmermare.stuffiread.settings.ThemeBehavior
 import com.shimmermare.stuffiread.ui.AppState
 import com.shimmermare.stuffiread.ui.components.form.EnumFormField
 import com.shimmermare.stuffiread.ui.components.form.SubmittableInputForm
-import com.shimmermare.stuffiread.ui.pages.LoadedPage
-import com.shimmermare.stuffiread.ui.pages.error.ErrorPage
-import io.github.aakira.napier.Napier
-import kotlinx.coroutines.launch
+import com.shimmermare.stuffiread.ui.routing.Page
 
-class SettingsPage : LoadedPage<AppSettings>() {
-    override suspend fun load(app: AppState): AppSettings {
-        return app.settingsService.getSettings()
-    }
-
+class SettingsPage : Page {
     @Composable
-    override fun LoadingError(app: AppState) {
-        val coroutineScope = rememberCoroutineScope()
-
-        Napier.e(error) { "Failed to load settings" }
-
-        app.router.goTo(
-            ErrorPage(
-                title = "Failed to load settings",
-                exception = error,
-                suggestion = "Reset to default settings? Backup will be created for existing settings.",
-                actions = listOf(
-                    ErrorPage.Action("Reset") {
-                        coroutineScope.launch {
-                            app.settingsService.resetSettings()
-                            app.router.goTo(SettingsPage())
-                        }
-                    }
-                )
-            )
-        )
-    }
-
-    @Composable
-    override fun LoadedContent(app: AppState) {
-        val coroutineScope = rememberCoroutineScope()
-
+    override fun Body(app: AppState) {
         Column(
             modifier = Modifier.padding(20.dp).sizeIn(maxWidth = 600.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             SubmittableInputForm(
-                data = content!!,
+                data = app.settings,
                 modifier = Modifier.padding(20.dp).sizeIn(maxWidth = 800.dp),
                 submitButtonText = "Save",
                 onSubmit = {
-                    coroutineScope.launch {
-                        app.settingsService.updateSettings(it)
-                        app.router.goTo(SettingsPage())
-                    }
+                    app.updateSettings(it)
                 },
                 actions = { state ->
                     Button(
                         onClick = {
-                            coroutineScope.launch {
-                                content = app.settingsService.resetSettings()
-                            }
+                            app.resetSettings()
                         },
                         enabled = state.data != AppSettings()
                     ) {
@@ -83,7 +45,7 @@ class SettingsPage : LoadedPage<AppSettings>() {
                 EnumFormField(
                     id = "theme",
                     state = state,
-                    name = "Theme (NOT IMPLEMENTED)",
+                    name = "Theme",
                     enumType = ThemeBehavior::class,
                     getter = { it.themeBehavior },
                     setter = { form, value -> form.copy(themeBehavior = value) },

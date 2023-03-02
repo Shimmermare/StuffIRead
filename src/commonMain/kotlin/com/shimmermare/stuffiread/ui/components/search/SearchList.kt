@@ -1,13 +1,10 @@
 package com.shimmermare.stuffiread.ui.components.search
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -16,9 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 /**
@@ -42,17 +37,11 @@ fun <T> SearchList(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(5.dp),
-            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth(0.33F)
         ) {
             SearchBar(
                 searchText = searchByNameText,
                 placeholderText = "Search by name",
-                modifier = Modifier
-                    .fillMaxWidth(0.33F)
-                    .height(36.dp)
-                    .background(color = Color.LightGray, shape = RoundedCornerShape(5.dp)),
                 onSearchTextChanged = { searchByNameText = it },
                 onClearClick = { searchByNameText = "" },
             )

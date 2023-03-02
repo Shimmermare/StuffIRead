@@ -26,7 +26,7 @@ import kotlin.math.roundToInt
 
 @Composable
 fun StoryScoreInput(app: AppState, value: Score, onValueChange: (Score) -> Unit) {
-    StoryScoreInput(app.settingsService.getSettings().scoreDisplayType, value, onValueChange)
+    StoryScoreInput(app.settings.scoreDisplayType, value, onValueChange)
 }
 
 @Composable

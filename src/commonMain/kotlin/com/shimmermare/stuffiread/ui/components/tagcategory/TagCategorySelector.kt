@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -87,20 +86,16 @@ private fun SelectorPopup(
         ) {
             Column(
                 modifier = Modifier
-                    .padding(5.dp)
+                    .padding(10.dp)
                     .width(600.dp)
                     .heightIn(max = 400.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Row(
-                    modifier = Modifier.height(42.dp),
-                ) {
-                    SearchBar(
-                        searchText = searchText,
-                        onClearClick = { searchText = "" },
-                        onSearchTextChanged = { searchText = it }
-                    )
-                }
+                SearchBar(
+                    searchText = searchText,
+                    onClearClick = { searchText = "" },
+                    onSearchTextChanged = { searchText = it }
+                )
                 ChipVerticalGrid(
                     modifier = Modifier.verticalScroll(rememberScrollState())
                 ) {

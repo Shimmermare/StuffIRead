@@ -159,7 +159,7 @@ private fun SelectorPopup(
         PopupContent {
             Column(
                 modifier = Modifier
-                    .padding(5.dp)
+                    .padding(10.dp)
                     .width(600.dp)
                     .heightIn(max = 600.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -173,15 +173,11 @@ private fun SelectorPopup(
                         )
                     }
                 }
-                Row(
-                    modifier = Modifier.height(42.dp).padding(horizontal = 10.dp),
-                ) {
-                    SearchBar(
-                        searchText = searchText,
-                        onClearClick = { searchText = "" },
-                        onSearchTextChanged = { searchText = it }
-                    )
-                }
+                SearchBar(
+                    searchText = searchText,
+                    onClearClick = { searchText = "" },
+                    onSearchTextChanged = { searchText = it }
+                )
                 Text(text = "Found ${filteredTags.size} tags:")
                 ChipVerticalGrid(modifier = Modifier.heightIn(max = 400.dp)) {
                     filteredTags.forEach {

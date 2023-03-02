@@ -29,9 +29,10 @@ fun SearchBar(
     searchText: String,
     placeholderText: String = "",
     modifier: Modifier = Modifier
-        .fillMaxSize()
+        .fillMaxWidth()
+        .height(42.dp)
         .padding(vertical = 2.dp)
-        .background(color = Color.LightGray, shape = RoundedCornerShape(5.dp)),
+        .background(color = MaterialTheme.colors.onBackground.copy(alpha = 0.1F), shape = RoundedCornerShape(5.dp)),
     onSearchTextChanged: (String) -> Unit = {},
     onClearClick: () -> Unit = {}
 ) {
