@@ -1,6 +1,5 @@
 package com.shimmermare.stuffiread.ui.components.story
 
-import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,11 +16,9 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
+import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -46,6 +43,7 @@ import com.shimmermare.stuffiread.ui.components.form.OptionalFormField
 import com.shimmermare.stuffiread.ui.components.form.OptionalInstantFormField
 import com.shimmermare.stuffiread.ui.components.form.OptionalIntFormField
 import com.shimmermare.stuffiread.ui.components.form.TextFormField
+import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollContainer
 import com.shimmermare.stuffiread.ui.components.search.SearchBar
 import com.shimmermare.stuffiread.ui.components.tag.MultiTagSelector
 import com.shimmermare.stuffiread.ui.util.LoadingContainer
@@ -65,6 +63,8 @@ fun StoryListWithSearch(
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         StoryFilterControls(app, filter, onFilterChange = { filter = it })
+
+        Divider(modifier = Modifier.fillMaxWidth())
 
         LoadingContainer(
             key = filter to ignoreInvalidStories,
@@ -180,16 +180,10 @@ private fun AdvancedStoryFilterControls(app: AppState, filter: StoryFilter, onFi
             onFilterChange(state.data)
         }
     }
-
     Box(
-        modifier = Modifier.heightIn(max = 400.dp)
+        modifier = Modifier.heightIn(max = 300.dp)
     ) {
-        val scrollState = rememberScrollState()
-        Column(
-            modifier = Modifier
-                .verticalScroll(scrollState)
-                .padding(end = 12.dp)
-        ) {
+        VerticalScrollContainer {
             Row {
                 InputForm(
                     state = state,
@@ -200,10 +194,6 @@ private fun AdvancedStoryFilterControls(app: AppState, filter: StoryFilter, onFi
                 Spacer(modifier = Modifier.weight(1F))
             }
         }
-        VerticalScrollbar(
-            modifier = Modifier.align(Alignment.CenterEnd),
-            adapter = rememberScrollbarAdapter(scrollState)
-        )
     }
 }
 

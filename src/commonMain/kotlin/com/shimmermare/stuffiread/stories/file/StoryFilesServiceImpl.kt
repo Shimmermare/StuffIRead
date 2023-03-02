@@ -33,7 +33,7 @@ class StoryFilesServiceImpl(
     private val storiesDirectory = archiveDirectory.resolve(FileBasedStoryService.STORIES_DIR_NAME)
 
     override suspend fun getStoryFilesMeta(storyId: StoryId): List<StoryFileMeta> {
-        val filesDir = getFilesDir(storyId)
+        val filesDir = getStoryFilesDirectory(storyId)
         return withContext(Dispatchers.IO) {
             if (filesDir.notExists()) return@withContext emptyList()
 
@@ -55,7 +55,7 @@ class StoryFilesServiceImpl(
     }
 
     override suspend fun getStoryFiles(storyId: StoryId): List<StoryFile> {
-        val filesDir = getFilesDir(storyId)
+        val filesDir = getStoryFilesDirectory(storyId)
         return withContext(Dispatchers.IO) {
             if (filesDir.notExists()) return@withContext emptyList()
 
@@ -77,7 +77,7 @@ class StoryFilesServiceImpl(
     }
 
     override suspend fun updateStoryFiles(storyId: StoryId, files: List<StoryFile>) {
-        val filesDir = getFilesDir(storyId)
+        val filesDir = getStoryFilesDirectory(storyId)
         withContext(Dispatchers.IO) {
             Napier.i { "Updating story files storyId=$storyId files=${files.map { it.meta.fileName }}" }
 
@@ -105,8 +105,12 @@ class StoryFilesServiceImpl(
         }
     }
 
+    override fun getStoryFilesDirectory(storyId: StoryId): Path {
+        return storiesDirectory.resolve(Path(storyId.toString(), STORY_FILES_DIR_NAME))
+    }
+
     private fun readFile(storyId: StoryId, fileName: String): WithOrder<StoryFile> {
-        val filesDir = getFilesDir(storyId)
+        val filesDir = getStoryFilesDirectory(storyId)
         val contentFile = filesDir.resolve(fileName)
         val metaFile = filesDir.resolve("$fileName.json")
 
@@ -121,7 +125,7 @@ class StoryFilesServiceImpl(
     }
 
     private fun readFileMeta(storyId: StoryId, fileName: String): WithOrder<StoryFileMeta> {
-        val filesDir = getFilesDir(storyId)
+        val filesDir = getStoryFilesDirectory(storyId)
         return readFileMeta(
             contentFile = filesDir.resolve(fileName),
             metaFile = filesDir.resolve("$fileName.json")
@@ -146,7 +150,7 @@ class StoryFilesServiceImpl(
     }
 
     private fun writeFile(storyId: StoryId, file: StoryFile, order: UInt) {
-        val filesDir = getFilesDir(storyId)
+        val filesDir = getStoryFilesDirectory(storyId)
         val metaFile = filesDir.resolve("${file.meta.fileName}.json")
         val contentFile = filesDir.resolve(file.meta.fileName)
 
@@ -163,10 +167,6 @@ class StoryFilesServiceImpl(
             )
         }
         contentFile.writeBytes(file.content)
-    }
-
-    private fun getFilesDir(storyId: StoryId): Path {
-        return storiesDirectory.resolve(Path(storyId.toString(), STORY_FILES_DIR_NAME))
     }
 
     companion object {

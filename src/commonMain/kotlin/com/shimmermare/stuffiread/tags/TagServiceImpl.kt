@@ -74,11 +74,15 @@ class TagServiceImpl(
         return tree.getExtendedTag(tagId)
     }
 
+    override fun getExtendedTagsByIds(tagIds: Iterable<TagId>): List<ExtendedTag> {
+        return tagIds.mapNotNull { tree.getExtendedTag(it) }
+    }
+
     override fun getTagWithCategoryById(tagId: TagId): TagWithCategory? {
         return tree.getTagWithCategory(tagId)
     }
 
-    override fun getTagsWithCategoryByTagIds(tagIds: Iterable<TagId>): List<TagWithCategory> {
+    override fun getTagsWithCategoryByIds(tagIds: Iterable<TagId>): List<TagWithCategory> {
         return tree.getTagsWithCategoryByIds(tagIds)
     }
 

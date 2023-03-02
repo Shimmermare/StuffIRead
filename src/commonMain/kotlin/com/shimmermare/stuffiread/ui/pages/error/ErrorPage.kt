@@ -1,16 +1,11 @@
 package com.shimmermare.stuffiread.ui.pages.error
 
-import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
@@ -21,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.ui.AppState
 import com.shimmermare.stuffiread.ui.components.error.ErrorCard
+import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollContainer
 import com.shimmermare.stuffiread.ui.routing.Page
 
 class ErrorPage(
@@ -46,25 +42,15 @@ class ErrorPage(
                 }
             }
         ) {
-            Box {
-                val lazyColumnState = rememberLazyListState()
-                LazyColumn(
-                    state = lazyColumnState,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    item {
-                        ErrorCard(
-                            title = title,
-                            description = description,
-                            exception = exception,
-                            suggestion = suggestion
-                        )
-                    }
+            VerticalScrollContainer {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    ErrorCard(
+                        title = title,
+                        description = description,
+                        exception = exception,
+                        suggestion = suggestion
+                    )
                 }
-                VerticalScrollbar(
-                    modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
-                    adapter = rememberScrollbarAdapter(lazyColumnState)
-                )
             }
         }
     }

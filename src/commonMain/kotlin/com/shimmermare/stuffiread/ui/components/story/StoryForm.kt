@@ -1,21 +1,15 @@
 package com.shimmermare.stuffiread.ui.components.story
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.rememberScrollbarAdapter
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -26,7 +20,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.painter.Painter
@@ -52,6 +45,7 @@ import com.shimmermare.stuffiread.ui.components.form.OptionalInstantFormField
 import com.shimmermare.stuffiread.ui.components.form.SubmittableInputForm
 import com.shimmermare.stuffiread.ui.components.form.TextFormField
 import com.shimmermare.stuffiread.ui.components.form.ValidationResult
+import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollContainer
 import com.shimmermare.stuffiread.ui.components.tag.MultiTagSelector
 import com.shimmermare.stuffiread.ui.util.ExtensionFileFilter
 import com.shimmermare.stuffiread.ui.util.FileDialog
@@ -68,31 +62,22 @@ fun StoryForm(
     submitButtonText: String = "Submit",
     canSubmitWithoutChanges: Boolean = false,
 ) {
-    val scrollState = rememberScrollState()
-    Box {
-        Column(
-            modifier = Modifier.verticalScroll(scrollState).padding(end = 12.dp)
-        ) {
-            Row {
-                Box(
-                    modifier = Modifier.width(1000.dp)
-                ) {
-                    FormContainer(
-                        app = app,
-                        prefillData = prefillData,
-                        onSubmit = onSubmit,
-                        onBack = onBack,
-                        submitButtonText = submitButtonText,
-                        canSubmitWithoutChanges = canSubmitWithoutChanges,
-                    )
-                }
-                Spacer(modifier = Modifier.fillMaxWidth())
+    VerticalScrollContainer {
+        Row {
+            Box(
+                modifier = Modifier.width(1000.dp)
+            ) {
+                FormContainer(
+                    app = app,
+                    prefillData = prefillData,
+                    onSubmit = onSubmit,
+                    onBack = onBack,
+                    submitButtonText = submitButtonText,
+                    canSubmitWithoutChanges = canSubmitWithoutChanges,
+                )
             }
+            Spacer(modifier = Modifier.fillMaxWidth())
         }
-        VerticalScrollbar(
-            modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
-            adapter = rememberScrollbarAdapter(scrollState)
-        )
     }
 }
 
@@ -262,7 +247,7 @@ private fun FormContainer(
             getter = { it.files },
             setter = { data, value -> data.copy(files = value) }
         ) { value, _, onValueChange ->
-            StoryFiles(value, onValueChange)
+            StoryFileListInput(value, onValueChange)
         }
     }
 }

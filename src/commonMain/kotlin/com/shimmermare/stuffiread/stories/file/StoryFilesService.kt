@@ -1,6 +1,7 @@
 package com.shimmermare.stuffiread.stories.file
 
 import com.shimmermare.stuffiread.stories.StoryId
+import java.nio.file.Path
 
 /**
  * File order is preserved.
@@ -17,4 +18,6 @@ interface StoryFilesService {
      * Will delete files not in [files]!
      */
     suspend fun updateStoryFiles(storyId: StoryId, files: List<StoryFile>)
+
+    fun getStoryFilesDirectory(storyId: StoryId): Path
 }

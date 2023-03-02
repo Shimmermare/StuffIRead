@@ -31,11 +31,13 @@ interface TagService {
 
     fun getExtendedTagByIdOrThrow(tagId: TagId) = getExtendedTagById(tagId) ?: error("Tag $tagId not found")
 
+    fun getExtendedTagsByIds(tagIds: Iterable<TagId>): List<ExtendedTag>
+
     fun getTagWithCategoryById(tagId: TagId): TagWithCategory?
 
     fun getTagWithCategoryByIdOrThrow(tagId: TagId) = getTagWithCategoryById(tagId) ?: error("Tag $tagId not found")
 
-    fun getTagsWithCategoryByTagIds(tagIds: Iterable<TagId>): List<TagWithCategory>
+    fun getTagsWithCategoryByIds(tagIds: Iterable<TagId>): List<TagWithCategory>
 
     fun getTagByName(name: TagName): Tag?
 

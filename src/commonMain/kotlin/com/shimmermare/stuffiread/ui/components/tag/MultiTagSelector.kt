@@ -41,7 +41,7 @@ fun MultiTagSelector(
 ) {
     LoadingContainer(
         key = selectedIds,
-        loader = { ids -> tagService.getTagsWithCategoryByTagIds(ids).associateBy { it.tag.id } }
+        loader = { ids -> tagService.getTagsWithCategoryByIds(ids).associateBy { it.tag.id } }
     ) { selectedTags ->
         SelectorContent(
             tagService,
