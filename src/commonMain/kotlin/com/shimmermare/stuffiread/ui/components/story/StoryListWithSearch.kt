@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -42,13 +43,18 @@ import com.shimmermare.stuffiread.ui.components.form.OptionalInstantFormField
 import com.shimmermare.stuffiread.ui.components.form.OptionalUIntFormField
 import com.shimmermare.stuffiread.ui.components.form.RangedOptionalIntFormField
 import com.shimmermare.stuffiread.ui.components.form.TextFormField
+import com.shimmermare.stuffiread.ui.components.input.OutlinedEnumField
 import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollColumn
 import com.shimmermare.stuffiread.ui.components.search.SearchBar
+import com.shimmermare.stuffiread.ui.components.story.SortBehavior.ASCENDING_UNKNOWN_FIRST
+import com.shimmermare.stuffiread.ui.components.story.SortBehavior.DESCENDING
+import com.shimmermare.stuffiread.ui.components.story.SortBehavior.DESCENDING_UNKNOWN_FIRST
 import com.shimmermare.stuffiread.ui.components.tag.MultiTagSelector
 import com.shimmermare.stuffiread.ui.storySearchService
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
+import kotlinx.datetime.Instant.Companion.DISTANT_FUTURE
 import kotlin.math.abs
 
 @Composable
@@ -364,6 +370,10 @@ private fun AdvancedStoryFilterFields(state: InputFormState<StoryFilter>) {
 private fun StoryList(filter: StoryFilter) {
     val storySearchService = storySearchService
 
+    var sortBy: SortBy by remember { mutableStateOf(SortBy.DEFAULT) }
+    var sortBehavior: SortBehavior by remember { mutableStateOf(SortBehavior.DEFAULT) }
+    val comparator: Comparator<Story> = remember(sortBy, sortBehavior) { buildComparator(sortBy, sortBehavior) }
+
     var ignoreInvalidStories: Boolean by remember { mutableStateOf(false) }
 
     val stories: MutableList<Story> = remember(filter) { mutableStateListOf() }
@@ -378,8 +388,7 @@ private fun StoryList(filter: StoryFilter) {
             storySearchService.getStoriesByFilter(filter, ignoreInvalidStories)
                 .onEach { story ->
                     stories.add(story)
-                    // TODO: Sort by control
-                    stories.sortBy { it.name }
+                    stories.sortWith(comparator)
                 }
                 .collect()
         } catch (e: Exception) {
@@ -394,6 +403,10 @@ private fun StoryList(filter: StoryFilter) {
         inProgress = false
     }
 
+    LaunchedEffect(sortBy, sortBehavior) {
+        stories.sortWith(comparator)
+    }
+
     if (error != null) {
         VerticalScrollColumn(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -406,20 +419,48 @@ private fun StoryList(filter: StoryFilter) {
             }
         }
     } else {
-        val storiesFoundText = when {
-            inProgress -> when {
-                stories.isEmpty() -> "Searching..."
-                stories.size == 1 -> "Found 1 story. Searching for more..."
-                else -> "Found ${stories.size} stories. Searching for more..."
-            }
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            val storiesFoundText = when {
+                inProgress -> when {
+                    stories.isEmpty() -> "Searching..."
+                    stories.size == 1 -> "Found 1 story. Searching for more..."
+                    else -> "Found ${stories.size} stories. Searching for more..."
+                }
 
-            else -> when {
-                stories.isEmpty() -> "No stories found"
-                stories.size == 1 -> "Found 1 story"
-                else -> "Found ${stories.size} stories"
+                else -> when {
+                    stories.isEmpty() -> "No stories found"
+                    stories.size == 1 -> "Found 1 story"
+                    else -> "Found ${stories.size} stories"
+                }
+            }
+            Text(storiesFoundText, style = MaterialTheme.typography.h5)
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedEnumField(
+                    value = sortBy,
+                    enumType = SortBy::class,
+                    displayNameProvider = { "Sort by: " + it.displayName },
+                    onValueChange = { sortBy = it!! },
+                    inputFieldModifier = Modifier.width(300.dp).height(36.dp)
+                )
+                OutlinedEnumField(
+                    value = sortBehavior,
+                    enumType = SortBehavior::class,
+                    displayNameProvider = { it.displayName },
+                    onValueChange = { sortBehavior = it!! },
+                    inputFieldModifier = Modifier.width(250.dp).height(36.dp)
+                )
             }
         }
-        Text(storiesFoundText, style = MaterialTheme.typography.h5)
+
+        Divider(modifier = Modifier.fillMaxWidth())
 
         val gridState = rememberLazyGridState()
         LazyVerticalGrid(
@@ -433,5 +474,93 @@ private fun StoryList(filter: StoryFilter) {
                 StoryCard(story, visible = abs(index - gridState.firstVisibleItemIndex) < 10)
             }
         }
+    }
+}
+
+private fun buildComparator(sortBy: SortBy, behavior: SortBehavior): Comparator<Story> {
+    return Comparator { a, b ->
+        val aUnknown = sortBy.isUnknown(a)
+        val bUnknown = sortBy.isUnknown(b)
+
+        val unknownSorted = aUnknown.compareTo(bUnknown)
+        if (unknownSorted != 0) {
+            return@Comparator if (behavior == ASCENDING_UNKNOWN_FIRST || behavior == DESCENDING_UNKNOWN_FIRST) {
+                unknownSorted * -1
+            } else {
+                unknownSorted
+            }
+        }
+
+        val byValue = sortBy.comparator.compare(a, b)
+        return@Comparator if (behavior == DESCENDING || behavior == DESCENDING_UNKNOWN_FIRST) {
+            byValue * -1
+        } else {
+            byValue
+        }
+    }
+}
+
+@Suppress("unused")
+private enum class SortBy(
+    val displayName: String,
+    val isUnknown: (Story) -> Boolean = { false },
+    val comparator: Comparator<Story>
+) {
+    ID("ID", comparator = Comparator.comparing { it.id }),
+    NAME("Name", comparator = Comparator.comparing { it.name }),
+    AUTHOR("Author", isUnknown = { !it.author.isPresent }, comparator = Comparator.comparing { it.author }),
+    PUBLISHED(
+        "Published",
+        isUnknown = { it.published == null },
+        comparator = Comparator.comparing { it.published ?: DISTANT_FUTURE }
+    ),
+    CHANGED(
+        "Changed",
+        isUnknown = { it.changed == null },
+        comparator = Comparator.comparing { it.changed ?: DISTANT_FUTURE }
+    ),
+    SCORE(
+        "Score",
+        isUnknown = { it.score == null },
+        comparator = Comparator.comparing { it.score ?: Score(1F) }
+    ),
+    FIRST_READ(
+        "First read",
+        isUnknown = { it.firstRead == null },
+        comparator = Comparator.comparing { it.firstRead ?: DISTANT_FUTURE }
+    ),
+    LAST_READ(
+        "Last read",
+        isUnknown = { it.lastRead == null },
+        comparator = Comparator.comparing { it.lastRead ?: DISTANT_FUTURE }
+    ),
+    TIMES_READ(
+        "Times read",
+        comparator = Comparator.comparing { it.timesRead }
+    ),
+    CREATED(
+        "Created",
+        comparator = Comparator.comparing { it.created }
+    ),
+    UPDATED(
+        "Updated",
+        comparator = Comparator.comparing { it.updated }
+    );
+
+    companion object {
+        val DEFAULT = NAME
+    }
+}
+
+private enum class SortBehavior(
+    val displayName: String,
+) {
+    ASCENDING("Ascending"),
+    DESCENDING("Descending"),
+    ASCENDING_UNKNOWN_FIRST("Ascending (unknown first)"),
+    DESCENDING_UNKNOWN_FIRST("Descending (unknown first)");
+
+    companion object {
+        val DEFAULT = ASCENDING
     }
 }
