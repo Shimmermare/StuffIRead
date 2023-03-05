@@ -31,32 +31,32 @@ import com.shimmermare.stuffiread.ui.theme.LocalTheme
 import com.shimmermare.stuffiread.ui.theme.Theme
 
 @Composable
-fun TopBar(app: AppState, onResetAppStateRequest: () -> Unit) {
+fun TopBar(onResetAppStateRequest: () -> Unit) {
+    val router = router
     var menuOpened: Boolean by remember { mutableStateOf(false) }
 
     TopAppBar(
-        title = { app.router.CurrentPageTitle() },
+        title = { router.CurrentPageTitle() },
         navigationIcon = {
             Box {
                 IconButton(onClick = { menuOpened = true }) {
                     Icon(Icons.Filled.Menu, null)
                 }
-                Menu(
-                    app,
+                AppMenu(
                     menuOpened,
                     onDismissRequest = { menuOpened = false },
                     onResetAppStateRequest = onResetAppStateRequest,
-                    onOpenSettingsRequest = { app.router.goTo(SettingsPage()) },
+                    onOpenSettingsRequest = { router.goTo(SettingsPage()) },
                 )
             }
         },
         actions = {
-            if (app.storyArchive != null) {
-                GoToPageActionButton(app, "Stories") { StoriesPage() }
-                GoToPageActionButton(app, "Tags") { TagsPage() }
-                GoToPageActionButton(app, "Tag categories") { TagCategoriesPage() }
-            } else if (app.router.currentPage !is OpenArchivePage) {
-                GoToPageActionButton(app, "Open archive") { OpenArchivePage() }
+            if (storyArchive != null) {
+                GoToPageActionButton("Stories") { StoriesPage() }
+                GoToPageActionButton("Tags") { TagsPage() }
+                GoToPageActionButton("Tag categories") { TagCategoriesPage() }
+            } else if (router.currentPage !is OpenArchivePage) {
+                GoToPageActionButton("Open archive") { OpenArchivePage() }
             }
         }
     )
@@ -64,11 +64,11 @@ fun TopBar(app: AppState, onResetAppStateRequest: () -> Unit) {
 
 @Composable
 private inline fun <reified T : Page> GoToPageActionButton(
-    app: AppState,
     pageName: String,
     crossinline pageSupplier: () -> T
 ) {
-    ActionButton(pageName, app.router.currentPage !is T, onClick = { app.router.goTo(pageSupplier()) })
+    val router = router
+    ActionButton(pageName, router.currentPage !is T, onClick = { router.goTo(pageSupplier()) })
 }
 
 @Composable

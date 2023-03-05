@@ -33,11 +33,13 @@ import com.shimmermare.stuffiread.ui.components.text.FilledNameText
 @Composable
 fun TagCategorySelector(
     tagService: TagService,
-    categoryId: TagCategoryId? = null,
+    categoryId: TagCategoryId = TagCategoryId.None,
     filter: (TagCategory) -> Boolean = { true },
-    onSelect: (TagCategoryId?) -> Unit
+    onSelect: (TagCategoryId) -> Unit
 ) {
-    val category: TagCategory? = remember(categoryId) { categoryId?.let { tagService.getCategoryById(it) } }
+    val category: TagCategory? = remember(categoryId) {
+        if (categoryId == TagCategoryId.None) null else tagService.getCategoryById(categoryId)
+    }
 
     var showPopup: Boolean by remember { mutableStateOf(false) }
 
@@ -93,7 +95,6 @@ private fun SelectorPopup(
             ) {
                 SearchBar(
                     searchText = searchText,
-                    onClearClick = { searchText = "" },
                     onSearchTextChanged = { searchText = it }
                 )
                 ChipVerticalGrid(

@@ -17,16 +17,17 @@ import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.res.loadImageBitmap
 import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.stories.StoryId
-import com.shimmermare.stuffiread.stories.cover.StoryCoverService
-import com.shimmermare.stuffiread.ui.util.OptionalLoadingContainer
+import com.shimmermare.stuffiread.ui.components.layout.OptionalLoadingContainer
+import com.shimmermare.stuffiread.ui.storyCoverService
 import io.github.aakira.napier.Napier
 
 @Composable
 fun StoryCoverImage(
-    storyCoverService: StoryCoverService,
     storyId: StoryId,
     modifier: Modifier = Modifier.height(150.dp).widthIn(min = 100.dp, max = 250.dp),
 ) {
+    val storyCoverService = storyCoverService
+
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center

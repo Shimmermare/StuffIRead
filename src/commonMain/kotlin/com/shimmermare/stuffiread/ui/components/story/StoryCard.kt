@@ -18,22 +18,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.stories.Story
 import com.shimmermare.stuffiread.tags.TagWithCategory
-import com.shimmermare.stuffiread.ui.AppState
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
-import com.shimmermare.stuffiread.ui.components.tag.TagName
+import com.shimmermare.stuffiread.ui.components.tag.TagNameRoutable
 import com.shimmermare.stuffiread.ui.pages.story.info.StoryInfoPage
+import com.shimmermare.stuffiread.ui.router
+import com.shimmermare.stuffiread.ui.tagService
 
 private const val PREVIEW_TAG_COUNT = 20
 
 @Composable
 fun StoryCard(
-    app: AppState,
     story: Story,
-    visible: Boolean
+    visible: Boolean = true,
 ) {
     Box(
         modifier = Modifier
@@ -42,24 +43,26 @@ fun StoryCard(
             .height(300.dp)
     ) {
         if (visible) {
-            VisibleStoryCard(app, story)
+            VisibleStoryCard(story)
         }
     }
 }
 
 @Composable
 private fun VisibleStoryCard(
-    app: AppState,
     story: Story,
 ) {
+    val router = router
+    val tagService = tagService
+
     val tags = remember(story.id) {
-        app.storyArchive!!.tagService.getTagsWithCategoryByIds(story.tags).sortedWith(TagWithCategory.DEFAULT_ORDER)
+        tagService.getTagsWithCategoryByIds(story.tags).sortedWith(TagWithCategory.DEFAULT_ORDER)
     }
 
     Surface(
         modifier = Modifier
             .border(1.dp, Color.LightGray)
-            .clickable { app.router.goTo(StoryInfoPage(storyId = story.id)) },
+            .clickable { router.goTo(StoryInfoPage(storyId = story.id)) },
         elevation = 3.dp
     ) {
         Row(
@@ -87,10 +90,7 @@ private fun VisibleStoryCard(
                             overflow = TextOverflow.Ellipsis
                         )
                     }
-                    StoryCoverImage(
-                        storyCoverService = app.storyArchive!!.storyCoverService,
-                        storyId = story.id
-                    )
+                    StoryCoverImage(storyId = story.id)
                 }
                 Column(
                     modifier = Modifier.align(Alignment.BottomStart),
@@ -110,14 +110,7 @@ private fun VisibleStoryCard(
                         )
                     }
                     if (story.score != null) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = "Score: ",
-                                style = MaterialTheme.typography.subtitle1,
-                                maxLines = 1
-                            )
-                            StoryScore(app, story.score)
-                        }
+                        StoryScore(story.score)
                     }
                 }
             }
@@ -128,7 +121,7 @@ private fun VisibleStoryCard(
                 if (tags.isNotEmpty()) {
                     ChipVerticalGrid {
                         tags.take(PREVIEW_TAG_COUNT).forEach {
-                            TagName(app.router, it)
+                            TagNameRoutable(it)
                         }
                         if (tags.size > PREVIEW_TAG_COUNT) {
                             Box(
@@ -141,18 +134,19 @@ private fun VisibleStoryCard(
                     }
                 }
                 if (story.description.isPresent) {
-                    Row(
+                    Column(
                         modifier = Modifier.weight(1F, false)
                     ) {
-                        Text(story.description.toString())
+                        Text("Description", fontWeight = FontWeight.Bold)
+                        Text(story.description.toString(), overflow = TextOverflow.Ellipsis)
                     }
                 }
                 if (story.review.isPresent) {
-                    Row(
+                    Column(
                         modifier = Modifier.weight(1F, false)
                     ) {
-                        Text("Review", style = MaterialTheme.typography.subtitle1)
-                        Text(story.review.toString())
+                        Text("Review", fontWeight = FontWeight.Bold)
+                        Text(story.review.toString(), overflow = TextOverflow.Ellipsis)
                     }
                 }
             }

@@ -2,6 +2,7 @@ package com.shimmermare.stuffiread.stories
 
 import com.shimmermare.stuffiread.stories.StoryAuthor.Companion.MAX_LENGTH
 import com.shimmermare.stuffiread.stories.StoryDescription.Companion.MAX_LENGTH
+import com.shimmermare.stuffiread.stories.StoryId.Companion.None
 import com.shimmermare.stuffiread.stories.StoryName.Companion.MAX_LENGTH
 import com.shimmermare.stuffiread.stories.StoryReview.Companion.MAX_LENGTH
 import com.shimmermare.stuffiread.stories.StoryURL.Companion.MAX_LENGTH
@@ -13,8 +14,6 @@ import io.ktor.http.*
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 
-typealias StoryId = UInt
-
 /**
  * Story entity is centerpiece of the app.
  *
@@ -23,7 +22,7 @@ typealias StoryId = UInt
  */
 @Serializable
 data class Story(
-    val id: StoryId = 0u,
+    val id: StoryId = None,
     /**
      * Story author.
      * Optional: if not set - author either unknown or anonymous.
@@ -58,15 +57,10 @@ data class Story(
      */
     val tags: Set<TagId> = emptySet(),
     /**
-     * Stories that are SEQUELS to this story. These sequels will have this story present in [prequels].
-     * Cycles are allowed.
+     * Stories that are SEQUELS to this story.
+     * Cycles are allowed (but story can't be direct sequel to itself).
      */
     val sequels: Set<StoryId> = emptySet(),
-    /**
-     * Stories that are PREQUELS to this story. These prequels will have this story present in [sequels].
-     * Cycles are allowed.
-     */
-    val prequels: Set<StoryId> = emptySet(),
     /**
      * User score.
      */
@@ -85,9 +79,9 @@ data class Story(
     val lastRead: Instant? = firstRead,
     /**
      * How many times user did read this story.
-     * Implied to include only "full" reads, but interpretation is up to user.
+     * Whenever that means only "full" reads or not is up to user.
      */
-    val timesRead: Int = 1,
+    val timesRead: UInt = 1u,
     /**
      * Date when story entry was created in archive.
      */
@@ -98,18 +92,34 @@ data class Story(
     val updated: Instant = created,
 ) {
     init {
-        if (published != null && changed != null && changed < published) {
-            throw IllegalArgumentException("Changed date ($changed) is before published date ($published)")
+        require(published == null || changed == null || changed >= published) {
+            "Changed date ($changed) is before published date ($published)"
         }
-        if (firstRead != null && lastRead != null && lastRead < firstRead) {
-            throw IllegalArgumentException("Last read date ($lastRead) is before first read date ($firstRead)")
+        require(firstRead == null || lastRead == null || lastRead >= firstRead) {
+            "Last read date ($lastRead) is before first read date ($firstRead)"
         }
-        if (timesRead < 0) {
-            throw IllegalArgumentException("Times read negative ($timesRead)")
+        require(!sequels.contains(id)) {
+            "Story can't be sequel to itself"
         }
-        if (updated < created) {
-            throw IllegalArgumentException("Updated date ($updated) is before created date ($created)")
+        require(updated >= created) {
+            "Updated date ($updated) is before created date ($created)"
         }
+    }
+}
+
+/**
+ * Represents story ID.
+ * Value of 0 is considered null-value for non-existing stories. See [None].
+ */
+@JvmInline
+@Serializable
+value class StoryId(val value: UInt) : Comparable<StoryId> {
+    override fun compareTo(other: StoryId): Int = value.compareTo(other.value)
+
+    override fun toString(): String = value.toString()
+
+    companion object {
+        val None = StoryId(0u)
     }
 }
 

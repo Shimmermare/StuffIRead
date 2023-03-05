@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.ui.AppState
 import com.shimmermare.stuffiread.ui.components.error.ErrorCard
-import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollContainer
+import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollColumn
 import com.shimmermare.stuffiread.ui.routing.Page
 
 class ErrorPage(
@@ -42,7 +42,7 @@ class ErrorPage(
                 }
             }
         ) {
-            VerticalScrollContainer {
+            VerticalScrollColumn {
                 Box(modifier = Modifier.fillMaxSize()) {
                     ErrorCard(
                         title = title,

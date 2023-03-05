@@ -1,19 +1,18 @@
 package com.shimmermare.stuffiread.tags
 
 import com.shimmermare.stuffiread.tags.TagDescription.Companion.MAX_LENGTH
+import com.shimmermare.stuffiread.tags.TagId.Companion.None
 import com.shimmermare.stuffiread.tags.TagName.Companion.MAX_LENGTH
 import com.shimmermare.stuffiread.ui.util.ComparatorUtils
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
-
-typealias TagId = Int
 
 /**
  * Represents discrete characteristic about the story.
  */
 @Serializable
 data class Tag(
-    val id: TagId = 0,
+    val id: TagId = None,
     /**
      * Unique displayed name.
      */
@@ -42,6 +41,22 @@ data class Tag(
         if (updated < created) {
             throw IllegalArgumentException("Updated date ($updated) is before created date ($created)")
         }
+    }
+}
+
+/**
+ * Represents tag ID.
+ * Value of 0 is considered null-value for non-existing tags. See [None].
+ */
+@JvmInline
+@Serializable
+value class TagId(val value: UInt) : Comparable<TagId> {
+    override fun compareTo(other: TagId): Int = value.compareTo(other.value)
+
+    override fun toString(): String = value.toString()
+
+    companion object {
+        val None = TagId(0u)
     }
 }
 

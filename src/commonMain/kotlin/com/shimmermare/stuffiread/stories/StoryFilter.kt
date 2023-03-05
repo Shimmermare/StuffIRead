@@ -7,6 +7,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class StoryFilter(
     val idIn: Set<StoryId>? = null,
+    val idNotIn: Set<StoryId>? = null,
     /**
      * Case-insensitive.
      */
@@ -45,6 +46,7 @@ data class StoryFilter(
      * Includes both explicit and implied tags.
      */
     val tagsPresent: Set<TagId>? = null,
+    val isPrequelOf: Set<StoryId>? = null,
     /**
      * Inclusive.
      * Will exclude stories without [Story.score].
@@ -83,11 +85,11 @@ data class StoryFilter(
     /**
      * Inclusive.
      */
-    val timesReadGreaterOrEqual: Int? = null,
+    val timesReadGreaterOrEqual: UInt? = null,
     /**
      * Inclusive.
      */
-    val timesReadLessOrEqual: Int? = null,
+    val timesReadLessOrEqual: UInt? = null,
     /**
      * Inclusive.
      * Will exclude stories without [Story.created].
@@ -108,6 +110,9 @@ data class StoryFilter(
     val updatedBefore: Instant? = null,
 ) {
     init {
+        require(idIn == null || idNotIn == null) {
+            "ID IN and ID NOT IN filters can't be used at the same time"
+        }
         require(publishedAfter == null || publishedBefore == null || publishedAfter <= publishedBefore) {
             "Published date filter has invalid range ($publishedBefore > $publishedAfter)"
         }

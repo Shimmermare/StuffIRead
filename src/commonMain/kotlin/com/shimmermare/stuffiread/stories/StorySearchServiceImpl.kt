@@ -33,6 +33,10 @@ class StorySearchServiceImpl(
             }
         }
 
+        if (filter.isPrequelOf != null) {
+            stories = stories.filter { story -> filter.isPrequelOf.any { story.sequels.contains(it) } }
+        }
+
         stories = stories.filterRange(filter.scoreGreaterOrEqual, filter.scoreLessOrEqual) { it.score }
         stories = stories.filterTextContains(filter.reviewContains) { it.review.value }
         stories = stories.filterRange(filter.firstReadAfter, filter.firstReadBefore) { it.firstRead }

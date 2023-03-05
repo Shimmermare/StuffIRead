@@ -5,8 +5,9 @@ import com.shimmermare.stuffiread.util.AppJson
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
@@ -32,18 +33,15 @@ class FileBasedStoryService(
 
     override suspend fun getStoriesByIds(storyIds: Collection<StoryId>, ignoreInvalid: Boolean): Flow<Story> {
         return withContext(Dispatchers.IO) {
-            flow {
-                val flowCollector = this
-                storyIds.map { storyId ->
-                    try {
-                        val story = readStory(storyId)
-                        if (story != null) flowCollector.emit(story)
-                    } catch (e: Exception) {
-                        if (ignoreInvalid) {
-                            Napier.e(e) { "Ignoring invalid story file" }
-                        } else {
-                            throw Exception("Failed to load story $storyId", e)
-                        }
+            storyIds.asFlow().mapNotNull { storyId ->
+                try {
+                    readStory(storyId)
+                } catch (e: Exception) {
+                    if (ignoreInvalid) {
+                        Napier.e(e) { "Ignoring invalid story file" }
+                        null
+                    } else {
+                        throw Exception("Failed to load story $storyId", e)
                     }
                 }
             }
@@ -54,18 +52,15 @@ class FileBasedStoryService(
         return withContext(Dispatchers.IO) {
             if (storiesDirectory.notExists()) return@withContext emptyFlow()
 
-            flow {
-                val flowCollector = this
-                storiesDirectory.listDirectoryEntries().map { storyDir ->
-                    try {
-                        val story = readStory(storyDir.resolve(STORY_FILE_NAME))
-                        if (story != null) flowCollector.emit(story)
-                    } catch (e: Exception) {
-                        if (ignoreInvalid) {
-                            Napier.e(e) { "Ignoring invalid story file" }
-                        } else {
-                            throw Exception("Failed to load story ${storyDir.fileName}", e)
-                        }
+            storiesDirectory.listDirectoryEntries().asFlow().mapNotNull { storyDir ->
+                try {
+                    readStory(storyDir.resolve(STORY_FILE_NAME))
+                } catch (e: Exception) {
+                    if (ignoreInvalid) {
+                        Napier.e(e) { "Ignoring invalid story file" }
+                        null
+                    } else {
+                        throw Exception("Failed to load story ${storyDir.fileName}", e)
                     }
                 }
             }
@@ -73,7 +68,7 @@ class FileBasedStoryService(
     }
 
     override suspend fun createStory(story: Story): Story {
-        require(story.id == 0u) {
+        require(story.id == StoryId.None) {
             "Story can't be created with predefined ID (${story.id})"
         }
         return withContext(Dispatchers.IO) {
@@ -120,7 +115,7 @@ class FileBasedStoryService(
         if (storyFile.notExists()) return null
 
         val storyId: StoryId = try {
-            storyFile.parent.fileName.toString().toUInt()
+            StoryId(storyFile.parent.fileName.toString().toUInt())
         } catch (e: NumberFormatException) {
             error("Story folder name is not valid ID: '${storyFile.parent.fileName}'")
         }
@@ -132,7 +127,7 @@ class FileBasedStoryService(
     }
 
     private fun writeStory(story: Story) {
-        require(story.id != 0u) {
+        require(story.id != StoryId.None) {
             "0 story ID is not allowed"
         }
         val storyDir = storiesDirectory.resolve(story.id.toString())
@@ -145,8 +140,8 @@ class FileBasedStoryService(
 
     private fun nextFreeId(): StoryId {
         val entries = storiesDirectory.listDirectoryEntries()
-        if (entries.isEmpty()) return 1u
-        return entries.mapNotNull { it.fileName.toString().toUIntOrNull() }.max() + 1u
+        if (entries.isEmpty()) return StoryId(1u)
+        return StoryId(entries.mapNotNull { it.fileName.toString().toUIntOrNull() }.max() + 1u)
     }
 
     private fun storyFilePath(storyId: StoryId): Path {

@@ -36,3 +36,36 @@ fun OutlinedIntField(
         }
     )
 }
+
+/**
+ * @param range inclusive range
+ */
+@Composable
+fun OutlinedUIntField(
+    value: UInt,
+    onValueChange: (UInt) -> Unit,
+    modifier: Modifier = Modifier,
+    isError: Boolean = false,
+    range: UIntRange = UInt.MIN_VALUE..UInt.MAX_VALUE,
+) {
+    ExtendedOutlinedTextField(
+        value = value.toString(),
+        modifier = modifier,
+        isError = isError,
+        singleLine = true,
+        onValueChange = {
+            val onlyDigits = it.filter { c -> c.isDigit() }.let { s ->
+                when {
+                    s.isEmpty() -> "0"
+                    else -> s
+                }
+            }
+            val uintValue = onlyDigits.toBigInteger()
+                .max(range.first.toLong().toBigInteger())
+                .min(range.last.toLong().toBigInteger())
+                .longValueExact()
+                .toUInt()
+            if (value != uintValue) onValueChange(uintValue)
+        }
+    )
+}

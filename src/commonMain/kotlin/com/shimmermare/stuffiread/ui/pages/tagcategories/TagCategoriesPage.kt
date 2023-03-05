@@ -48,7 +48,6 @@ class TagCategoriesPage : MutableTablePage<TagCategoryId, TagCategory>() {
     @Composable
     override fun DeleteDialog(app: AppState, item: TagCategory, onDeleted: () -> Unit, onDismiss: () -> Unit) {
         DeleteTagCategoryDialog(
-            app.storyArchive!!.tagService,
             item,
             onDeleted,
             onDismiss

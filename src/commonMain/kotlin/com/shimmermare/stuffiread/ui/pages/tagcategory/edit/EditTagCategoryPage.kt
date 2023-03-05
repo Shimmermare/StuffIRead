@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.text.style.TextOverflow
 import com.shimmermare.stuffiread.tags.TagCategory
+import com.shimmermare.stuffiread.tags.TagCategoryId
 import com.shimmermare.stuffiread.tags.TagCategoryName
 import com.shimmermare.stuffiread.ui.AppState
 import com.shimmermare.stuffiread.ui.components.animation.AnimatedFadeIn
@@ -24,7 +25,7 @@ class EditTagCategoryPage(
         mode = EDIT,
         category = tagCategory
     ) {
-        if (tagCategory.id == 0) throw IllegalArgumentException("Can edit only existing tag category")
+        if (tagCategory.id == TagCategoryId.None) throw IllegalArgumentException("Can edit only existing tag category")
     }
 
     @Composable
@@ -76,7 +77,7 @@ class EditTagCategoryPage(
         fun createCopy(original: TagCategory) = EditTagCategoryPage(
             mode = CREATE,
             category = original.copy(
-                id = 0,
+                id = TagCategoryId.None,
                 name = TagCategoryName("Copy of " + original.name)
             )
         )

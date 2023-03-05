@@ -11,7 +11,6 @@ import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.tags.Tag
 import com.shimmermare.stuffiread.tags.TagCategoryDescription
 import com.shimmermare.stuffiread.tags.TagCategoryId
-import com.shimmermare.stuffiread.tags.TagCategoryName
 import com.shimmermare.stuffiread.tags.TagDescription
 import com.shimmermare.stuffiread.tags.TagId
 import com.shimmermare.stuffiread.tags.TagName
@@ -54,14 +53,14 @@ fun TagForm(
             getter = { it.name.value },
             setter = { form, value -> form.copy(name = TagName(value)) },
             validator = { validateName(tagService, mode, tag.id, it) })
-        FormField<Tag, TagCategoryId?>(
+        FormField(
             id = "category",
             state = state,
             name = "Category",
             description = "Pick category that fits this tag the most.",
-            getter = { if (it.categoryId > 0) it.categoryId else 0 },
-            setter = { form, value -> form.copy(categoryId = value ?: 0) },
-            validator = { validateTagCategory(tagService, it ?: 0) },
+            getter = { it.categoryId },
+            setter = { form, value -> form.copy(categoryId = value) },
+            validator = { validateTagCategory(tagService, it) },
         ) { value, _, onChange ->
             TagCategorySelector(
                 tagService = tagService, categoryId = value, onSelect = onChange
@@ -86,23 +85,21 @@ fun TagForm(
             setter = { form, value -> form.copy(impliedTagIds = value) },
             validator = { validateImpliedTags(tagService, tag.id, it) },
         ) { value, _, onChange ->
-            MultiTagSelector(
-                tagService, selectedIds = value, filter = { it.id != tag.id }, onSelect = onChange
-            )
+            MultiTagSelector(selectedIds = value, filter = { it.id != tag.id }, onSelect = onChange)
         }
     }
 }
 
 private fun validateName(
-    tagService: TagService, mode: EditTagPageMode, currentId: TagCategoryId, name: String
+    tagService: TagService, mode: EditTagPageMode, currentId: TagId, name: String
 ): ValidationResult {
     val error = when {
         name.isBlank() -> {
             "Name can't be blank"
         }
 
-        name.length > TagCategoryName.MAX_LENGTH -> {
-            "Name length exceeded ${TagCategoryName.MAX_LENGTH} (${name.length})"
+        name.length > TagName.MAX_LENGTH -> {
+            "Name length exceeded ${TagName.MAX_LENGTH} (${name.length})"
         }
 
         mode == CREATE && tagService.getTagByName(TagName(name)) != null -> {
@@ -131,7 +128,7 @@ private fun validateDescription(description: String): ValidationResult {
 
 private fun validateTagCategory(tagService: TagService, categoryId: TagCategoryId): ValidationResult {
     val error = when {
-        categoryId == 0 -> "Category not selected"
+        categoryId == TagCategoryId.None -> "Category not selected"
         tagService.getCategoryById(categoryId) == null -> "Category with ID $categoryId doesn't exist"
         else -> null
     }

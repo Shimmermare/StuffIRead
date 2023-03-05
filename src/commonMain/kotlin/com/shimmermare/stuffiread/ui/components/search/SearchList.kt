@@ -43,7 +43,6 @@ fun <T> SearchList(
                 searchText = searchByNameText,
                 placeholderText = "Search by name",
                 onSearchTextChanged = { searchByNameText = it },
-                onClearClick = { searchByNameText = "" },
             )
         }
 

@@ -16,7 +16,7 @@ import io.github.aakira.napier.Napier
  */
 class TagCategoryInfoPage(private val categoryId: TagCategoryId) : LoadedPage<TagCategory>() {
     init {
-        require(categoryId != 0) { "Can't view info for non-existing tag category" }
+        require(categoryId != TagCategoryId.None) { "Can't view info for non-existing tag category" }
     }
 
     @Composable
@@ -53,6 +53,6 @@ class TagCategoryInfoPage(private val categoryId: TagCategoryId) : LoadedPage<Ta
 
     @Composable
     override fun LoadedContent(app: AppState) {
-        TagCategoryInfo(app, content!!)
+        TagCategoryInfo(content!!)
     }
 }

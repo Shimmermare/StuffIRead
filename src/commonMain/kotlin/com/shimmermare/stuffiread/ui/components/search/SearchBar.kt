@@ -33,8 +33,8 @@ fun SearchBar(
         .height(42.dp)
         .padding(vertical = 2.dp)
         .background(color = MaterialTheme.colors.onBackground.copy(alpha = 0.1F), shape = RoundedCornerShape(5.dp)),
-    onSearchTextChanged: (String) -> Unit = {},
-    onClearClick: () -> Unit = {}
+    onSearchTextChanged: (String) -> Unit,
+    onClearClick: () -> Unit = { onSearchTextChanged("") }
 ) {
     var showClearButton by remember { mutableStateOf(false) }
     val keyboardController = LocalSoftwareKeyboardController.current

@@ -2,7 +2,7 @@ package com.shimmermare.stuffiread.ui.components.error
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.MaterialTheme
@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun ErrorCard(
     info: ErrorInfo,
-    modifier: Modifier = Modifier.fillMaxWidth().padding(20.dp),
+    modifier: Modifier = Modifier.fillMaxSize().padding(20.dp),
 ) {
     ErrorCard(
         title = info.title,
@@ -32,35 +32,32 @@ fun ErrorCard(
     description: String? = null,
     exception: Exception? = null,
     suggestion: String? = null,
-    modifier: Modifier = Modifier.fillMaxWidth().padding(20.dp),
+    modifier: Modifier = Modifier.fillMaxSize().padding(20.dp),
 ) {
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        SelectionContainer {
+    SelectionContainer {
+        Column(
+            modifier = modifier,
+            verticalArrangement = Arrangement.spacedBy(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
             Text(title, style = MaterialTheme.typography.h5)
-        }
 
-        if (description != null) {
-            SelectionContainer {
+            if (description != null) {
                 Text(description)
             }
-        }
-        if (exception != null) {
-            Column {
-                Text("Exception stack trace:", style = MaterialTheme.typography.h6)
-                SelectionContainer {
+
+            if (exception != null) {
+                Column {
+                    Text("Exception stack trace:", style = MaterialTheme.typography.h6)
                     // Default font can't display tab char
                     val text = exception.stackTraceToString().replace("\t", "    ")
                     Text(text)
                 }
             }
-        }
-        if (suggestion != null) {
-            SelectionContainer {
+
+            if (suggestion != null) {
                 Text(suggestion)
+
             }
         }
     }

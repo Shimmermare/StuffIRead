@@ -11,8 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.tags.TagCategory
 import com.shimmermare.stuffiread.tags.TagCategoryId
-import com.shimmermare.stuffiread.tags.TagService
 import com.shimmermare.stuffiread.ui.components.dialog.FixedAlertDialog
+import com.shimmermare.stuffiread.ui.tagService
 
 /**
  * Dialog that presents to user option to safely delete tag category.
@@ -22,13 +22,14 @@ import com.shimmermare.stuffiread.ui.components.dialog.FixedAlertDialog
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun DeleteTagCategoryDialog(
-    tagService: TagService,
     category: TagCategory,
     onDeleted: () -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val tagService = tagService
+
     val tagsInCategoryCount: UInt = remember(category.id) { tagService.getTagCountInCategory(category.id) }
-    var replacementCategoryId: TagCategoryId? by remember { mutableStateOf(null) }
+    var replacementCategoryId: TagCategoryId by remember { mutableStateOf(TagCategoryId.None) }
 
     FixedAlertDialog(
         onDismissRequest = onDismiss,
@@ -59,10 +60,10 @@ fun DeleteTagCategoryDialog(
         },
         confirmButton = {
             Button(
-                enabled = tagsInCategoryCount == 0u || replacementCategoryId != null,
+                enabled = tagsInCategoryCount == 0u || replacementCategoryId != TagCategoryId.None,
                 onClick = {
                     if (tagsInCategoryCount > 0u) {
-                        tagService.changeTagsCategory(category.id, replacementCategoryId!!)
+                        tagService.changeTagsCategory(category.id, replacementCategoryId)
                         if (tagService.getTagCountInCategory(category.id) > 0u) {
                             throw IllegalStateException("Failed to change category ${category.id} -> $replacementCategoryId")
                         }

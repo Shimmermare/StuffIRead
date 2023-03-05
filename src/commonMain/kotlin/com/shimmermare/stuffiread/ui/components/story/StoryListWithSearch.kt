@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -31,93 +32,42 @@ import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.stories.Score
 import com.shimmermare.stuffiread.stories.Story
 import com.shimmermare.stuffiread.stories.StoryFilter
-import com.shimmermare.stuffiread.ui.AppState
+import com.shimmermare.stuffiread.stories.StoryId
 import com.shimmermare.stuffiread.ui.components.error.ErrorCard
+import com.shimmermare.stuffiread.ui.components.error.ErrorInfo
 import com.shimmermare.stuffiread.ui.components.form.InputForm
 import com.shimmermare.stuffiread.ui.components.form.InputFormState
 import com.shimmermare.stuffiread.ui.components.form.OptionalFormField
 import com.shimmermare.stuffiread.ui.components.form.OptionalInstantFormField
-import com.shimmermare.stuffiread.ui.components.form.OptionalIntFormField
+import com.shimmermare.stuffiread.ui.components.form.OptionalUIntFormField
+import com.shimmermare.stuffiread.ui.components.form.RangedOptionalIntFormField
 import com.shimmermare.stuffiread.ui.components.form.TextFormField
-import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollContainer
+import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollColumn
 import com.shimmermare.stuffiread.ui.components.search.SearchBar
 import com.shimmermare.stuffiread.ui.components.tag.MultiTagSelector
-import com.shimmermare.stuffiread.ui.util.LoadingContainer
+import com.shimmermare.stuffiread.ui.storySearchService
+import io.github.aakira.napier.Napier
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
 import kotlin.math.abs
-import kotlin.time.Duration.Companion.seconds
 
 @Composable
-fun StoryListWithSearch(
-    app: AppState,
-) {
+fun StoryListWithSearch() {
     var filter: StoryFilter by remember { mutableStateOf(StoryFilter.DEFAULT) }
-    var ignoreInvalidStories: Boolean by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier.fillMaxSize().padding(20.dp),
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        StoryFilterControls(app, filter, onFilterChange = { filter = it })
-
+        StoryFilterControls(filter, onFilterChange = { filter = it })
         Divider(modifier = Modifier.fillMaxWidth())
-
-        LoadingContainer(
-            key = filter to ignoreInvalidStories,
-            timeout = 120.seconds,
-            loader = { (filter, ignoreInvalidStories) ->
-                app.storyArchive!!.storySearchService.getStoriesByFilter(filter, ignoreInvalidStories)
-            },
-            onError = {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(20.dp)
-                ) {
-                    ErrorCard(
-                        title = "Search failed",
-                        exception = it,
-                        suggestion = "You can exclude invalid stories from search."
-                    )
-                    Button(onClick = { ignoreInvalidStories = true }) {
-                        Text("Ignore invalid stories")
-                    }
-                }
-            }
-        ) { storiesFlow ->
-            val stories: MutableList<Story> = remember { mutableStateListOf() }
-
-            LaunchedEffect(Unit) {
-                storiesFlow.collect { story ->
-                    stories.add(story)
-                }
-            }
-
-            val storiesFoundText = when {
-                stories.isEmpty() -> "No stories found"
-                stories.size == 1 -> "Found 1 story"
-                else -> "Found ${stories.size} stories"
-            }
-            Text(storiesFoundText, style = MaterialTheme.typography.h5)
-
-            val gridState = rememberLazyGridState()
-            LazyVerticalGrid(
-                state = gridState,
-                modifier = Modifier.fillMaxWidth().heightIn(max = 10000.dp),
-                columns = GridCells.Adaptive(minSize = 1000.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp),
-                horizontalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterHorizontally),
-            ) {
-
-                itemsIndexed(stories) { index, story ->
-                    StoryCard(app, story, abs(index - gridState.firstVisibleItemIndex) < 10)
-                }
-            }
-        }
+        StoryList(filter)
     }
 }
 
 @Composable
-private fun StoryFilterControls(app: AppState, currentFilter: StoryFilter, onFilterChange: (StoryFilter) -> Unit) {
+private fun StoryFilterControls(currentFilter: StoryFilter, onFilterChange: (StoryFilter) -> Unit) {
     var filter: StoryFilter by remember(currentFilter) { mutableStateOf(currentFilter) }
     var showAdvanced: Boolean by remember { mutableStateOf(false) }
 
@@ -162,13 +112,13 @@ private fun StoryFilterControls(app: AppState, currentFilter: StoryFilter, onFil
             }
         }
         if (showAdvanced) {
-            AdvancedStoryFilterControls(app, filter) { filter = it }
+            AdvancedStoryFilterControls(filter) { filter = it }
         }
     }
 }
 
 @Composable
-private fun AdvancedStoryFilterControls(app: AppState, filter: StoryFilter, onFilterChange: (StoryFilter) -> Unit) {
+private fun AdvancedStoryFilterControls(filter: StoryFilter, onFilterChange: (StoryFilter) -> Unit) {
     val state = remember(filter) { InputFormState(filter) }
 
     LaunchedEffect(state.data) {
@@ -179,13 +129,13 @@ private fun AdvancedStoryFilterControls(app: AppState, filter: StoryFilter, onFi
     Box(
         modifier = Modifier.heightIn(max = 300.dp)
     ) {
-        VerticalScrollContainer {
+        VerticalScrollColumn {
             Row {
                 InputForm(
                     state = state,
                     modifier = Modifier.width(800.dp),
                 ) { formState ->
-                    AdvancedStoryFilterFields(app, formState)
+                    AdvancedStoryFilterFields(formState)
                 }
                 Spacer(modifier = Modifier.weight(1F))
             }
@@ -194,14 +144,14 @@ private fun AdvancedStoryFilterControls(app: AppState, filter: StoryFilter, onFi
 }
 
 @Composable
-private fun AdvancedStoryFilterFields(app: AppState, state: InputFormState<StoryFilter>) {
-    OptionalIntFormField(
+private fun AdvancedStoryFilterFields(state: InputFormState<StoryFilter>) {
+    RangedOptionalIntFormField(
         id = "id",
         state = state,
         name = "ID",
         defaultValue = 1,
-        getter = { it.idIn?.firstOrNull()?.toInt() },
-        setter = { data, value -> data.copy(idIn = value?.let { setOf(it.toUInt()) }) },
+        getter = { it.idIn?.firstOrNull()?.value?.toInt() },
+        setter = { data, value -> data.copy(idIn = value?.let { setOf(StoryId(it.toUInt())) }) },
         range = 1..Int.MAX_VALUE,
     )
     TextFormField(
@@ -269,7 +219,6 @@ private fun AdvancedStoryFilterFields(app: AppState, state: InputFormState<Story
         setter = { form, value -> form.copy(tagsPresent = value) },
     ) { value, _, onValueChange ->
         MultiTagSelector(
-            tagService = app.storyArchive!!.tagService,
             selectedIds = value,
             onSelect = onValueChange
         )
@@ -284,7 +233,7 @@ private fun AdvancedStoryFilterFields(app: AppState, state: InputFormState<Story
                 getter = { it.scoreGreaterOrEqual },
                 setter = { data, value -> data.copy(scoreGreaterOrEqual = value) },
             ) { value, _, onValueChange ->
-                StoryScoreInput(app, value, onValueChange)
+                StoryScoreInput(value, onValueChange)
             }
         }
         Row(modifier = Modifier.weight(1F)) {
@@ -296,7 +245,7 @@ private fun AdvancedStoryFilterFields(app: AppState, state: InputFormState<Story
                 getter = { it.scoreLessOrEqual },
                 setter = { data, value -> data.copy(scoreLessOrEqual = value) },
             ) { value, _, onValueChange ->
-                StoryScoreInput(app, value, onValueChange)
+                StoryScoreInput(value, onValueChange)
             }
         }
     }
@@ -350,25 +299,22 @@ private fun AdvancedStoryFilterFields(app: AppState, state: InputFormState<Story
     }
     Row {
         Row(modifier = Modifier.weight(1F)) {
-            OptionalIntFormField(
+            OptionalUIntFormField(
                 id = "timesReadGreaterOrEqual",
                 state = state,
                 name = "Times read greater than or equal",
-                defaultValue = 0,
                 getter = { it.timesReadGreaterOrEqual },
                 setter = { data, value -> data.copy(timesReadGreaterOrEqual = value) },
-                range = 0..Int.MAX_VALUE,
             )
         }
         Row(modifier = Modifier.weight(1F)) {
-            OptionalIntFormField(
+            OptionalUIntFormField(
                 id = "timesReadLessOrEqual",
                 state = state,
                 name = "Times read less than or equal",
-                defaultValue = 5,
+                defaultValue = 5u,
                 getter = { it.timesReadLessOrEqual },
                 setter = { data, value -> data.copy(timesReadLessOrEqual = value) },
-                range = 0..Int.MAX_VALUE,
             )
         }
     }
@@ -410,6 +356,82 @@ private fun AdvancedStoryFilterFields(app: AppState, state: InputFormState<Story
                 getter = { it.updatedBefore },
                 setter = { data, value -> data.copy(updatedBefore = value) }
             )
+        }
+    }
+}
+
+@Composable
+private fun StoryList(filter: StoryFilter) {
+    val storySearchService = storySearchService
+
+    var ignoreInvalidStories: Boolean by remember { mutableStateOf(false) }
+
+    val stories: MutableList<Story> = remember(filter) { mutableStateListOf() }
+
+    var inProgress: Boolean by remember { mutableStateOf(false) }
+    var error: ErrorInfo? by remember { mutableStateOf(null) }
+
+    LaunchedEffect(filter, ignoreInvalidStories) {
+        inProgress = true
+        error = null
+        try {
+            storySearchService.getStoriesByFilter(filter, ignoreInvalidStories)
+                .onEach { story ->
+                    stories.add(story)
+                    // TODO: Sort by control
+                    stories.sortBy { it.name }
+                }
+                .collect()
+        } catch (e: Exception) {
+            Napier.e(e) { "Failed to search stories with filter $filter" }
+            error = ErrorInfo(
+                title = "Search failed",
+                exception = e,
+                suggestion = "You can exclude invalid stories from search."
+            )
+            stories.clear()
+        }
+        inProgress = false
+    }
+
+    if (error != null) {
+        VerticalScrollColumn(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(20.dp),
+            modifier = Modifier.fillMaxHeight()
+        ) {
+            ErrorCard(error!!)
+            Button(onClick = { ignoreInvalidStories = true }) {
+                Text("Ignore invalid stories")
+            }
+        }
+    } else {
+        val storiesFoundText = when {
+            inProgress -> when {
+                stories.isEmpty() -> "Searching..."
+                stories.size == 1 -> "Found 1 story. Searching for more..."
+                else -> "Found ${stories.size} stories. Searching for more..."
+            }
+
+            else -> when {
+                stories.isEmpty() -> "No stories found"
+                stories.size == 1 -> "Found 1 story"
+                else -> "Found ${stories.size} stories"
+            }
+        }
+        Text(storiesFoundText, style = MaterialTheme.typography.h5)
+
+        val gridState = rememberLazyGridState()
+        LazyVerticalGrid(
+            state = gridState,
+            modifier = Modifier.fillMaxWidth().heightIn(max = 10000.dp),
+            columns = GridCells.Adaptive(minSize = 1000.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
+            horizontalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterHorizontally),
+        ) {
+            itemsIndexed(stories) { index, story ->
+                StoryCard(story, visible = abs(index - gridState.firstVisibleItemIndex) < 10)
+            }
         }
     }
 }

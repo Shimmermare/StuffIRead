@@ -6,18 +6,16 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.stories.StoryId
 import com.shimmermare.stuffiread.ui.AppState
-import com.shimmermare.stuffiread.ui.components.story.StoryForm
+import com.shimmermare.stuffiread.ui.components.story.SavingStoryForm
 import com.shimmermare.stuffiread.ui.components.story.StoryFormData
 import com.shimmermare.stuffiread.ui.pages.LoadedPage
 import com.shimmermare.stuffiread.ui.pages.story.info.StoryInfoPage
 import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.coroutineContext
 
@@ -52,29 +50,19 @@ class EditStoryPage(
 
     @Composable
     override fun LoadedContent(app: AppState) {
-        val coroutineScope = rememberCoroutineScope()
 
         Scaffold(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(20.dp)
         ) {
-            StoryForm(
-                app = app,
+            SavingStoryForm(
                 prefillData = content!!,
-                onSubmit = {
-                    coroutineScope.launch {
-                        app.storyArchive!!.apply {
-                            val updated = storyService.updateStory(it.story)
-                            storyCoverService.updateStoryCover(updated.id, it.cover)
-                            storyFilesService.updateStoryFiles(updated.id, it.files)
-                            app.router.goTo(StoryInfoPage(updated.id))
-                        }
-                    }
+                onSubmittedAndSaved = {
+                    app.router.goTo(StoryInfoPage(it.story.id))
                 },
                 onBack = { app.router.goTo(StoryInfoPage(storyId)) },
-                submitButtonText = "Save",
-                canSubmitWithoutChanges = false
+                creationMode = false,
             )
         }
     }

@@ -1,68 +1,51 @@
 package com.shimmermare.stuffiread.ui.components.tag
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.height
+import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.tags.ExtendedTag
 import com.shimmermare.stuffiread.tags.Tag
 import com.shimmermare.stuffiread.tags.TagWithCategory
 import com.shimmermare.stuffiread.ui.components.text.FilledNameText
 import com.shimmermare.stuffiread.ui.pages.tag.info.TagInfoPage
-import com.shimmermare.stuffiread.ui.routing.Router
+import com.shimmermare.stuffiread.ui.router
 
 @Composable
-fun TagName(
-    router: Router,
+fun TagNameRoutable(
     tag: ExtendedTag,
     indirect: Boolean = false,
-    fontSize: TextUnit? = null,
-    height: Dp? = null,
+    fontSize: TextUnit = MaterialTheme.typography.subtitle1.fontSize,
+    modifier: Modifier = Modifier.height(30.dp),
 ) {
+    val router = router
     TagName(
         tag = tag,
         indirect = indirect,
         fontSize = fontSize,
-        height = height,
+        modifier = modifier,
         onClick = { router.goTo(TagInfoPage(tag.tag.id)) }
     )
 }
 
 @Composable
-fun TagName(
-    router: Router,
+fun TagNameRoutable(
     tag: TagWithCategory,
     indirect: Boolean = false,
-    fontSize: TextUnit? = null,
-    height: Dp? = null,
+    fontSize: TextUnit = MaterialTheme.typography.subtitle1.fontSize,
+    modifier: Modifier = Modifier.height(30.dp),
 ) {
+    val router = router
     TagName(
         tag = tag,
         indirect = indirect,
         fontSize = fontSize,
-        height = height,
+        modifier = modifier,
         onClick = { router.goTo(TagInfoPage(tag.tag.id)) }
-    )
-}
-
-@Composable
-fun TagName(
-    router: Router,
-    tag: Tag,
-    indirect: Boolean = false,
-    color: Color? = null,
-    fontSize: TextUnit? = null,
-    height: Dp? = null,
-) {
-    TagName(
-        tag = tag,
-        color = color,
-        indirect = indirect,
-        fontSize = fontSize,
-        height = height,
-        onClick = { router.goTo(TagInfoPage(tag.id)) }
     )
 }
 
@@ -70,16 +53,15 @@ fun TagName(
 fun TagName(
     tag: ExtendedTag,
     indirect: Boolean = false,
-    fontSize: TextUnit? = null,
-    height: Dp? = null,
+    fontSize: TextUnit = MaterialTheme.typography.subtitle1.fontSize,
+    modifier: Modifier = Modifier.height(30.dp),
     onClick: () -> Unit
 ) {
     TagName(
         tag = tag,
         indirect = indirect,
         fontSize = fontSize,
-        height = height,
-        modifier = Modifier.clickable(onClick = onClick)
+        modifier = modifier.clickable(onClick = onClick)
     )
 }
 
@@ -87,26 +69,25 @@ fun TagName(
 fun TagName(
     tag: TagWithCategory,
     indirect: Boolean = false,
-    fontSize: TextUnit? = null,
-    height: Dp? = null,
+    fontSize: TextUnit = MaterialTheme.typography.subtitle1.fontSize,
+    modifier: Modifier = Modifier.height(30.dp),
     onClick: () -> Unit
 ) {
     TagName(
         tag = tag,
         indirect = indirect,
         fontSize = fontSize,
-        height = height,
-        modifier = Modifier.clickable(onClick = onClick)
+        modifier = modifier.clickable(onClick = onClick)
     )
 }
 
 @Composable
 fun TagName(
     tag: Tag,
+    color: Color,
     indirect: Boolean = false,
-    color: Color? = null,
-    fontSize: TextUnit? = null,
-    height: Dp? = null,
+    fontSize: TextUnit = MaterialTheme.typography.subtitle1.fontSize,
+    modifier: Modifier = Modifier.height(30.dp),
     onClick: () -> Unit
 ) {
     TagName(
@@ -114,8 +95,7 @@ fun TagName(
         color = color,
         indirect = indirect,
         fontSize = fontSize,
-        height = height,
-        modifier = Modifier.clickable(onClick = onClick)
+        modifier = modifier.clickable(onClick = onClick)
     )
 }
 
@@ -123,16 +103,14 @@ fun TagName(
 fun TagName(
     tag: ExtendedTag,
     indirect: Boolean = false,
-    fontSize: TextUnit? = null,
-    height: Dp? = null,
-    modifier: Modifier? = null,
+    fontSize: TextUnit = MaterialTheme.typography.subtitle1.fontSize,
+    modifier: Modifier = Modifier.height(30.dp),
 ) {
     TagName(
         tag = tag.tag,
         color = Color(tag.category.color),
         indirect = indirect,
         fontSize = fontSize,
-        height = height,
         modifier = modifier
     )
 }
@@ -141,16 +119,14 @@ fun TagName(
 fun TagName(
     tag: TagWithCategory,
     indirect: Boolean = false,
-    fontSize: TextUnit? = null,
-    height: Dp? = null,
-    modifier: Modifier? = null,
+    fontSize: TextUnit = MaterialTheme.typography.subtitle1.fontSize,
+    modifier: Modifier = Modifier.height(30.dp),
 ) {
     TagName(
         tag = tag.tag,
         color = Color(tag.category.color),
         indirect = indirect,
         fontSize = fontSize,
-        height = height,
         modifier = modifier
     )
 }
@@ -158,17 +134,15 @@ fun TagName(
 @Composable
 fun TagName(
     tag: Tag,
-    color: Color? = null,
+    color: Color,
     indirect: Boolean = false,
-    fontSize: TextUnit? = null,
-    height: Dp? = null,
-    modifier: Modifier? = null,
+    fontSize: TextUnit = MaterialTheme.typography.subtitle1.fontSize,
+    modifier: Modifier = Modifier.height(30.dp),
 ) {
     FilledNameText(
         text = tag.name.value,
-        color = (color ?: Color.Black).let { if (indirect) it.copy(alpha = 0.6F) else it },
+        color = color.let { if (indirect) it.copy(alpha = 0.6F) else it },
         fontSize = fontSize,
-        height = height,
         modifier = modifier
     )
 }

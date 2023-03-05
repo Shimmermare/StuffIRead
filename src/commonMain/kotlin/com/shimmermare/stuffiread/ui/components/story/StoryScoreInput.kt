@@ -20,18 +20,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import com.shimmermare.stuffiread.settings.ScoreDisplayType
 import com.shimmermare.stuffiread.stories.Score
-import com.shimmermare.stuffiread.ui.AppState
+import com.shimmermare.stuffiread.ui.appSettings
 import com.shimmermare.stuffiread.ui.components.input.OutlinedIntField
 import kotlin.math.roundToInt
 
 @Composable
-fun StoryScoreInput(app: AppState, value: Score, onValueChange: (Score) -> Unit) {
-    StoryScoreInput(app.settings.scoreDisplayType, value, onValueChange)
-}
-
-@Composable
-fun StoryScoreInput(displayType: ScoreDisplayType, value: Score, onValueChange: (Score) -> Unit) {
-    when (displayType) {
+fun StoryScoreInput(value: Score, onValueChange: (Score) -> Unit) {
+    when (appSettings.scoreDisplayType) {
         ScoreDisplayType.STARS_5 -> StarsInput(value, 5, onValueChange)
         ScoreDisplayType.STARS_10 -> StarsInput(value, 10, onValueChange)
         ScoreDisplayType.NUMBERS_1_TO_10 -> NumbersInput(value, 10, onValueChange)

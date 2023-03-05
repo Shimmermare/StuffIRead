@@ -30,13 +30,12 @@ import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
 import com.shimmermare.stuffiread.ui.components.layout.PopupContent
 import com.shimmermare.stuffiread.ui.components.table.Table
 import com.shimmermare.stuffiread.ui.components.tag.TagName
+import com.shimmermare.stuffiread.ui.components.tag.TagNameRoutable
 import com.shimmermare.stuffiread.ui.components.tagcategory.TagCategoryName
-import com.shimmermare.stuffiread.ui.routing.Router
 
 
 @Composable
 fun TagTable(
-    router: Router,
     tags: Collection<ExtendedTag>,
     onRowClick: (ExtendedTag) -> Unit,
     onEditRequest: (ExtendedTag) -> Unit,
@@ -79,28 +78,24 @@ fun TagTable(
         ) { item ->
             Row(verticalAlignment = Alignment.CenterVertically) {
                 TagImplication(
-                    router = router,
                     items = item.impliedTags,
                     tooltip = "Implied tags",
                     indirect = false,
                     icon = Icons.Filled.ArrowDownward
                 )
                 TagImplication(
-                    router = router,
                     items = item.indirectlyImpliedTags,
                     tooltip = "Indirectly implied tags",
                     indirect = true,
                     icon = Icons.Filled.ArrowDownward
                 )
                 TagImplication(
-                    router = router,
                     items = item.implyingTags,
                     tooltip = "Implying tags",
                     indirect = false,
                     icon = Icons.Filled.ArrowUpward
                 )
                 TagImplication(
-                    router = router,
                     items = item.indirectlyImplyingTags,
                     tooltip = "Indirectly implying tags",
                     indirect = true,
@@ -129,7 +124,6 @@ fun TagTable(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun TagImplication(
-    router: Router,
     items: List<TagWithCategory>,
     tooltip: String,
     indirect: Boolean,
@@ -146,7 +140,7 @@ private fun TagImplication(
                         Text(tooltip, style = MaterialTheme.typography.subtitle1)
                         ChipVerticalGrid {
                             items.forEach {
-                                TagName(router, it, indirect = indirect)
+                                TagNameRoutable(it, indirect = indirect)
                             }
                         }
                     }

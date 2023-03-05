@@ -133,6 +133,9 @@ class TagServiceImpl(
     }
 
     override fun changeTagsCategory(currentCategoryId: TagCategoryId, newCategoryId: TagCategoryId) {
+        require(newCategoryId != TagCategoryId.None) {
+            "Can't change category to nothing"
+        }
         val updatedTags = tree.getTagsInCategory(currentCategoryId).map {
             it.tag.copy(categoryId = newCategoryId)
         }

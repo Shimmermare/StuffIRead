@@ -1,4 +1,4 @@
-package com.shimmermare.stuffiread.ui.util
+package com.shimmermare.stuffiread.ui.components.layout
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.CircularProgressIndicator

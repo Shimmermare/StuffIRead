@@ -29,18 +29,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.tags.ExtendedTag
-import com.shimmermare.stuffiread.ui.AppState
 import com.shimmermare.stuffiread.ui.components.date.Date
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
 import com.shimmermare.stuffiread.ui.components.tag.DeleteTagDialog
-import com.shimmermare.stuffiread.ui.components.tag.TagName
-import com.shimmermare.stuffiread.ui.components.tagcategory.TagCategoryName
+import com.shimmermare.stuffiread.ui.components.tag.TagNameRoutable
+import com.shimmermare.stuffiread.ui.components.tagcategory.TagCategoryNameRoutable
 import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPage
 import com.shimmermare.stuffiread.ui.pages.tags.TagsPage
-import com.shimmermare.stuffiread.ui.routing.Router
+import com.shimmermare.stuffiread.ui.router
 
 @Composable
-fun TagInfo(app: AppState, tag: ExtendedTag) {
+fun TagInfo(tag: ExtendedTag) {
+    val router = router
+
     var showDeleteDialog: Boolean by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -49,10 +50,10 @@ fun TagInfo(app: AppState, tag: ExtendedTag) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                FloatingActionButton(onClick = { app.router.goTo(EditTagPage.createCopy(tag.tag)) }) {
+                FloatingActionButton(onClick = { router.goTo(EditTagPage.createCopy(tag.tag)) }) {
                     Icon(Icons.Filled.ContentCopy, null)
                 }
-                FloatingActionButton(onClick = { app.router.goTo(EditTagPage.edit(tag.tag)) }) {
+                FloatingActionButton(onClick = { router.goTo(EditTagPage.edit(tag.tag)) }) {
                     Icon(Icons.Filled.Edit, null)
                 }
                 FloatingActionButton(onClick = { showDeleteDialog = true }) {
@@ -71,7 +72,7 @@ fun TagInfo(app: AppState, tag: ExtendedTag) {
                 Box(
                     modifier = Modifier.weight(0.5F)
                 ) {
-                    PropertiesBlock(app.router, tag)
+                    PropertiesBlock(tag)
                 }
                 Box(
                     modifier = Modifier.weight(0.5F)
@@ -84,11 +85,10 @@ fun TagInfo(app: AppState, tag: ExtendedTag) {
 
     if (showDeleteDialog) {
         DeleteTagDialog(
-            tagService = app.storyArchive!!.tagService,
             tag = tag,
             onDeleted = {
                 showDeleteDialog = false
-                app.router.goTo(TagsPage())
+                router.goTo(TagsPage())
             },
             onDismiss = { showDeleteDialog = false }
         )
@@ -96,16 +96,16 @@ fun TagInfo(app: AppState, tag: ExtendedTag) {
 }
 
 @Composable
-private fun PropertiesBlock(router: Router, tag: ExtendedTag) {
+private fun PropertiesBlock(tag: ExtendedTag) {
     SelectionContainer {
         Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 Text(text = "Name", style = MaterialTheme.typography.h6)
-                TagName(router, tag)
+                TagNameRoutable(tag)
             }
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 Text(text = "Category", style = MaterialTheme.typography.h6)
-                TagCategoryName(router, tag.category)
+                TagCategoryNameRoutable(tag.category)
             }
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 Text(text = "Description", style = MaterialTheme.typography.h6)
@@ -123,7 +123,7 @@ private fun PropertiesBlock(router: Router, tag: ExtendedTag) {
                     )
                     ChipVerticalGrid {
                         tag.implyingTags.forEach {
-                            TagName(router, it)
+                            TagNameRoutable(it)
                         }
                     }
                 }
@@ -136,7 +136,7 @@ private fun PropertiesBlock(router: Router, tag: ExtendedTag) {
                     )
                     ChipVerticalGrid {
                         tag.indirectlyImplyingTags.forEach {
-                            TagName(router, it, indirect = true)
+                            TagNameRoutable(it, indirect = true)
                         }
                     }
                 }
@@ -149,7 +149,7 @@ private fun PropertiesBlock(router: Router, tag: ExtendedTag) {
                     )
                     ChipVerticalGrid {
                         tag.impliedTags.forEach {
-                            TagName(router, it)
+                            TagNameRoutable(it)
                         }
                     }
                 }
@@ -162,7 +162,7 @@ private fun PropertiesBlock(router: Router, tag: ExtendedTag) {
                     )
                     ChipVerticalGrid {
                         tag.indirectlyImpliedTags.forEach {
-                            TagName(router, it, indirect = true)
+                            TagNameRoutable(it, indirect = true)
                         }
                     }
                 }

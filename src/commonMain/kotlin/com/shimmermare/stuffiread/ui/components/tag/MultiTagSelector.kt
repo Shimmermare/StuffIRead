@@ -1,29 +1,38 @@
 package com.shimmermare.stuffiread.ui.components.tag
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import com.shimmermare.stuffiread.tags.Tag
 import com.shimmermare.stuffiread.tags.TagId
-import com.shimmermare.stuffiread.tags.TagService
 import com.shimmermare.stuffiread.tags.TagWithCategory
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
+import com.shimmermare.stuffiread.ui.components.layout.LoadingContainer
+import com.shimmermare.stuffiread.ui.components.layout.PointerInsideTrackerBox
 import com.shimmermare.stuffiread.ui.components.layout.PopupContent
 import com.shimmermare.stuffiread.ui.components.search.SearchBar
-import com.shimmermare.stuffiread.ui.util.LoadingContainer
+import com.shimmermare.stuffiread.ui.tagService
 
 /**
  * Input to select multiple unique tags from list of all tags.
@@ -34,116 +43,80 @@ import com.shimmermare.stuffiread.ui.util.LoadingContainer
  */
 @Composable
 fun MultiTagSelector(
-    tagService: TagService,
     selectedIds: Set<TagId>,
     filter: (Tag) -> Boolean = { true },
     onSelect: (Set<TagId>) -> Unit
 ) {
+    val tagService = tagService
+
+    var showPopup: Boolean by remember { mutableStateOf(false) }
+
     LoadingContainer(
         key = selectedIds,
         loader = { ids -> tagService.getTagsWithCategoryByIds(ids).associateBy { it.tag.id } }
     ) { selectedTags ->
-        SelectorContent(
-            tagService,
-            selectedTags,
-            filter,
-            onSelect
-        )
-    }
-}
-
-@Composable
-private fun SelectorContent(
-    tagService: TagService,
-    initiallySelectedTags: Map<TagId, TagWithCategory>,
-    filter: (Tag) -> Boolean,
-    onSelect: (Set<TagId>) -> Unit
-) {
-    var selectedTags: Map<TagId, TagWithCategory> by remember { mutableStateOf(initiallySelectedTags) }
-    var showPopup: Boolean by remember(initiallySelectedTags) { mutableStateOf(false) }
-
-    DisableSelection {
-        if (showPopup) {
-            Box {
-                SelectorPopupContainer(
-                    tagService,
-                    selectedTags,
-                    filter = { filter(it.tag) },
-                    onDismissRequest = {
-                        if (initiallySelectedTags != selectedTags) {
-                            onSelect(selectedTags.keys)
-                        }
-                        showPopup = false
-                    },
-                    onValueChange = {
-                        selectedTags = it
+        DisableSelection {
+            if (showPopup) {
+                Box {
+                    LoadingContainer(
+                        key = selectedTags,
+                        loader = { tagService.getTagsWithCategory() }
+                    ) { allTags ->
+                        SelectorPopup(
+                            selectedTags,
+                            allTags,
+                            filter = { filter(it.tag) },
+                            onSelected = {
+                                if (it != selectedTags.keys) {
+                                    onSelect(selectedTags.keys)
+                                }
+                                showPopup = false
+                            }
+                        )
                     }
-                )
+                }
             }
-        }
-        ChipVerticalGrid {
-            selectedTags.forEach { (id, tag) ->
-                SelectedTagName(tag) { onSelect(selectedTags.keys - id) }
-            }
+            ChipVerticalGrid {
+                selectedTags.forEach { (id, tag) ->
+                    SelectedTagName(tag) { onSelect(selectedTags.keys - id) }
+                }
 
-            Box(modifier = Modifier.clickable { showPopup = true }) {
-                Icon(Icons.Filled.Add, null, modifier = Modifier.size(30.dp))
+                Box(modifier = Modifier.clickable { showPopup = true }) {
+                    Icon(Icons.Filled.Add, null, modifier = Modifier.size(30.dp))
+                }
             }
         }
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun SelectedTagName(tag: TagWithCategory, onUnselect: () -> Unit) {
-    var pointerInside by remember(tag.tag.id) { mutableStateOf(false) }
-
-    Row(
-        modifier = Modifier
-            .onPointerEvent(PointerEventType.Enter) { pointerInside = true }
-            .onPointerEvent(PointerEventType.Exit) { pointerInside = false },
-        horizontalArrangement = Arrangement.spacedBy(5.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        TagName(tag)
-        if (pointerInside) {
-            Box(modifier = Modifier.clickable(onClick = onUnselect)) {
-                Icon(Icons.Filled.Clear, null, modifier = Modifier.size(30.dp))
+    PointerInsideTrackerBox { pointerInside ->
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            TagName(tag)
+            if (pointerInside) {
+                Box(modifier = Modifier.clickable(onClick = onUnselect)) {
+                    Icon(Icons.Filled.Clear, null, modifier = Modifier.size(30.dp))
+                }
             }
         }
-    }
-}
-
-@Composable
-private fun SelectorPopupContainer(
-    tagService: TagService,
-    selectedTags: Map<TagId, TagWithCategory>,
-    filter: (TagWithCategory) -> Boolean,
-    onDismissRequest: () -> Unit,
-    onValueChange: (Map<TagId, TagWithCategory>) -> Unit,
-) {
-    LoadingContainer(
-        key = selectedTags,
-        loader = { tagService.getTagsWithCategory() }
-    ) { allTags ->
-        SelectorPopup(
-            selectedTags,
-            allTags,
-            filter,
-            onDismissRequest,
-            onValueChange
-        )
     }
 }
 
 @Composable
 private fun SelectorPopup(
-    selectedTags: Map<TagId, TagWithCategory>,
+    initiallySelectedTags: Map<TagId, TagWithCategory>,
     allTags: List<TagWithCategory>,
     filter: (TagWithCategory) -> Boolean,
-    onDismissRequest: () -> Unit,
-    onValueChange: (Map<TagId, TagWithCategory>) -> Unit,
+    onSelected: (Set<TagId>) -> Unit,
 ) {
+    var selectedTags: Map<TagId, TagWithCategory> by remember(initiallySelectedTags.keys) {
+        mutableStateOf(initiallySelectedTags)
+    }
+
     var searchText: String by remember { mutableStateOf("") }
     val filteredTags: List<TagWithCategory> = remember(selectedTags, searchText) {
         allTags.filter {
@@ -154,7 +127,7 @@ private fun SelectorPopup(
 
     Popup(
         focusable = true,
-        onDismissRequest = onDismissRequest
+        onDismissRequest = { onSelected(selectedTags.keys) }
     ) {
         PopupContent {
             Column(
@@ -169,13 +142,12 @@ private fun SelectorPopup(
                     selectedTags.forEach { (id, tag) ->
                         TagName(
                             tag = tag,
-                            onClick = { onValueChange(selectedTags - id) }
+                            onClick = { selectedTags = selectedTags - id }
                         )
                     }
                 }
                 SearchBar(
                     searchText = searchText,
-                    onClearClick = { searchText = "" },
                     onSearchTextChanged = { searchText = it }
                 )
                 Text(text = "Found ${filteredTags.size} tags:")
@@ -183,7 +155,7 @@ private fun SelectorPopup(
                     filteredTags.forEach {
                         TagName(
                             tag = it,
-                            onClick = { onValueChange(selectedTags + (it.tag.id to it)) }
+                            onClick = { selectedTags = selectedTags + (it.tag.id to it) }
                         )
                     }
                 }

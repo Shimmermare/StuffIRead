@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,12 +22,12 @@ import com.shimmermare.stuffiread.stories.Story
 import com.shimmermare.stuffiread.stories.StoryName
 import com.shimmermare.stuffiread.ui.AppState
 import com.shimmermare.stuffiread.ui.components.animation.AnimatedFadeIn
-import com.shimmermare.stuffiread.ui.components.story.StoryForm
+import com.shimmermare.stuffiread.ui.components.story.SavingStoryForm
 import com.shimmermare.stuffiread.ui.components.story.StoryFormData
 import com.shimmermare.stuffiread.ui.components.story.importing.StoryImportForm
 import com.shimmermare.stuffiread.ui.pages.story.info.StoryInfoPage
+import com.shimmermare.stuffiread.ui.router
 import com.shimmermare.stuffiread.ui.routing.Page
-import kotlinx.coroutines.launch
 
 class CreateStoryPage : Page {
     @Composable
@@ -38,7 +37,8 @@ class CreateStoryPage : Page {
 
     @Composable
     override fun Body(app: AppState) {
-        val coroutineScope = rememberCoroutineScope()
+        val router = router
+
         var formData: StoryFormData? by remember { mutableStateOf(null) }
 
         Scaffold(
@@ -54,22 +54,13 @@ class CreateStoryPage : Page {
                     if (formData == null) {
                         ImportOrCreateNew(onSelected = { formData = it })
                     } else {
-                        StoryForm(
-                            app = app,
+                        SavingStoryForm(
                             prefillData = formData!!,
-                            onSubmit = {
-                                coroutineScope.launch {
-                                    app.storyArchive!!.apply {
-                                        val created = storyService.createStory(it.story)
-                                        storyCoverService.updateStoryCover(created.id, it.cover)
-                                        storyFilesService.updateStoryFiles(created.id, it.files)
-                                        app.router.goTo(StoryInfoPage(created.id))
-                                    }
-                                }
+                            onSubmittedAndSaved = {
+                                router.goTo(StoryInfoPage(it.story.id))
                             },
                             onBack = { formData = null },
-                            submitButtonText = "Create",
-                            canSubmitWithoutChanges = true
+                            creationMode = true
                         )
                     }
                 }

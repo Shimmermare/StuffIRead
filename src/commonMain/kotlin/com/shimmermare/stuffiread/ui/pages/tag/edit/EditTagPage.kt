@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.text.style.TextOverflow
 import com.shimmermare.stuffiread.tags.Tag
+import com.shimmermare.stuffiread.tags.TagCategoryId
 import com.shimmermare.stuffiread.tags.TagId
 import com.shimmermare.stuffiread.tags.TagName
 import com.shimmermare.stuffiread.ui.AppState
@@ -17,7 +18,7 @@ import com.shimmermare.stuffiread.ui.routing.Page
 
 class EditTagPage(
     private val mode: EditTagPageMode,
-    private val editingTagId: TagId? = null,
+    private val editingTagId: TagId = TagId.None,
     private val prefillWith: Tag,
 ) : Page {
     @Composable
@@ -26,7 +27,7 @@ class EditTagPage(
             when (mode) {
                 CREATE -> "New tag"
                 EDIT -> {
-                    val tag = app.storyArchive!!.tagService.getTagById(editingTagId!!)!!
+                    val tag = app.storyArchive!!.tagService.getTagByIdOrThrow(editingTagId)
                     "Tag (Editing) - ${tag.name} [${editingTagId}]"
                 }
             }
@@ -44,7 +45,7 @@ class EditTagPage(
                 onBack = {
                     when (mode) {
                         CREATE -> app.router.goTo(TagsPage())
-                        EDIT -> app.router.goTo(TagInfoPage(editingTagId!!))
+                        EDIT -> app.router.goTo(TagInfoPage(editingTagId))
                     }
                 },
                 onSubmit = {
@@ -63,20 +64,20 @@ class EditTagPage(
             mode = CREATE,
             prefillWith = Tag(
                 name = TagName("New tag"),
-                categoryId = 0,
+                categoryId = TagCategoryId.None,
             )
         )
 
         fun createCopy(original: Tag) = EditTagPage(
             mode = CREATE,
             prefillWith = original.copy(
-                id = 0,
+                id = TagId.None,
                 name = TagName("Copy of " + original.name)
             )
         )
 
         fun edit(tag: Tag): EditTagPage {
-            if (tag.id == 0) throw IllegalArgumentException("Can edit only existing tag")
+            if (tag.id == TagId.None) throw IllegalArgumentException("Can edit only existing tag")
             return EditTagPage(
                 mode = EDIT,
                 editingTagId = tag.id,

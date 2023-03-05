@@ -1,6 +1,7 @@
 package com.shimmermare.stuffiread.tags
 
 import com.shimmermare.stuffiread.tags.TagCategoryDescription.Companion.MAX_LENGTH
+import com.shimmermare.stuffiread.tags.TagCategoryId.Companion.None
 import com.shimmermare.stuffiread.tags.TagCategoryName.Companion.MAX_LENGTH
 import com.shimmermare.stuffiread.tags.TagName.Companion.MAX_LENGTH
 import com.shimmermare.stuffiread.ui.util.ComparatorUtils
@@ -8,14 +9,12 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import java.awt.Color
 
-typealias TagCategoryId = Int
-
 /**
  * Tag categories are used to group tags by common properties.
  */
 @Serializable
 data class TagCategory(
-    val id: TagCategoryId = 0,
+    val id: TagCategoryId = None,
     /**
      * Unique displayed name.
      */
@@ -36,8 +35,8 @@ data class TagCategory(
     val updated: Instant = created,
 ) {
     init {
-        if (updated < created) {
-            throw IllegalArgumentException("Updated date ($updated) is before created date ($created)")
+        require(updated >= created) {
+            "Updated date ($updated) is before created date ($created)"
         }
     }
 
@@ -48,6 +47,22 @@ data class TagCategory(
             .comparing(TagCategory::sortOrder)
             .thenComparing(TagCategory::name)
             .thenComparing(TagCategory::id)
+    }
+}
+
+/**
+ * Represents tag category ID.
+ * Value of 0 is considered null-value for non-existing tag categories. See [None].
+ */
+@JvmInline
+@Serializable
+value class TagCategoryId(val value: UInt) : Comparable<TagCategoryId> {
+    override fun compareTo(other: TagCategoryId): Int = value.compareTo(other.value)
+
+    override fun toString(): String = value.toString()
+
+    companion object {
+        val None = TagCategoryId(0u)
     }
 }
 

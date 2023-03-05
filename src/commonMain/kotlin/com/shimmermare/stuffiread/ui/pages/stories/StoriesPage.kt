@@ -35,7 +35,7 @@ class StoriesPage : Page {
                 }
             }
         ) {
-            StoryListWithSearch(app)
+            StoryListWithSearch()
         }
     }
 }

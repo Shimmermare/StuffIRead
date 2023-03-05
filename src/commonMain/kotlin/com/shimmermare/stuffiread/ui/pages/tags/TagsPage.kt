@@ -9,6 +9,7 @@ import com.shimmermare.stuffiread.ui.pages.MutableTablePage
 import com.shimmermare.stuffiread.ui.pages.error.ErrorPage
 import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPage
 import com.shimmermare.stuffiread.ui.pages.tag.info.TagInfoPage
+import com.shimmermare.stuffiread.ui.router
 import com.shimmermare.stuffiread.ui.routing.Router
 import io.github.aakira.napier.Napier
 
@@ -28,12 +29,13 @@ class TagsPage : MutableTablePage<TagId, ExtendedTag>() {
     override fun LoadingError(app: AppState) {
         Napier.e(error) { "Failed to load tags" }
 
-        app.router.goTo(
+        val router = router
+        router.goTo(
             ErrorPage(
                 title = "Failed to load tags",
                 exception = error,
                 actions = listOf(ErrorPage.Action("Try Again") {
-                    app.router.goTo(TagsPage())
+                    router.goTo(TagsPage())
                 })
             )
         )
@@ -50,7 +52,6 @@ class TagsPage : MutableTablePage<TagId, ExtendedTag>() {
     @Composable
     override fun DeleteDialog(app: AppState, item: ExtendedTag, onDeleted: () -> Unit, onDismiss: () -> Unit) {
         DeleteTagDialog(
-            tagService = app.storyArchive!!.tagService,
             tag = item,
             onDeleted = {
                 onDeleted()
@@ -67,11 +68,11 @@ class TagsPage : MutableTablePage<TagId, ExtendedTag>() {
         items: Collection<ExtendedTag>,
         onDeleteRequest: (ExtendedTag) -> Unit
     ) {
+        val router = router
         TagTable(
-            router = app.router,
             tags = items,
-            onRowClick = { app.router.goTo(TagInfoPage(it.tag.id)) },
-            onEditRequest = { app.router.goTo(EditTagPage.edit(it.tag)) },
+            onRowClick = { router.goTo(TagInfoPage(it.tag.id)) },
+            onEditRequest = { router.goTo(EditTagPage.edit(it.tag)) },
             onDeleteRequest = onDeleteRequest
         )
     }

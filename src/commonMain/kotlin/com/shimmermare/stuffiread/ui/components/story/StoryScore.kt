@@ -14,17 +14,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import com.shimmermare.stuffiread.settings.ScoreDisplayType
 import com.shimmermare.stuffiread.stories.Score
-import com.shimmermare.stuffiread.ui.AppState
+import com.shimmermare.stuffiread.ui.appSettings
 import kotlin.math.roundToInt
 
 @Composable
-fun StoryScore(app: AppState, score: Score) {
-    StoryScore(app.settings.scoreDisplayType, score)
-}
-
-@Composable
-fun StoryScore(displayType: ScoreDisplayType, score: Score) {
-    when (displayType) {
+fun StoryScore(score: Score) {
+    when (appSettings.scoreDisplayType) {
         ScoreDisplayType.STARS_5 -> StarsScore(score, 5)
         ScoreDisplayType.STARS_10 -> StarsScore(score, 10)
         ScoreDisplayType.NUMBERS_1_TO_10 -> NumbersScore(score, 10)

@@ -7,8 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalUriHandler
 
 @Composable
-fun Menu(
-    app: AppState,
+fun AppMenu(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
     onResetAppStateRequest: () -> Unit,
@@ -19,7 +18,7 @@ fun Menu(
         expanded = expanded,
         onDismissRequest = onDismissRequest
     ) {
-        if (app.storyArchive != null) {
+        if (storyArchive != null) {
             DropdownMenuItem(onClick = onResetAppStateRequest) {
                 Text("Close archive")
             }
@@ -27,7 +26,7 @@ fun Menu(
         DropdownMenuItem(onClick = onOpenSettingsRequest) {
             Text("Settings")
         }
-        DropdownMenuItem(onClick = { uriHandler.openUri(AppState.GITHUB_URL) }) {
+        DropdownMenuItem(onClick = { uriHandler.openUri(GITHUB_URL) }) {
             Text("Open GitHub")
         }
     }

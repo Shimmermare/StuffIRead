@@ -13,7 +13,7 @@ import io.github.aakira.napier.Napier
 
 class TagInfoPage(private val tagId: TagId) : LoadedPage<ExtendedTag>() {
     init {
-        require(tagId != 0) { "Can't view info for non-existing tag" }
+        require(tagId != TagId.None) { "Can't view info for non-existing tag" }
     }
 
     @Composable
@@ -50,6 +50,6 @@ class TagInfoPage(private val tagId: TagId) : LoadedPage<ExtendedTag>() {
 
     @Composable
     override fun LoadedContent(app: AppState) {
-        TagInfo(app, content!!)
+        TagInfo(content!!)
     }
 }

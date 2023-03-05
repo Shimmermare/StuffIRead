@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,41 +33,77 @@ import com.shimmermare.stuffiread.stories.StoryReview
 import com.shimmermare.stuffiread.stories.StoryURL
 import com.shimmermare.stuffiread.stories.cover.StoryCover
 import com.shimmermare.stuffiread.stories.cover.StoryCoverFormat
-import com.shimmermare.stuffiread.stories.cover.StoryCoverService
 import com.shimmermare.stuffiread.stories.file.StoryFile
-import com.shimmermare.stuffiread.ui.AppState
 import com.shimmermare.stuffiread.ui.components.form.FormField
 import com.shimmermare.stuffiread.ui.components.form.InputFormState
-import com.shimmermare.stuffiread.ui.components.form.IntFormField
 import com.shimmermare.stuffiread.ui.components.form.OptionalFormField
 import com.shimmermare.stuffiread.ui.components.form.OptionalInstantFormField
 import com.shimmermare.stuffiread.ui.components.form.SubmittableInputForm
 import com.shimmermare.stuffiread.ui.components.form.TextFormField
+import com.shimmermare.stuffiread.ui.components.form.UIntFormField
 import com.shimmermare.stuffiread.ui.components.form.ValidationResult
-import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollContainer
+import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollColumn
 import com.shimmermare.stuffiread.ui.components.tag.MultiTagSelector
+import com.shimmermare.stuffiread.ui.storyCoverService
+import com.shimmermare.stuffiread.ui.storyFilesService
+import com.shimmermare.stuffiread.ui.storyService
 import com.shimmermare.stuffiread.ui.util.ExtensionFileFilter
 import com.shimmermare.stuffiread.ui.util.FileDialog
 import com.shimmermare.stuffiread.ui.util.SelectionMode
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.launch
 
+/**
+ * Wrapper over [StoryForm] that handles story saving. Works in creation and edit mode.
+ */
+@Composable
+fun SavingStoryForm(
+    prefillData: StoryFormData,
+    onSubmittedAndSaved: (StoryFormData) -> Unit,
+    onBack: () -> Unit,
+    creationMode: Boolean,
+) {
+    val storyService = storyService
+    val storyCoverService = storyCoverService
+    val storyFilesService = storyFilesService
+
+    val coroutineScope = rememberCoroutineScope()
+
+    StoryForm(
+        prefillData = prefillData,
+        onSubmit = { formData ->
+            coroutineScope.launch {
+                val saved = if (creationMode) {
+                    storyService.createStory(formData.story)
+                } else {
+                    storyService.updateStory(formData.story)
+                }
+
+                storyCoverService.updateStoryCover(saved.id, formData.cover)
+                storyFilesService.updateStoryFiles(saved.id, formData.files)
+                onSubmittedAndSaved(formData.copy(story = saved))
+            }
+        },
+        onBack = onBack,
+        submitButtonText = if (creationMode) "Create" else "Save",
+        canSubmitWithoutChanges = creationMode
+    )
+}
+
 @Composable
 fun StoryForm(
-    app: AppState,
     prefillData: StoryFormData,
     onSubmit: (StoryFormData) -> Unit,
     onBack: () -> Unit,
     submitButtonText: String = "Submit",
     canSubmitWithoutChanges: Boolean = false,
 ) {
-    VerticalScrollContainer {
+    VerticalScrollColumn {
         Row {
             Box(
                 modifier = Modifier.width(1000.dp)
             ) {
                 FormContainer(
-                    app = app,
                     prefillData = prefillData,
                     onSubmit = onSubmit,
                     onBack = onBack,
@@ -83,7 +118,6 @@ fun StoryForm(
 
 @Composable
 private fun FormContainer(
-    app: AppState,
     prefillData: StoryFormData,
     onSubmit: (StoryFormData) -> Unit,
     onBack: () -> Unit,
@@ -101,10 +135,7 @@ private fun FormContainer(
             }
         }
     ) { state ->
-        StoryCoverFormField(
-            storyCoverService = app.storyArchive!!.storyCoverService,
-            state = state
-        )
+        StoryCoverFormField(state)
         TextFormField(
             id = "author",
             state = state,
@@ -184,15 +215,23 @@ private fun FormContainer(
             setter = { data, value -> data.copy(story = data.story.copy(tags = value)) },
         ) { value, _, onValueChange ->
             MultiTagSelector(
-                tagService = app.storyArchive!!.tagService,
                 selectedIds = value,
                 onSelect = onValueChange
             )
         }
-        // TODO: Story picker sequels
-        Text("TODO: Sequels", style = MaterialTheme.typography.h6, color = MaterialTheme.colors.error)
-        // TODO: Story picker prequels
-        Text("TODO: Prequels", style = MaterialTheme.typography.h6, color = MaterialTheme.colors.error)
+        FormField(
+            id = "sequels",
+            state = state,
+            name = "Sequels",
+            getter = { it.story.sequels },
+            setter = { data, value -> data.copy(story = data.story.copy(sequels = value)) }
+        ) { value, _, onValueChange ->
+            MultiStorySelector(
+                selectedIds = value,
+                filter = { it.id != state.data.story.id },
+                onSelect = onValueChange
+            )
+        }
         OptionalFormField(
             id = "score",
             state = state,
@@ -201,7 +240,7 @@ private fun FormContainer(
             getter = { it.story.score },
             setter = { data, value -> data.copy(story = data.story.copy(score = value)) },
         ) { value, _, onValueChange ->
-            StoryScoreInput(app, value, onValueChange)
+            StoryScoreInput(value, onValueChange)
         }
         TextFormField(
             id = "review",
@@ -230,14 +269,13 @@ private fun FormContainer(
             getter = { it.story.lastRead },
             setter = { data, value -> data.copy(story = data.story.copy(lastRead = value)) },
         )
-        IntFormField(
+        UIntFormField(
             id = "timesRead",
             state = state,
             name = "Times read",
             getter = { it.story.timesRead },
             setter = { data, value -> data.copy(story = data.story.copy(timesRead = value)) },
             inputModifier = Modifier.width(100.dp).height(36.dp),
-            range = 0..Int.MAX_VALUE
         )
         FormField(
             id = "files",
@@ -254,9 +292,9 @@ private fun FormContainer(
 
 @Composable
 private fun StoryCoverFormField(
-    storyCoverService: StoryCoverService,
     state: InputFormState<StoryFormData>,
 ) {
+    val storyCoverService = storyCoverService
     FormField(
         id = "cover",
         state = state,

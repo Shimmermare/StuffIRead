@@ -20,16 +20,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.stories.Story
+import com.shimmermare.stuffiread.stories.StoryFilter
+import com.shimmermare.stuffiread.stories.StoryId
 import com.shimmermare.stuffiread.tags.TagWithCategory
-import com.shimmermare.stuffiread.ui.AppState
 import com.shimmermare.stuffiread.ui.components.date.Date
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
-import com.shimmermare.stuffiread.ui.components.tag.TagName
-import com.shimmermare.stuffiread.ui.util.LoadingContainer
+import com.shimmermare.stuffiread.ui.components.layout.LoadingContainer
+import com.shimmermare.stuffiread.ui.components.tag.TagNameRoutable
+import com.shimmermare.stuffiread.ui.storyFilesService
+import com.shimmermare.stuffiread.ui.storySearchService
+import com.shimmermare.stuffiread.ui.storyService
+import com.shimmermare.stuffiread.ui.tagService
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.flow.toList
 
 @Composable
-fun StoryInfo(app: AppState, story: Story) {
+fun StoryInfo(story: Story) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -41,35 +47,34 @@ fun StoryInfo(app: AppState, story: Story) {
             Box(
                 modifier = Modifier.weight(1F)
             ) {
-                LeftBlock(app, story)
+                LeftBlock(story)
             }
             Box(
                 modifier = Modifier.weight(1F)
             ) {
-                RightBlock(app, story)
+                RightBlock(story)
             }
         }
     }
 }
 
 @Composable
-private fun LeftBlock(app: AppState, story: Story) {
+private fun LeftBlock(story: Story) {
+    val tagService = tagService
+
     val tags = remember {
-        app.storyArchive!!.tagService.getExtendedTagsByIds(story.tags)
-            .flatMap { tag ->
-                buildList {
-                    add(TagWithCategory(tag.tag, tag.category))
-                    addAll(tag.impliedTags)
-                    addAll(tag.indirectlyImpliedTags)
-                }
+        tagService.getExtendedTagsByIds(story.tags).flatMap { tag ->
+            buildList {
+                add(TagWithCategory(tag.tag, tag.category))
+                addAll(tag.impliedTags)
+                addAll(tag.indirectlyImpliedTags)
             }
-            .distinctBy { it.tag.id }
-            .sortedWith(TagWithCategory.DEFAULT_ORDER.thenComparing { a, b ->
-                val aExplicit = story.tags.contains(a.tag.id)
-                val bExplicit = story.tags.contains(b.tag.id)
-                // Explicit first
-                bExplicit.compareTo(aExplicit)
-            })
+        }.distinctBy { it.tag.id }.sortedWith(TagWithCategory.DEFAULT_ORDER.thenComparing { a, b ->
+            val aExplicit = story.tags.contains(a.tag.id)
+            val bExplicit = story.tags.contains(b.tag.id)
+            // Explicit first
+            bExplicit.compareTo(aExplicit)
+        })
     }
 
     Column(
@@ -81,14 +86,12 @@ private fun LeftBlock(app: AppState, story: Story) {
             horizontalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             StoryCoverImage(
-                storyCoverService = app.storyArchive!!.storyCoverService,
                 storyId = story.id,
                 modifier = Modifier.height(200.dp).widthIn(min = 100.dp, max = 300.dp),
             )
             SelectionContainer {
                 Column(
-                    modifier = Modifier.weight(1F),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                    modifier = Modifier.weight(1F), verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Text(story.name.toString(), style = MaterialTheme.typography.h5)
                     Text(story.author.toString(), style = MaterialTheme.typography.h6)
@@ -109,7 +112,7 @@ private fun LeftBlock(app: AppState, story: Story) {
 
         if (tags.isNotEmpty()) {
             ChipVerticalGrid {
-                tags.forEach { tag -> TagName(app.router, tag, indirect = !story.tags.contains(tag.tag.id)) }
+                tags.forEach { tag -> TagNameRoutable(tag, indirect = !story.tags.contains(tag.tag.id)) }
             }
         }
 
@@ -135,40 +138,79 @@ private fun LeftBlock(app: AppState, story: Story) {
             Text("No description", style = MaterialTheme.typography.h6)
         }
 
-        // TODO: Story picker sequels
-        Text("TODO: Sequels", style = MaterialTheme.typography.h6, color = MaterialTheme.colors.error)
-        // TODO: Story picker prequels
-        Text("TODO: Prequels", style = MaterialTheme.typography.h6, color = MaterialTheme.colors.error)
+        StorySequels(story.sequels)
+        StoryPrequels(story.id)
+        StoryFilesInfo(story)
+    }
+}
 
-        LoadingContainer(
-            key = story.id,
-            loader = { app.storyArchive!!.storyFilesService.getStoryFilesMeta(it) }
-        ) { files ->
-            if (files.isNotEmpty()) {
-                Column {
-                    val uriHandler = LocalUriHandler.current
-                    Text("Story has ${files.size} archived files", style = MaterialTheme.typography.h6)
-                    Button(onClick = {
-                        val filesDirUri = app.storyArchive!!.storyFilesService.getStoryFilesDirectory(story.id).toUri()
-                        Napier.i { "Opening story files dir for ${story.id}: $filesDirUri" }
-                        uriHandler.openUri(filesDirUri.toASCIIString())
-                    }) {
-                        Text("Open files directory")
-                    }
-                    StoryFileListView(files)
-                }
-            } else {
-                Text("Story has no archived files", style = MaterialTheme.typography.h6)
+@Composable
+private fun StorySequels(ids: Set<StoryId>) {
+    val storyService = storyService
+
+    if (ids.isNotEmpty()) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
+            Text("Sequels", style = MaterialTheme.typography.h6)
+            LoadingContainer(
+                key = ids,
+                loader = { ids -> storyService.getStoriesByIds(ids).toList().sortedBy { it.name } },
+            ) { stories ->
+                stories.forEach { SmallStoryCardRoutableWithPreview(story = it) }
             }
         }
     }
 }
 
 @Composable
-private fun RightBlock(
-    app: AppState,
-    story: Story
-) {
+private fun StoryPrequels(id: StoryId) {
+    val storySearchService = storySearchService
+
+    Column(
+        verticalArrangement = Arrangement.spacedBy(5.dp)
+    ) {
+        Text("Prequels", style = MaterialTheme.typography.h6)
+        LoadingContainer(
+            key = id,
+            loader = { storySearchService.getStoriesByFilter(StoryFilter(isPrequelOf = setOf(id))).toList() }
+        ) { stories ->
+            stories.forEach { SmallStoryCardRoutableWithPreview(story = it) }
+        }
+    }
+}
+
+@Composable
+private fun StoryFilesInfo(story: Story) {
+    val storyFilesService = storyFilesService
+
+    LoadingContainer(
+        key = story.id,
+        loader = { storyFilesService.getStoryFilesMeta(it) }
+    ) { files ->
+        if (files.isNotEmpty()) {
+            Column {
+                val uriHandler = LocalUriHandler.current
+                Text("Story has ${files.size} archived files", style = MaterialTheme.typography.h6)
+                Button(
+                    onClick = {
+                        val filesDirUri = storyFilesService.getStoryFilesDirectory(story.id).toUri()
+                        Napier.i { "Opening story files dir for ${story.id}: $filesDirUri" }
+                        uriHandler.openUri(filesDirUri.toASCIIString())
+                    }
+                ) {
+                    Text("Open files directory")
+                }
+                StoryFileListView(files)
+            }
+        } else {
+            Text("Story has no archived files", style = MaterialTheme.typography.h6)
+        }
+    }
+}
+
+@Composable
+private fun RightBlock(story: Story) {
     SelectionContainer {
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -193,7 +235,7 @@ private fun RightBlock(
             if (story.score != null) {
                 Row {
                     Text("Score: ", style = MaterialTheme.typography.subtitle1)
-                    StoryScore(app, story.score)
+                    StoryScore(story.score)
                 }
             } else {
                 Text("Story not scored")

@@ -16,7 +16,7 @@ import com.shimmermare.stuffiread.tags.TagCategoryId
 import com.shimmermare.stuffiread.tags.TagCategoryName
 import com.shimmermare.stuffiread.tags.TagService
 import com.shimmermare.stuffiread.ui.components.form.FormField
-import com.shimmermare.stuffiread.ui.components.form.IntFormField
+import com.shimmermare.stuffiread.ui.components.form.RangedIntFormField
 import com.shimmermare.stuffiread.ui.components.form.SubmittableInputForm
 import com.shimmermare.stuffiread.ui.components.form.TextFormField
 import com.shimmermare.stuffiread.ui.components.form.ValidationResult
@@ -70,14 +70,13 @@ fun TagCategoryForm(
             validator = ::validateDescription,
             singleLine = false
         )
-        IntFormField(
+        RangedIntFormField(
             id = "sortOrder",
             state = state,
             name = "Sort Order",
             description = "Order in which tags are displayed on story.",
             getter = { it.sortOrder },
             setter = { form, value -> form.copy(sortOrder = value) },
-            range = 0..Int.MAX_VALUE
         )
         FormField(
             id = "color",

@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.stories.Story
 import com.shimmermare.stuffiread.stories.StoryId
 import com.shimmermare.stuffiread.ui.AppState
-import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollContainer
+import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollColumn
 import com.shimmermare.stuffiread.ui.components.story.DeleteStoryDialog
 import com.shimmermare.stuffiread.ui.components.story.StoryInfo
 import com.shimmermare.stuffiread.ui.pages.LoadedPage
@@ -32,7 +32,7 @@ import io.github.aakira.napier.Napier
 
 class StoryInfoPage(val storyId: StoryId) : LoadedPage<Story>() {
     init {
-        require(storyId != 0u) { "Can't view non-existing story" }
+        require(storyId != StoryId.None) { "Can't view non-existing story" }
     }
 
     @Composable
@@ -85,8 +85,8 @@ class StoryInfoPage(val storyId: StoryId) : LoadedPage<Story>() {
                 }
             }
         ) {
-            VerticalScrollContainer {
-                StoryInfo(app, content!!)
+            VerticalScrollColumn {
+                StoryInfo(content!!)
             }
         }
 

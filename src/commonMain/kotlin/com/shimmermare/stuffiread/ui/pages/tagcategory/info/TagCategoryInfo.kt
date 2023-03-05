@@ -33,22 +33,24 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.tags.TagCategory
 import com.shimmermare.stuffiread.tags.TagWithCategory
-import com.shimmermare.stuffiread.ui.AppState
 import com.shimmermare.stuffiread.ui.components.date.Date
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
-import com.shimmermare.stuffiread.ui.components.tag.TagName
+import com.shimmermare.stuffiread.ui.components.tag.TagNameRoutable
 import com.shimmermare.stuffiread.ui.components.tagcategory.DeleteTagCategoryDialog
-import com.shimmermare.stuffiread.ui.components.tagcategory.TagCategoryName
+import com.shimmermare.stuffiread.ui.components.tagcategory.TagCategoryNameRoutable
 import com.shimmermare.stuffiread.ui.pages.tagcategories.TagCategoriesPage
 import com.shimmermare.stuffiread.ui.pages.tagcategory.edit.EditTagCategoryPage
-import com.shimmermare.stuffiread.ui.routing.Router
+import com.shimmermare.stuffiread.ui.router
+import com.shimmermare.stuffiread.ui.tagService
 import com.shimmermare.stuffiread.ui.util.ColorUtils.blueInt
 import com.shimmermare.stuffiread.ui.util.ColorUtils.greenInt
 import com.shimmermare.stuffiread.ui.util.ColorUtils.redInt
 import com.shimmermare.stuffiread.ui.util.ColorUtils.toHexColor
 
 @Composable
-fun TagCategoryInfo(app: AppState, category: TagCategory) {
+fun TagCategoryInfo(category: TagCategory) {
+    val router = router
+
     var showDeleteDialog: Boolean by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -58,16 +60,12 @@ fun TagCategoryInfo(app: AppState, category: TagCategory) {
                 horizontalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 FloatingActionButton(
-                    onClick = {
-                        app.router.goTo(EditTagCategoryPage.createCopy(category))
-                    }
+                    onClick = { router.goTo(EditTagCategoryPage.createCopy(category)) }
                 ) {
                     Icon(Icons.Filled.ContentCopy, null)
                 }
                 FloatingActionButton(
-                    onClick = {
-                        app.router.goTo(EditTagCategoryPage(category))
-                    }
+                    onClick = { router.goTo(EditTagCategoryPage(category)) }
                 ) {
                     Icon(Icons.Filled.Edit, null)
                 }
@@ -89,12 +87,12 @@ fun TagCategoryInfo(app: AppState, category: TagCategory) {
                 Box(
                     modifier = Modifier.weight(0.5F)
                 ) {
-                    PropertiesBlock(app.router, category)
+                    PropertiesBlock(category)
                 }
                 Box(
                     modifier = Modifier.weight(0.5F)
                 ) {
-                    StatsBlock(app, category)
+                    StatsBlock(category)
                 }
             }
         }
@@ -102,11 +100,10 @@ fun TagCategoryInfo(app: AppState, category: TagCategory) {
 
     if (showDeleteDialog) {
         DeleteTagCategoryDialog(
-            app.storyArchive!!.tagService,
             category,
             onDeleted = {
                 showDeleteDialog = false
-                app.router.goTo(TagCategoriesPage())
+                router.goTo(TagCategoriesPage())
             },
             onDismiss = {
                 showDeleteDialog = false
@@ -116,14 +113,14 @@ fun TagCategoryInfo(app: AppState, category: TagCategory) {
 }
 
 @Composable
-private fun PropertiesBlock(router: Router, category: TagCategory) {
+private fun PropertiesBlock(category: TagCategory) {
     val color = Color(category.color)
 
     SelectionContainer {
         Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 Text(text = "Name", style = MaterialTheme.typography.h6)
-                TagCategoryName(router, category)
+                TagCategoryNameRoutable(category)
             }
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 Text(text = "Description", style = MaterialTheme.typography.h6)
@@ -163,9 +160,11 @@ private fun PropertiesBlock(router: Router, category: TagCategory) {
 }
 
 @Composable
-private fun StatsBlock(app: AppState, category: TagCategory) {
+private fun StatsBlock(category: TagCategory) {
+    val tagService = tagService
+
     val tagsInCategoryIncludingImplied: List<TagWithCategory> = remember(category.id) {
-        app.storyArchive!!.tagService.getTagsInCategoryIncludingImplied(category.id)
+        tagService.getTagsInCategoryIncludingImplied(category.id)
     }
     val tagsInCategory: List<TagWithCategory> = remember(category.id) {
         tagsInCategoryIncludingImplied.filter { it.tag.categoryId == category.id }.sortedBy { it.tag.name }
@@ -180,14 +179,14 @@ private fun StatsBlock(app: AppState, category: TagCategory) {
         Text(text = "Tags in category: ${tagsInCategory.size}", style = MaterialTheme.typography.h6)
         ChipVerticalGrid {
             tagsInCategory.forEach { tag ->
-                TagName(app.router, tag)
+                TagNameRoutable(tag)
             }
         }
 
         Text(text = "Tags implied by tags in category: ${tagsImplied.size}", style = MaterialTheme.typography.h6)
         ChipVerticalGrid {
             tagsImplied.forEach { tag ->
-                TagName(app.router, tag)
+                TagNameRoutable(tag)
             }
         }
     }

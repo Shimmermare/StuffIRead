@@ -35,12 +35,12 @@ class TagTree private constructor(
 
     init {
         categoriesById.forEach { (id, _) ->
-            require(id != 0) {
+            require(id != TagCategoryId.None) {
                 "Category can't have 0 ID"
             }
         }
         tagsById.forEach { (id, tag) ->
-            require(id != 0) {
+            require(id != TagId.None) {
                 "Tag can't have 0 ID"
             }
             require(categoriesById.containsKey(tag.categoryId)) {
@@ -146,7 +146,7 @@ class TagTree private constructor(
     }
 
     fun copyAndCreateCategory(category: TagCategory): CopyTreeResult<TagCategory> {
-        require(category.id == 0) {
+        require(category.id == TagCategoryId.None) {
             "Category to create already has ID ${category.id}"
         }
         val createdTs = Clock.System.now()
@@ -209,7 +209,7 @@ class TagTree private constructor(
     }
 
     fun copyAndCreateTag(tag: Tag): CopyTreeResult<Tag> {
-        require(tag.id == 0) {
+        require(tag.id == TagId.None) {
             "Tag to create already has ID ${tag.id}"
         }
         val createdTs = Clock.System.now()
@@ -241,11 +241,11 @@ class TagTree private constructor(
     }
 
     private fun nextFreeCategoryId(): TagCategoryId {
-        return categoriesById.maxOf { it.key } + 1
+        return TagCategoryId((categoriesById.maxOfOrNull { it.key.value } ?: 0u) + 1u)
     }
 
     private fun nextFreeTagId(): TagId {
-        return tagsById.maxOf { it.key } + 1
+        return TagId((tagsById.maxOfOrNull { it.key.value } ?: 0u) + 1u)
     }
 
     private fun buildImpliedMap(): Map<TagId, List<TagWithCategory>> {
