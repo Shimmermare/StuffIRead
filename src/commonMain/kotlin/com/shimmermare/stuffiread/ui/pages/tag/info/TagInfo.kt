@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material.Button
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
@@ -27,16 +28,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.stories.StoryFilter
 import com.shimmermare.stuffiread.tags.ExtendedTag
+import com.shimmermare.stuffiread.tags.TagId
 import com.shimmermare.stuffiread.ui.components.date.Date
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
+import com.shimmermare.stuffiread.ui.components.layout.LoadingContainer
+import com.shimmermare.stuffiread.ui.components.story.SmallStoryCardRoutableWithPreview
 import com.shimmermare.stuffiread.ui.components.tag.DeleteTagDialog
 import com.shimmermare.stuffiread.ui.components.tag.TagNameRoutable
 import com.shimmermare.stuffiread.ui.components.tagcategory.TagCategoryNameRoutable
+import com.shimmermare.stuffiread.ui.pages.stories.StoriesPage
 import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPage
 import com.shimmermare.stuffiread.ui.pages.tags.TagsPage
 import com.shimmermare.stuffiread.ui.router
+import com.shimmermare.stuffiread.ui.storySearchService
+import kotlinx.coroutines.flow.toList
+
+private const val STORIES_WITH_TAG_PREVIEW_COUNT = 5
 
 @Composable
 fun TagInfo(tag: ExtendedTag) {
@@ -77,7 +88,7 @@ fun TagInfo(tag: ExtendedTag) {
                 Box(
                     modifier = Modifier.weight(0.5F)
                 ) {
-                    StatsBlock()
+                    StatsBlock(tag.tag.id)
                 }
             }
         }
@@ -184,11 +195,44 @@ private fun PropertiesBlock(tag: ExtendedTag) {
 
 @Composable
 private fun StatsBlock(
+    tagId: TagId
 ) {
+    val router = router
+    val storySearchService = storySearchService
     Column(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Text(text = "Stories with tag: TODO", style = MaterialTheme.typography.h6)
+        LoadingContainer(
+            key = tagId,
+            loader = {
+                storySearchService.getStoriesByFilter(StoryFilter(tagsPresent = setOf(tagId)))
+                    .toList().sortedBy { it.name }
+            }
+        ) { storiesWithTag ->
+            if (storiesWithTag.isEmpty()) {
+                Text("No stories with tag", fontWeight = FontWeight.Bold)
+            } else {
+                Text("${storiesWithTag.size} story(s) with tag", fontWeight = FontWeight.Bold)
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(5.dp)
+                ) {
+                    storiesWithTag.take(STORIES_WITH_TAG_PREVIEW_COUNT).forEach {
+                        SmallStoryCardRoutableWithPreview(it)
+                    }
+                    if (storiesWithTag.size > STORIES_WITH_TAG_PREVIEW_COUNT) {
+                        Text("and ${storiesWithTag.size - STORIES_WITH_TAG_PREVIEW_COUNT} more")
+                    }
+                }
+                Button(
+                    onClick = {
+                        val filter = StoryFilter(tagsPresent = setOf(tagId))
+                        router.goTo(StoriesPage(presetFilter = filter))
+                    }
+                ) {
+                    Text("Show all")
+                }
+            }
+        }
     }
 }
 

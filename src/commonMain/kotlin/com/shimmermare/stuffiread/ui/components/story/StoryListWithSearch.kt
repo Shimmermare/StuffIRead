@@ -58,17 +58,17 @@ import kotlinx.datetime.Instant.Companion.DISTANT_FUTURE
 import kotlin.math.abs
 
 @Composable
-fun StoryListWithSearch() {
-    var filter: StoryFilter by remember { mutableStateOf(StoryFilter.DEFAULT) }
+fun StoryListWithSearch(presetFilter: StoryFilter = StoryFilter.DEFAULT) {
+    var currentFilter: StoryFilter by remember(presetFilter) { mutableStateOf(presetFilter) }
 
     Column(
         modifier = Modifier.fillMaxSize().padding(20.dp),
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        StoryFilterControls(filter, onFilterChange = { filter = it })
+        StoryFilterControls(currentFilter, onFilterChange = { currentFilter = it })
         Divider(modifier = Modifier.fillMaxWidth())
-        StoryList(filter)
+        StoryList(currentFilter)
     }
 }
 

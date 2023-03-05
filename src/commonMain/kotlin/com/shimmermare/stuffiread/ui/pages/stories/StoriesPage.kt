@@ -12,12 +12,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.stories.StoryFilter
 import com.shimmermare.stuffiread.ui.AppState
 import com.shimmermare.stuffiread.ui.components.story.StoryListWithSearch
 import com.shimmermare.stuffiread.ui.pages.story.create.CreateStoryPage
 import com.shimmermare.stuffiread.ui.routing.Page
 
-class StoriesPage : Page {
+class StoriesPage(
+    val presetFilter: StoryFilter = StoryFilter.DEFAULT
+) : Page {
     @Composable
     override fun Body(app: AppState) {
         Scaffold(
@@ -35,7 +38,7 @@ class StoriesPage : Page {
                 }
             }
         ) {
-            StoryListWithSearch()
+            StoryListWithSearch(presetFilter)
         }
     }
 }
