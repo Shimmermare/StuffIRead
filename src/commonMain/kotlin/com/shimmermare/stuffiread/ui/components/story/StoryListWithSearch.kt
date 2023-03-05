@@ -220,7 +220,7 @@ private fun AdvancedStoryFilterFields(state: InputFormState<StoryFilter>) {
     ) { value, _, onValueChange ->
         MultiTagSelector(
             selectedIds = value,
-            onSelect = onValueChange
+            onSelected = onValueChange
         )
     }
     Row {

@@ -216,7 +216,7 @@ private fun FormContainer(
         ) { value, _, onValueChange ->
             MultiTagSelector(
                 selectedIds = value,
-                onSelect = onValueChange
+                onSelected = onValueChange
             )
         }
         FormField(

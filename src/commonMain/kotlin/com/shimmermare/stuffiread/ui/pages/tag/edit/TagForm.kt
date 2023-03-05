@@ -23,14 +23,20 @@ import com.shimmermare.stuffiread.ui.components.tag.MultiTagSelector
 import com.shimmermare.stuffiread.ui.components.tagcategory.TagCategorySelector
 import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPageMode.CREATE
 import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPageMode.EDIT
+import com.shimmermare.stuffiread.ui.tagService
 
 @Composable
 fun TagForm(
-    tagService: TagService, mode: EditTagPageMode, tag: Tag, onBack: () -> Unit, onSubmit: (Tag) -> Unit
+    mode: EditTagPageMode,
+    tag: Tag,
+    modifier: Modifier = Modifier.padding(20.dp).sizeIn(maxWidth = 800.dp),
+    onBack: () -> Unit,
+    onSubmit: (Tag) -> Unit
 ) {
+    val tagService = tagService
     SubmittableInputForm(
         data = tag,
-        modifier = Modifier.padding(20.dp).sizeIn(maxWidth = 800.dp),
+        modifier = modifier,
         submitButtonText = when (mode) {
             CREATE -> "Create"
             EDIT -> "Save"
@@ -46,13 +52,15 @@ fun TagForm(
             }
         },
     ) { state ->
-        TextFormField(id = "name",
+        TextFormField(
+            id = "name",
             state = state,
             name = "Name",
             description = "Unique tag name. Examples: \"Mystery\", \"Greentext\"",
             getter = { it.name.value },
             setter = { form, value -> form.copy(name = TagName(value)) },
-            validator = { validateName(tagService, mode, tag.id, it) })
+            validator = { validateName(tagService, mode, tag.id, it) }
+        )
         FormField(
             id = "category",
             state = state,
@@ -62,9 +70,7 @@ fun TagForm(
             setter = { form, value -> form.copy(categoryId = value) },
             validator = { validateTagCategory(tagService, it) },
         ) { value, _, onChange ->
-            TagCategorySelector(
-                tagService = tagService, categoryId = value, onSelect = onChange
-            )
+            TagCategorySelector(categoryId = value, onSelected = onChange)
         }
         TextFormField(
             id = "description",
@@ -85,7 +91,7 @@ fun TagForm(
             setter = { form, value -> form.copy(impliedTagIds = value) },
             validator = { validateImpliedTags(tagService, tag.id, it) },
         ) { value, _, onChange ->
-            MultiTagSelector(selectedIds = value, filter = { it.id != tag.id }, onSelect = onChange)
+            MultiTagSelector(selectedIds = value, filter = { it.id != tag.id }, onSelected = onChange)
         }
     }
 }

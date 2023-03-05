@@ -50,10 +50,9 @@ fun DeleteTagCategoryDialog(
                 ) {
                     Text("$tagsInCategoryCount tags in this category. Before deleting category you must provide a replacement: ")
                     TagCategorySelector(
-                        tagService = tagService,
                         categoryId = replacementCategoryId,
                         filter = { it.id != category.id },
-                        onSelect = { replacementCategoryId = it }
+                        onSelected = { replacementCategoryId = it }
                     )
                 }
             }

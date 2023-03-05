@@ -24,15 +24,16 @@ import com.shimmermare.stuffiread.ui.components.input.PopupColorPicker
 import com.shimmermare.stuffiread.ui.components.text.FilledNameText
 import com.shimmermare.stuffiread.ui.pages.tagcategory.edit.EditTagCategoryPageMode.CREATE
 import com.shimmermare.stuffiread.ui.pages.tagcategory.edit.EditTagCategoryPageMode.EDIT
+import com.shimmermare.stuffiread.ui.tagService
 
 @Composable
 fun TagCategoryForm(
-    tagService: TagService,
     mode: EditTagCategoryPageMode,
     category: TagCategory,
     onBack: () -> Unit,
     onSubmit: (TagCategory) -> Unit
 ) {
+    val tagService = tagService
     SubmittableInputForm(
         data = category,
         modifier = Modifier.padding(20.dp).sizeIn(maxWidth = 800.dp),

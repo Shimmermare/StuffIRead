@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.text.selection.DisableSelection
+import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -23,15 +23,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Popup
 import com.shimmermare.stuffiread.tags.Tag
+import com.shimmermare.stuffiread.tags.TagCategoryId
 import com.shimmermare.stuffiread.tags.TagId
+import com.shimmermare.stuffiread.tags.TagName
 import com.shimmermare.stuffiread.tags.TagWithCategory
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
-import com.shimmermare.stuffiread.ui.components.layout.LoadingContainer
+import com.shimmermare.stuffiread.ui.components.layout.FullscreenPopup
 import com.shimmermare.stuffiread.ui.components.layout.PointerInsideTrackerBox
 import com.shimmermare.stuffiread.ui.components.layout.PopupContent
 import com.shimmermare.stuffiread.ui.components.search.SearchBar
+import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPageMode
+import com.shimmermare.stuffiread.ui.pages.tag.edit.TagForm
 import com.shimmermare.stuffiread.ui.tagService
 
 /**
@@ -39,58 +42,70 @@ import com.shimmermare.stuffiread.ui.tagService
  *
  *
  * @param filter additional filter for tags available for selection.
- * @param onSelect will be called when popup is dismissed.
  */
 @Composable
 fun MultiTagSelector(
     selectedIds: Set<TagId>,
     filter: (Tag) -> Boolean = { true },
-    onSelect: (Set<TagId>) -> Unit
+    onSelected: (Set<TagId>) -> Unit
+) {
+    var mode: Mode by remember { mutableStateOf(Mode.CLOSED) }
+
+    SelectedTags(
+        selectedIds = selectedIds,
+        onUnselectRequest = { onSelected(selectedIds - it) },
+        onShowSelectorRequest = { mode = Mode.SHOW_SELECTOR }
+    )
+
+    when (mode) {
+        Mode.SHOW_SELECTOR -> {
+            Selector(
+                selectedIds = selectedIds,
+                filter = filter,
+                onCloseRequest = { mode = Mode.CLOSED },
+                onSelected = {
+                    onSelected(it)
+                    mode = Mode.CLOSED
+                },
+                onShowQuickCreateRequest = { mode = Mode.SHOW_QUICK_CREATE }
+            )
+        }
+
+        Mode.SHOW_QUICK_CREATE -> {
+            QuickCreate(
+                onShowSelectorRequest = { mode = Mode.SHOW_SELECTOR }
+            )
+        }
+
+        else -> {}
+    }
+}
+
+@Composable
+private fun SelectedTags(
+    selectedIds: Set<TagId>,
+    onUnselectRequest: (TagId) -> Unit,
+    onShowSelectorRequest: () -> Unit
 ) {
     val tagService = tagService
 
-    var showPopup: Boolean by remember { mutableStateOf(false) }
+    val selectedTags: List<TagWithCategory> = remember(selectedIds) {
+        tagService.getTagsWithCategoryByIds(selectedIds).sortedWith(TagWithCategory.DEFAULT_ORDER)
+    }
 
-    LoadingContainer(
-        key = selectedIds,
-        loader = { ids -> tagService.getTagsWithCategoryByIds(ids).associateBy { it.tag.id } }
-    ) { selectedTags ->
-        DisableSelection {
-            if (showPopup) {
-                Box {
-                    LoadingContainer(
-                        key = selectedTags,
-                        loader = { tagService.getTagsWithCategory() }
-                    ) { allTags ->
-                        SelectorPopup(
-                            selectedTags,
-                            allTags,
-                            filter = { filter(it.tag) },
-                            onSelected = {
-                                if (it != selectedTags.keys) {
-                                    onSelect(selectedTags.keys)
-                                }
-                                showPopup = false
-                            }
-                        )
-                    }
-                }
-            }
-            ChipVerticalGrid {
-                selectedTags.forEach { (id, tag) ->
-                    SelectedTagName(tag) { onSelect(selectedTags.keys - id) }
-                }
+    ChipVerticalGrid {
+        selectedTags.forEach { tag ->
+            SelectedTag(tag) { onUnselectRequest(tag.tag.id) }
+        }
 
-                Box(modifier = Modifier.clickable { showPopup = true }) {
-                    Icon(Icons.Filled.Add, null, modifier = Modifier.size(30.dp))
-                }
-            }
+        Box(modifier = Modifier.clickable(onClick = onShowSelectorRequest)) {
+            Icon(Icons.Filled.Add, null, modifier = Modifier.size(30.dp))
         }
     }
 }
 
 @Composable
-private fun SelectedTagName(tag: TagWithCategory, onUnselect: () -> Unit) {
+private fun SelectedTag(tag: TagWithCategory, onUnselect: () -> Unit) {
     PointerInsideTrackerBox { pointerInside ->
         Row(
             horizontalArrangement = Arrangement.spacedBy(5.dp),
@@ -107,14 +122,36 @@ private fun SelectedTagName(tag: TagWithCategory, onUnselect: () -> Unit) {
 }
 
 @Composable
+private fun Selector(
+    selectedIds: Set<TagId>,
+    filter: (Tag) -> Boolean = { true },
+    onCloseRequest: () -> Unit,
+    onSelected: (Set<TagId>) -> Unit,
+    onShowQuickCreateRequest: () -> Unit,
+) {
+    val tagService = tagService
+    val allTags = remember { tagService.getTagsWithCategory() }
+    SelectorPopup(
+        selectedIds,
+        allTags,
+        filter = { filter(it.tag) },
+        onCloseRequest = onCloseRequest,
+        onSelected = onSelected,
+        onShowQuickCreateRequest = onShowQuickCreateRequest
+    )
+}
+
+@Composable
 private fun SelectorPopup(
-    initiallySelectedTags: Map<TagId, TagWithCategory>,
+    initiallySelectedIds: Set<TagId>,
     allTags: List<TagWithCategory>,
     filter: (TagWithCategory) -> Boolean,
+    onCloseRequest: () -> Unit,
     onSelected: (Set<TagId>) -> Unit,
+    onShowQuickCreateRequest: () -> Unit,
 ) {
-    var selectedTags: Map<TagId, TagWithCategory> by remember(initiallySelectedTags.keys) {
-        mutableStateOf(initiallySelectedTags)
+    var selectedTags: Map<TagId, TagWithCategory> by remember(initiallySelectedIds) {
+        mutableStateOf(allTags.filter { initiallySelectedIds.contains(it.tag.id) }.associateBy { it.tag.id })
     }
 
     var searchText: String by remember { mutableStateOf("") }
@@ -125,10 +162,7 @@ private fun SelectorPopup(
         }
     }
 
-    Popup(
-        focusable = true,
-        onDismissRequest = { onSelected(selectedTags.keys) }
-    ) {
+    FullscreenPopup {
         PopupContent {
             Column(
                 modifier = Modifier
@@ -159,7 +193,49 @@ private fun SelectorPopup(
                         )
                     }
                 }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Button(onClick = onCloseRequest) {
+                        Text("Cancel")
+                    }
+                    Button(
+                        enabled = initiallySelectedIds != selectedTags.keys,
+                        onClick = { onSelected(selectedTags.keys) }
+                    ) {
+                        Text("Confirm")
+                    }
+                    Button(onClick = onShowQuickCreateRequest) {
+                        Text("Quick create")
+                    }
+                }
             }
         }
     }
+}
+
+@Composable
+private fun QuickCreate(onShowSelectorRequest: () -> Unit) {
+    val tagService = tagService
+    FullscreenPopup {
+        TagForm(
+            mode = EditTagPageMode.CREATE,
+            tag = Tag(
+                name = TagName("New tag"),
+                categoryId = TagCategoryId.None,
+            ),
+            modifier = Modifier.padding(20.dp).width(800.dp),
+            onBack = onShowSelectorRequest,
+            onSubmit = {
+                tagService.createTag(it)
+                onShowSelectorRequest()
+            }
+        )
+    }
+}
+
+private enum class Mode {
+    CLOSED,
+    SHOW_SELECTOR,
+    SHOW_QUICK_CREATE
 }

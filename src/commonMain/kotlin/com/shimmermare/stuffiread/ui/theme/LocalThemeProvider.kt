@@ -16,6 +16,7 @@ import kotlinx.coroutines.isActive
 import kotlin.time.Duration.Companion.milliseconds
 
 val LocalTheme: ProvidableCompositionLocal<Theme> = compositionLocalOf { throw IllegalStateException("Theme not set") }
+val theme: Theme @Composable get() = LocalTheme.current
 
 private val SYSTEM_THEME_SYNC_INTERVAL = 5000.milliseconds
 

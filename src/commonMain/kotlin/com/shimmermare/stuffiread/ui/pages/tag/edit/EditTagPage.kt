@@ -39,7 +39,6 @@ class EditTagPage(
     override fun Body(app: AppState) {
         AnimatedFadeIn {
             TagForm(
-                tagService = app.storyArchive!!.tagService,
                 mode = mode,
                 tag = prefillWith,
                 onBack = {

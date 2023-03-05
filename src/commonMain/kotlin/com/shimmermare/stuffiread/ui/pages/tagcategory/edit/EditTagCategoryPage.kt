@@ -45,7 +45,6 @@ class EditTagCategoryPage(
     override fun Body(app: AppState) {
         AnimatedFadeIn {
             TagCategoryForm(
-                tagService = app.storyArchive!!.tagService,
                 mode = mode,
                 category = category,
                 onBack = {
