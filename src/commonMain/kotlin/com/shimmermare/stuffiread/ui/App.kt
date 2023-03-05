@@ -30,6 +30,7 @@ import com.shimmermare.stuffiread.ui.theme.LocalThemeProvider
 import com.shimmermare.stuffiread.ui.theme.Theme
 import com.shimmermare.stuffiread.ui.util.compositionLocalOrThrow
 import com.shimmermare.stuffiread.ui.util.staticCompositionLocalOrThrow
+import io.github.aakira.napier.Napier
 import java.nio.file.Path
 
 const val GITHUB_URL = "https://github.com/Shimmermare/StuffIRead"
@@ -68,6 +69,7 @@ fun App(initialArchiveDirectory: Path? = null) {
             try {
                 app.openStoryArchive(initialArchiveDirectory, false)
             } catch (e: Exception) {
+                Napier.e(e) { "Failed to open story archive passed with CLI args: $initialArchiveDirectory" }
                 app.router.goTo(
                     ErrorPage(
                         title = "Failed to open story archive passed with CLI args",

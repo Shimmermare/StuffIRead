@@ -3,6 +3,7 @@ package com.shimmermare.stuffiread.stories.file
 import com.shimmermare.stuffiread.stories.FileBasedStoryService
 import com.shimmermare.stuffiread.stories.StoryId
 import com.shimmermare.stuffiread.util.AppJson
+import com.shimmermare.stuffiread.util.JsonVersionedSerializer
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -10,6 +11,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Serializer
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import java.nio.file.Path
@@ -133,7 +135,7 @@ class StoryFilesServiceImpl(
     }
 
     private fun readFileMeta(contentFile: Path, metaFile: Path): WithOrder<StoryFileMeta> {
-        val storedMeta = metaFile.inputStream().use { AppJson.decodeFromStream<StoredStoryFileMeta>(it) }
+        val storedMeta = metaFile.inputStream().use { AppJson.decodeFromStream(StoredStoryFileMetaSerializer, it) }
         val fileSize = contentFile.fileSize()
 
         return WithOrder(
@@ -184,6 +186,25 @@ class StoryFilesServiceImpl(
         val added: Instant = Clock.System.now(),
         val wordCount: UInt = 0u,
         val order: UInt = 0u,
+    ) {
+        companion object {
+            const val VERSION: UInt = 1u
+        }
+    }
+
+    /**
+     * TODO: Needs to be used explicitly for now due to bug: https://github.com/Kotlin/kotlinx.serialization/issues/1438
+     * Replace with [Serializer] when fixed.
+     */
+    private object StoredStoryFileMetaSerializer : JsonVersionedSerializer<StoredStoryFileMeta>(
+        currentVersion = StoredStoryFileMeta.VERSION,
+        migrations = listOf(
+            // Example:
+            // Migration(1u) {
+            //     JsonObject(it.jsonObject + ("newProperty" to JsonPrimitive("new value")))
+            // }
+        ),
+        actualSerializer = StoredStoryFileMeta.serializer()
     )
 
     private data class WithOrder<T>(

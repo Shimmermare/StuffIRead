@@ -1,3 +1,5 @@
+@file:UseSerializers(StorySerializer::class)
+
 package com.shimmermare.stuffiread.stories
 
 import com.shimmermare.stuffiread.stories.FileBasedStoryService.Companion.STORIES_DIR_NAME
@@ -9,6 +11,7 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream

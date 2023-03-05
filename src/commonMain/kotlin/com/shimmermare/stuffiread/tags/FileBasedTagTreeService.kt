@@ -1,12 +1,17 @@
+@file:UseSerializers(TagSerializer::class, TagCategorySerializer::class)
+
 package com.shimmermare.stuffiread.tags
 
 import com.shimmermare.stuffiread.util.AppJson
+import com.shimmermare.stuffiread.util.JsonVersionedSerializer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
@@ -34,7 +39,7 @@ class FileBasedTagTreeService(
                     }
 
                     val storedTree = tagsFilePath.inputStream(StandardOpenOption.READ).use {
-                        Json.decodeFromStream<StoredTagTree>(it)
+                        Json.decodeFromStream(StoredTagTreeSerializer, it)
                     }
 
                     TagTree(storedTree.categories, storedTree.tags)
@@ -74,5 +79,24 @@ class FileBasedTagTreeService(
     private data class StoredTagTree(
         val categories: Collection<TagCategory> = emptyList(),
         val tags: Collection<Tag> = emptyList()
+    ) {
+        companion object {
+            const val VERSION: UInt = 1u
+        }
+    }
+
+    /**
+     * TODO: Needs to be used explicitly for now due to bug: https://github.com/Kotlin/kotlinx.serialization/issues/1438
+     * Replace with [Serializer] when fixed.
+     */
+    private object StoredTagTreeSerializer : JsonVersionedSerializer<StoredTagTree>(
+        currentVersion = StoredTagTree.VERSION,
+        migrations = listOf(
+            // Example:
+            // Migration(1u) {
+            //     JsonObject(it.jsonObject + ("newProperty" to JsonPrimitive("new value")))
+            // }
+        ),
+        actualSerializer = StoredTagTree.serializer()
     )
 }

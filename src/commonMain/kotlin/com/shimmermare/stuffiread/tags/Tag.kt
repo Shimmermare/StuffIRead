@@ -1,11 +1,10 @@
 package com.shimmermare.stuffiread.tags
 
-import com.shimmermare.stuffiread.tags.TagDescription.Companion.MAX_LENGTH
 import com.shimmermare.stuffiread.tags.TagId.Companion.None
-import com.shimmermare.stuffiread.tags.TagName.Companion.MAX_LENGTH
-import com.shimmermare.stuffiread.ui.util.ComparatorUtils
+import com.shimmermare.stuffiread.util.JsonVersionedSerializer
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Serializer
 
 /**
  * Represents discrete characteristic about the story.
@@ -42,71 +41,23 @@ data class Tag(
             throw IllegalArgumentException("Updated date ($updated) is before created date ($created)")
         }
     }
-}
-
-/**
- * Represents tag ID.
- * Value of 0 is considered null-value for non-existing tags. See [None].
- */
-@JvmInline
-@Serializable
-value class TagId(val value: UInt) : Comparable<TagId> {
-    override fun compareTo(other: TagId): Int = value.compareTo(other.value)
-
-    override fun toString(): String = value.toString()
 
     companion object {
-        val None = TagId(0u)
+        const val VERSION: UInt = 1u
     }
 }
 
 /**
- * Represents unique tag name.
- * Can't be blank, has max length [MAX_LENGTH] and not allowed to be multi-line.
+ * TODO: Needs to be used explicitly for now due to bug: https://github.com/Kotlin/kotlinx.serialization/issues/1438
+ * Replace with [Serializer] when fixed.
  */
-@JvmInline
-@Serializable
-value class TagName(val value: String) : Comparable<TagName> {
-    init {
-        require(value.isNotBlank()) { "Name can't be blank" }
-        require(!value.contains('\n')) { "Multi-line name is not allowed" }
-        require(value.length <= MAX_LENGTH) { "Name length exceeded $MAX_LENGTH (${value.length})" }
-    }
-
-    override fun compareTo(other: TagName): Int = value.compareTo(other.value)
-
-    override fun toString(): String = value
-
-    companion object {
-        const val MAX_LENGTH = 100
-    }
-}
-
-/**
- * Represents tag description.
- * Can't be blank and has max length [MAX_LENGTH].
- */
-@JvmInline
-@Serializable
-value class TagDescription private constructor(val value: String?) : Comparable<TagDescription> {
-    val isPresent: Boolean get() = value != null
-
-    init {
-        if (value != null) {
-            require(value.length <= MAX_LENGTH) { "Description length exceeded $MAX_LENGTH (${value.length})" }
-        }
-    }
-
-    override fun compareTo(other: TagDescription): Int =
-        ComparatorUtils.naturalOrderNullsLast<String>().compare(value, other.value)
-
-    override fun toString(): String = value ?: ""
-
-    companion object {
-        val NONE = TagDescription(null)
-
-        const val MAX_LENGTH = 2000
-
-        fun of(name: String?) = if (name == null) NONE else TagDescription(name)
-    }
-}
+object TagSerializer : JsonVersionedSerializer<Tag>(
+    currentVersion = Tag.VERSION,
+    migrations = listOf(
+        // Example:
+        // Migration(1u) {
+        //     JsonObject(it.jsonObject + ("newProperty" to JsonPrimitive("new value")))
+        // }
+    ),
+    actualSerializer = Tag.serializer()
+)

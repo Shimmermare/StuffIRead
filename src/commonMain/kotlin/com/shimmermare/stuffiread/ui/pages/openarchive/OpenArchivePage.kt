@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import com.shimmermare.stuffiread.ui.AppState
 import com.shimmermare.stuffiread.ui.pages.error.ErrorPage
 import com.shimmermare.stuffiread.ui.routing.Page
+import io.github.aakira.napier.Napier
 
 class OpenArchivePage : Page {
     @Composable
@@ -25,6 +26,7 @@ class OpenArchivePage : Page {
                 try {
                     app.openStoryArchive(archiveDirectory, createIfNotExists)
                 } catch (e: Exception) {
+                    Napier.e(e) { "Failed to open story archive $archiveDirectory" }
                     app.router.goTo(
                         ErrorPage(
                             title = "Failed to open story archive",

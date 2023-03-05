@@ -1,18 +1,11 @@
 package com.shimmermare.stuffiread.stories
 
-import com.shimmermare.stuffiread.stories.StoryAuthor.Companion.MAX_LENGTH
-import com.shimmermare.stuffiread.stories.StoryDescription.Companion.MAX_LENGTH
 import com.shimmermare.stuffiread.stories.StoryId.Companion.None
-import com.shimmermare.stuffiread.stories.StoryName.Companion.MAX_LENGTH
-import com.shimmermare.stuffiread.stories.StoryReview.Companion.MAX_LENGTH
-import com.shimmermare.stuffiread.stories.StoryURL.Companion.MAX_LENGTH
-import com.shimmermare.stuffiread.tags.TagCategoryDescription.Companion.MAX_LENGTH
 import com.shimmermare.stuffiread.tags.TagId
-import com.shimmermare.stuffiread.tags.TagName.Companion.MAX_LENGTH
-import com.shimmermare.stuffiread.ui.util.ComparatorUtils
-import io.ktor.http.*
+import com.shimmermare.stuffiread.util.JsonVersionedSerializer
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Serializer
 
 /**
  * Story entity is centerpiece of the app.
@@ -105,161 +98,23 @@ data class Story(
             "Updated date ($updated) is before created date ($created)"
         }
     }
-}
-
-/**
- * Represents story ID.
- * Value of 0 is considered null-value for non-existing stories. See [None].
- */
-@JvmInline
-@Serializable
-value class StoryId(val value: UInt) : Comparable<StoryId> {
-    override fun compareTo(other: StoryId): Int = value.compareTo(other.value)
-
-    override fun toString(): String = value.toString()
 
     companion object {
-        val None = StoryId(0u)
+        const val VERSION: UInt = 1u
     }
 }
 
 /**
- * Represents story author's name/nickname.
- * Can't be blank and has max length [MAX_LENGTH].
+ * TODO: Needs to be used explicitly for now due to bug: https://github.com/Kotlin/kotlinx.serialization/issues/1438
+ * Replace with [Serializer] when fixed.
  */
-@JvmInline
-@Serializable
-value class StoryAuthor private constructor(val value: String?) : Comparable<StoryAuthor> {
-    init {
-        if (value != null) {
-            require(value.isNotBlank()) { "Author name can't be blank" }
-            require(!value.contains('\n')) { "Multi-line author name is not allowed" }
-            require(value.length <= MAX_LENGTH) { "Author name length exceeded $MAX_LENGTH (${value.length})" }
-        }
-    }
-
-    val isPresent: Boolean get() = value != null
-
-    override fun compareTo(other: StoryAuthor): Int =
-        ComparatorUtils.naturalOrderNullsLast<String>().compare(value, other.value)
-
-    override fun toString(): String = value ?: "Unknown Author"
-
-    companion object {
-        val UNKNOWN = StoryAuthor(null)
-
-        const val MAX_LENGTH = 120
-
-        fun of(author: String?) = if (author.isNullOrBlank()) UNKNOWN else StoryAuthor(author)
-    }
-}
-
-/**
- * Represents story name.
- * Optional, can't be blank or multi-line, has max length [MAX_LENGTH].
- */
-@JvmInline
-@Serializable
-value class StoryName(val value: String) : Comparable<StoryName> {
-    init {
-        require(value.isNotBlank()) { "Name can't be blank" }
-        require(!value.contains('\n')) { "Multi-line name is not allowed" }
-        require(value.length <= MAX_LENGTH) { "Name length exceeded $MAX_LENGTH (${value.length})" }
-    }
-
-    override fun compareTo(other: StoryName): Int = value.compareTo(other.value)
-
-    override fun toString(): String = value
-
-    companion object {
-        const val MAX_LENGTH = 200
-    }
-}
-
-/**
- * Represents story URL.
- * Has to be valid URL with max length [MAX_LENGTH].
- */
-@JvmInline
-@Serializable
-value class StoryURL private constructor(val value: String?) : Comparable<StoryURL> {
-    init {
-        if (value != null) {
-            require(value.length <= MAX_LENGTH) { "URL length exceeded $MAX_LENGTH (${value.length})" }
-            Url(value)
-        }
-    }
-
-    val isPresent: Boolean get() = value != null
-
-    override fun compareTo(other: StoryURL): Int =
-        ComparatorUtils.naturalOrderNullsLast<String>().compare(value, other.value)
-
-    override fun toString(): String = value ?: ""
-
-    companion object {
-        val NONE = StoryURL(null)
-
-        const val MAX_LENGTH = 200
-
-        fun of(url: String?) = if (url.isNullOrBlank()) NONE else StoryURL(url)
-    }
-}
-
-/**
- * Represents tag description.
- * Optional, has max length [MAX_LENGTH].
- */
-@JvmInline
-@Serializable
-value class StoryDescription private constructor(val value: String?) : Comparable<StoryDescription> {
-    val isPresent: Boolean get() = value != null
-
-    init {
-        if (value != null) {
-            require(value.length <= MAX_LENGTH) { "Description length exceeded $MAX_LENGTH (${value.length})" }
-        }
-    }
-
-    override fun compareTo(other: StoryDescription): Int =
-        ComparatorUtils.naturalOrderNullsLast<String>().compare(value, other.value)
-
-    override fun toString(): String = value ?: ""
-
-    companion object {
-        val NONE = StoryDescription(null)
-
-        const val MAX_LENGTH = 2000
-
-        fun of(description: String?) = if (description.isNullOrBlank()) NONE else StoryDescription(description)
-    }
-}
-
-/**
- * Represents tag review.
- * Optional, has max length [MAX_LENGTH].
- */
-@JvmInline
-@Serializable
-value class StoryReview private constructor(val value: String?) : Comparable<StoryReview> {
-    val isPresent: Boolean get() = value != null
-
-    init {
-        if (value != null) {
-            require(value.length <= MAX_LENGTH) { "Review length exceeded $MAX_LENGTH (${value.length})" }
-        }
-    }
-
-    override fun compareTo(other: StoryReview): Int =
-        ComparatorUtils.naturalOrderNullsLast<String>().compare(value, other.value)
-
-    override fun toString(): String = value ?: ""
-
-    companion object {
-        val NONE = StoryReview(null)
-
-        const val MAX_LENGTH = 2000
-
-        fun of(review: String?) = if (review.isNullOrBlank()) NONE else StoryReview(review)
-    }
-}
+object StorySerializer : JsonVersionedSerializer<Story>(
+    currentVersion = Story.VERSION,
+    migrations = listOf(
+        // Example:
+        // Migration(1u) {
+        //     JsonObject(it.jsonObject + ("newProperty" to JsonPrimitive("new value")))
+        // }
+    ),
+    actualSerializer = Story.serializer()
+)
