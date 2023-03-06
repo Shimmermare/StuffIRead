@@ -7,5 +7,6 @@ data class PasteMetadata<PasteId>(
     val author: String,
     val name: String,
     val addedDate: Instant?,
+    val modifiedDate: Instant? = addedDate,
     val tags: Set<String> = emptySet()
 )

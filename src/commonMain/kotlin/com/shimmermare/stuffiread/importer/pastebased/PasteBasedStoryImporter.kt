@@ -26,12 +26,13 @@ import kotlin.time.Duration.Companion.milliseconds
  * 3. Request content as UTF8 text for each paste.
  * 4. Map values:
  *   - [ImportedStory.author] is author of the first imported paste.
- *   - [ImportedStory.name] is the longest common prefix of imported pastes, or name of first paste if there's no prefix.
+ *   - [ImportedStory.name] is the longest common prefix of imported pastes, or name of first paste if prefix length
+ *     is less than half of first paste's name.
  *   - [ImportedStory.url] is URL of the first imported paste.
  *   - [ImportedStory.description] contains URLs of other pastes if there's more than one.
  *   - [ImportedStory.tags] merged tags from all pastes.
  *   - [ImportedStory.published] earliest added date of imported pastes.
- *   - [ImportedStory.changed] latest added date of imported pastes.
+ *   - [ImportedStory.changed] latest modified date of imported pastes.
  *   - [ImportedStory.files] paste content as TXT files.
  *
  * Importing story cover image is not supported.
@@ -76,7 +77,13 @@ abstract class PasteBasedStoryImporter<PasteId>(
                         .map { (first, second) -> first.meta.name.commonPrefixWith(second.meta.name) }
                         .minBy { it.length }
                         .trim(' ', '-', ':')
-                        .let { StoryName(it.ifBlank { pastes.first().meta.name }) }
+                        .let {
+                            if (it.length < pastes.first().meta.name.length / 2) {
+                                StoryName(pastes.first().meta.name)
+                            } else {
+                                StoryName(it)
+                            }
+                        }
                 },
                 url = StoryURL.of(getPasteUrl(pastes.first().meta.id)),
                 description = StringBuilder().apply {
@@ -89,7 +96,7 @@ abstract class PasteBasedStoryImporter<PasteId>(
                 // Oldest date for published
                 published = pastes.mapNotNull { it.meta.addedDate }.minOrNull(),
                 // Newest date for changed
-                changed = pastes.mapNotNull { it.meta.addedDate }.maxOrNull(),
+                changed = pastes.mapNotNull { it.meta.modifiedDate }.maxOrNull(),
                 cover = null,
                 files = files,
             )

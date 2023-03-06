@@ -58,13 +58,18 @@ fun ImportFromSourceForm(
             importSource?.let { importSource ->
                 when (importSource) {
                     ImportSource.PASTEBIN -> PasteImportForm<PasteKey>(
-                        source = ImportSource.PASTEBIN,
+                        source = importSource,
                         examplePasteUrls = listOf("https://pastebin.com/NdYBi384", "https://pastebin.com/raw/NdYBi384"),
                         onImported = onImported
                     )
                     ImportSource.PONEPASTE -> PasteImportForm<PasteKey>(
-                        source = ImportSource.PONEPASTE,
+                        source = importSource,
                         examplePasteUrls = listOf("https://ponepaste.org/5680", "https://ponepaste.org/raw/5680"),
+                        onImported = onImported
+                    )
+                    ImportSource.PONEBIN -> PasteImportForm<PasteKey>(
+                        source = importSource,
+                        examplePasteUrls = listOf("https://poneb.in/ABCDEFGH", "https://poneb.in/raw/ABCDEFGH"),
                         onImported = onImported
                     )
                     else -> Text("NOT IMPLEMENTED")

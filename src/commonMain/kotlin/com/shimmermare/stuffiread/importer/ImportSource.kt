@@ -2,6 +2,8 @@ package com.shimmermare.stuffiread.importer
 
 import com.shimmermare.stuffiread.importer.pastebin.PastebinImporter
 import com.shimmermare.stuffiread.importer.pastebin.PastebinUrlParser
+import com.shimmermare.stuffiread.importer.ponebin.PonebinImporter
+import com.shimmermare.stuffiread.importer.ponebin.PonebinUrlParser
 import com.shimmermare.stuffiread.importer.ponepaste.PonepasteImporter
 import com.shimmermare.stuffiread.importer.ponepaste.PonepasteUrlParser
 
@@ -11,7 +13,7 @@ enum class ImportSource(
 ) {
     ARCHIVE_OF_OUR_OWN(PastebinUrlParser, PastebinImporter),
     PASTEBIN(PastebinUrlParser, PastebinImporter),
-    PONEBIN(PastebinUrlParser, PastebinImporter),
+    PONEBIN(PonebinUrlParser, PonebinImporter),
     FIMFICTION(PastebinUrlParser, PastebinImporter),
     PONEPASTE(PonepasteUrlParser, PonepasteImporter),
     FICBOOK(PastebinUrlParser, PastebinImporter),
