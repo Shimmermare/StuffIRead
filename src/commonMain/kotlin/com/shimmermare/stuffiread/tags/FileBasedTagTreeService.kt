@@ -62,7 +62,7 @@ class FileBasedTagTreeService(
                         StandardOpenOption.CREATE
                     ).use {
                         val storedTagTree = StoredTagTree(tree.categories, tree.tags)
-                        AppJson.encodeToStream(storedTagTree, it)
+                        AppJson.encodeToStream(StoredTagTreeSerializer, storedTagTree, it)
                     }
                 }
             } catch (e: Exception) {

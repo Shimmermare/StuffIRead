@@ -1,18 +1,25 @@
 package com.shimmermare.stuffiread.importer.pastebin
 
+import com.shimmermare.stuffiread.importer.pastebased.PasteMetadata
 import io.github.aakira.napier.Napier
-import kotlinx.datetime.Clock
 import kotlinx.datetime.toKotlinInstant
 import org.jsoup.Jsoup
 import java.time.Instant
 import java.time.format.DateTimeFormatter
 
+/**
+ * Paste metadata (e.g. author) information is not accessible via public API. So we have to just parse HTTP.
+ * TODO: Find better way to access this lol.
+ *
+ * Because relying on HTML structure inevitably will lead to problems later (when pastebin changes something),
+ * the only "required" field is paste name. Other fields will be replaced with placeholders if failed.
+ */
 actual object PastebinMetadataProvider {
     // E.g. Thursday 27th of June 2013 10:51:07 PM CDT
     private val DATE_FORMAT = DateTimeFormatter.ofPattern("EEEE d['st']['nd']['rd']['th'] 'of' MMMM yyyy hh:mm:ss a z")
 
-    actual suspend fun get(pasteKey: PasteKey): PasteMetadata {
-        val html = Jsoup.connect("https://pastebin.com/${pasteKey.value}").get()
+    actual suspend fun get(pasteKey: PasteKey): PasteMetadata<PasteKey> {
+        val html = Jsoup.connect(PastebinImporter.getPasteUrl(pasteKey)).get()
         val infoElement = html.select(".info-bottom")
 
         val author = try {
@@ -26,11 +33,11 @@ actual object PastebinMetadataProvider {
             val textDate = infoElement.select(".date span")[0].attr("title")
             Instant.from(DATE_FORMAT.parse(textDate)).toKotlinInstant()
         } catch (e: Exception) {
-            Napier.e(e) { "Failed to parse date for $pasteKey" }
-            Clock.System.now()
+            Napier.e(e) { "Failed to parse added date for $pasteKey" }
+            null
         }
         return PasteMetadata(
-            key = pasteKey,
+            id = pasteKey,
             author = author,
             name = name,
             addedDate = date

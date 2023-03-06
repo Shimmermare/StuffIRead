@@ -11,6 +11,10 @@ value class PasteKey(val value: String) {
         }
     }
 
+    override fun toString(): String {
+        return value
+    }
+
     companion object {
         private val FORMAT = Regex("[a-zA-Z0-9]+")
     }

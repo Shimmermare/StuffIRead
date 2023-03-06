@@ -11,11 +11,12 @@ import com.shimmermare.stuffiread.ui.components.form.InputFormState
 fun <FormData> ResetFormButton(
     state: InputFormState<FormData>,
     originalData: FormData,
+    name: String = "Reset"
 ) {
     Button(
         onClick = { state.data = originalData },
         enabled = state.data != originalData
     ) {
-        Text("Reset")
+        Text(name)
     }
 }

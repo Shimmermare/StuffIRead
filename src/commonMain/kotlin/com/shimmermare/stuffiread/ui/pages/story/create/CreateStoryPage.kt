@@ -70,34 +70,26 @@ class CreateStoryPage : Page {
 
     @Composable
     private fun ImportOrCreateNew(onSelected: (StoryFormData) -> Unit) {
-        // Hide manual import suggestion and move content to top if user wants to import
-        var importFormOpen: Boolean by remember { mutableStateOf(false) }
+        // Hide manual import suggestion and move content to top if user selected import
+        var showManualCreate: Boolean by remember { mutableStateOf(true) }
 
         Column(
             modifier = Modifier.fillMaxHeight(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(
                 space = 20.dp,
-                alignment = if (importFormOpen) Alignment.Top else Alignment.CenterVertically
+                alignment = if (!showManualCreate) Alignment.Top else Alignment.CenterVertically
             ),
         ) {
-            if (!importFormOpen) {
+            if (showManualCreate) {
                 Button(onClick = { onSelected(StoryFormData(Story(name = StoryName("Story name")))) }) {
                     Text("Add manually")
                 }
                 Text("OR", style = MaterialTheme.typography.h5)
             }
             StoryImportForm(
-                onOpenStateChange = { importFormOpen = it },
-                onImported = {
-                    onSelected(
-                        StoryFormData(
-                            story = it.story,
-                            cover = it.cover,
-                            files = it.files
-                        )
-                    )
-                }
+                onSourceSelected = { showManualCreate = (it == null) },
+                onImported = onSelected
             )
         }
     }

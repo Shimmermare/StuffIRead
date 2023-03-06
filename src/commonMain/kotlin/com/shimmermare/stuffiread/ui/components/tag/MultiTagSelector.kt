@@ -24,17 +24,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.tags.Tag
-import com.shimmermare.stuffiread.tags.TagCategoryId
 import com.shimmermare.stuffiread.tags.TagId
-import com.shimmermare.stuffiread.tags.TagName
 import com.shimmermare.stuffiread.tags.TagWithCategory
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
 import com.shimmermare.stuffiread.ui.components.layout.FullscreenPopup
 import com.shimmermare.stuffiread.ui.components.layout.PointerInsideTrackerBox
 import com.shimmermare.stuffiread.ui.components.layout.PopupContent
 import com.shimmermare.stuffiread.ui.components.search.SearchBar
-import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPageMode
-import com.shimmermare.stuffiread.ui.pages.tag.edit.TagForm
 import com.shimmermare.stuffiread.ui.tagService
 
 /**
@@ -72,7 +68,7 @@ fun MultiTagSelector(
         }
 
         Mode.SHOW_QUICK_CREATE -> {
-            QuickCreate(
+            QuickCreateTag(
                 onShowSelectorRequest = { mode = Mode.SHOW_SELECTOR }
             )
         }
@@ -211,26 +207,6 @@ private fun SelectorPopup(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun QuickCreate(onShowSelectorRequest: () -> Unit) {
-    val tagService = tagService
-    FullscreenPopup {
-        TagForm(
-            mode = EditTagPageMode.CREATE,
-            tag = Tag(
-                name = TagName("New tag"),
-                categoryId = TagCategoryId.None,
-            ),
-            modifier = Modifier.padding(20.dp).width(800.dp),
-            onBack = onShowSelectorRequest,
-            onSubmit = {
-                tagService.createTag(it)
-                onShowSelectorRequest()
-            }
-        )
     }
 }
 

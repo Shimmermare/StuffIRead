@@ -98,6 +98,9 @@ class TagServiceImpl(
         return tree.getTagsInCategoryIncludingImplied(categoryId)
     }
 
+    override fun getTags(): List<Tag> {
+        return tree.tags.toList()
+    }
     override fun getTagsWithCategory(): List<TagWithCategory> {
         return tree.getTagsWithCategory()
     }

@@ -45,6 +45,8 @@ interface TagService {
 
     fun getTagsInCategoryIncludingImplied(categoryId: TagCategoryId): List<TagWithCategory>
 
+    fun getTags(): List<Tag>
+
     fun getTagsWithCategory(): List<TagWithCategory>
 
     fun getTagsExtended(): List<ExtendedTag>

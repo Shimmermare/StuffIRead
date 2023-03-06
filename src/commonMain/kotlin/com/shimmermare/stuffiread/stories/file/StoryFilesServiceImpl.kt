@@ -158,6 +158,7 @@ class StoryFilesServiceImpl(
 
         metaFile.outputStream().use {
             AppJson.encodeToStream(
+                serializer = StoredStoryFileMetaSerializer,
                 value = StoredStoryFileMeta(
                     format = file.meta.format,
                     originalName = file.meta.originalName,
