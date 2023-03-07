@@ -30,12 +30,13 @@ import com.shimmermare.stuffiread.ui.pages.tagcategory.edit.EditTagCategoryPageM
 fun TagCategoryForm(
     mode: EditTagCategoryPageMode,
     category: TagCategory,
+    modifier: Modifier = Modifier.padding(20.dp).sizeIn(maxWidth = 800.dp),
     onBack: () -> Unit,
     onSubmit: (TagCategory) -> Unit
 ) {
     SubmittableInputForm(
         data = category,
-        modifier = Modifier.padding(20.dp).sizeIn(maxWidth = 800.dp),
+        modifier = modifier,
         submitButtonText = when (mode) {
             CREATE -> "Create"
             EDIT -> "Save"

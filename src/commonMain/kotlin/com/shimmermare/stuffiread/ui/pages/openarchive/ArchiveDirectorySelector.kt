@@ -17,7 +17,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.shimmermare.stuffiread.ui.AppSettingsHolder
-import com.shimmermare.stuffiread.ui.components.dialog.FixedAlertDialog
+import com.shimmermare.stuffiread.ui.components.dialog.ErrorDialog
+import com.shimmermare.stuffiread.ui.components.error.ErrorInfo
 import com.shimmermare.stuffiread.ui.components.layout.PointerInsideTrackerBox
 import com.shimmermare.stuffiread.ui.util.DirectoriesOnlyFileFilter
 import com.shimmermare.stuffiread.ui.util.FileDialog
@@ -76,7 +77,6 @@ private fun ArchiveDirSelectorButtons(
     CreateArchiveDirButton { onSelected.invoke(it, true) }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun SelectArchiveDirButton(onSelected: (Path) -> Unit) {
     var showNotExistForDir: Path? by remember { mutableStateOf(null) }
@@ -101,19 +101,14 @@ private fun SelectArchiveDirButton(onSelected: (Path) -> Unit) {
     }
 
     if (showNotExistForDir != null) {
-        FixedAlertDialog(
-            title = {
-                Text("Failed to select story archive directory")
-            },
-            text = {
-                Text("Directory '$showNotExistForDir' doesn't exist.")
-            },
-            modifier = Modifier.widthIn(),
-            confirmButton = {
-                Button(onClick = { showNotExistForDir = null }) {
-                    Text("Ok")
-                }
-            },
+        val error = remember(showNotExistForDir) {
+            ErrorInfo(
+                title = "Failed to select story archive directory",
+                description = "Directory '$showNotExistForDir' doesn't exist.",
+            )
+        }
+        ErrorDialog(
+            error = error,
             onDismissRequest = { showNotExistForDir = null }
         )
     }
@@ -144,19 +139,14 @@ private fun CreateArchiveDirButton(onSelected: (Path) -> Unit) {
     }
 
     if (showAlreadyExistForDir != null) {
-        FixedAlertDialog(
-            title = {
-                Text("Failed to create story archive directory")
-            },
-            text = {
-                Text("Directory '$showAlreadyExistForDir' already exists.")
-            },
-            modifier = Modifier.widthIn(),
-            confirmButton = {
-                Button(onClick = { showAlreadyExistForDir = null }) {
-                    Text("Ok")
-                }
-            },
+        val error = remember(showAlreadyExistForDir) {
+            ErrorInfo(
+                title = "Failed to create story archive directory",
+                description = "Directory '$showAlreadyExistForDir' already exists.",
+            )
+        }
+        ErrorDialog(
+            error = error,
             onDismissRequest = { showAlreadyExistForDir = null }
         )
     }

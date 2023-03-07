@@ -1,6 +1,7 @@
 package com.shimmermare.stuffiread.tags
 
 import com.shimmermare.stuffiread.tags.TagId.Companion.None
+import com.shimmermare.stuffiread.ui.util.TimeUtils
 import com.shimmermare.stuffiread.util.JsonVersionedSerializer
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
@@ -30,7 +31,7 @@ data class Tag(
      * Note: implied tags are allowed to form implication cycles. That just means that all tags in cycle are implied.
      */
     val impliedTagIds: Set<TagId> = emptySet(),
-    val created: Instant = Instant.fromEpochSeconds(0),
+    val created: Instant = TimeUtils.EPOCH_START,
     val updated: Instant = created,
 ) {
     init {

@@ -1,5 +1,6 @@
 package com.shimmermare.stuffiread.ui.util
 
+import io.github.aakira.napier.Napier
 import java.io.File
 import java.nio.file.Path
 import javax.swing.JFileChooser
@@ -21,7 +22,7 @@ actual object FileDialog {
         val fileChooser = createFileChooser(title, currentDirectory, selectedFile, selectionMode, fileFilter)
 
         return if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-            fileChooser.selectedFile?.toPath()
+            fileChooser.selectedFile.toPathOrNull()
         } else {
             null
         }
@@ -42,7 +43,7 @@ actual object FileDialog {
         val fileChooser = createFileChooser(title, currentDirectory, selectedFile, selectionMode, fileFilter)
 
         if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-            val result = fileChooser.selectedFile?.toPath() ?: return null
+            val result = fileChooser.selectedFile.toPathOrNull() ?: return null
             return if (defaultExtension != null && result.extension != defaultExtension) {
                 result.resolveSibling("${result.fileName}.$defaultExtension")
             } else {
@@ -74,6 +75,15 @@ actual object FileDialog {
             SelectionMode.FILES_ONLY -> JFileChooser.FILES_ONLY
             SelectionMode.DIRECTORIES_ONLY -> JFileChooser.DIRECTORIES_ONLY
             SelectionMode.FILES_AND_DIRECTORIES -> JFileChooser.FILES_AND_DIRECTORIES
+        }
+    }
+
+    private fun File?.toPathOrNull(): Path? {
+        return try {
+            this?.toPath()
+        } catch (e: Exception) {
+            Napier.e("Failed to convert file to path", e)
+            null
         }
     }
 

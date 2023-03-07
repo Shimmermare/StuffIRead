@@ -10,6 +10,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -40,7 +41,7 @@ fun ErrorCard(
             verticalArrangement = Arrangement.spacedBy(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(title, style = MaterialTheme.typography.h5)
+            Text(title, style = MaterialTheme.typography.h6)
 
             if (description != null) {
                 Text(description)
@@ -48,7 +49,7 @@ fun ErrorCard(
 
             if (exception != null) {
                 Column {
-                    Text("Exception stack trace:", style = MaterialTheme.typography.h6)
+                    Text("Exception stack trace:", fontWeight = FontWeight.Bold)
                     // Default font can't display tab char
                     val text = exception.stackTraceToString().replace("\t", "    ")
                     Text(text)
@@ -57,7 +58,6 @@ fun ErrorCard(
 
             if (suggestion != null) {
                 Text(suggestion)
-
             }
         }
     }

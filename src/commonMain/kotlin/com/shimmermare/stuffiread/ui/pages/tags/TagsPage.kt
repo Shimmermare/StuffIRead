@@ -57,7 +57,7 @@ class TagsPage : MutableTablePage<TagId, ExtendedTag>() {
                 // Reload whole table because other tags can be changed too
                 reload()
             },
-            onDismiss = onDismiss
+            onDismissRequest = onDismiss
         )
     }
 

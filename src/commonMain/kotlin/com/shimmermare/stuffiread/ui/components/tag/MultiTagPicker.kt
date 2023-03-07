@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -26,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.tags.Tag
 import com.shimmermare.stuffiread.tags.TagId
 import com.shimmermare.stuffiread.tags.TagWithCategory
-import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
 import com.shimmermare.stuffiread.ui.components.layout.FullscreenPopup
 import com.shimmermare.stuffiread.ui.components.layout.PointerInsideTrackerBox
@@ -34,72 +35,62 @@ import com.shimmermare.stuffiread.ui.components.layout.PopupContent
 import com.shimmermare.stuffiread.ui.components.search.SearchBar
 
 /**
- * Input to select multiple unique tags from list of all tags.
- *
- *
- * @param filter additional filter for tags available for selection.
+ * Pick multiple tags.
  */
 @Composable
-fun MultiTagSelector(
-    selectedIds: Set<TagId>,
+fun MultiTagPicker(
+    title: String,
+    pickedTagIds: Set<TagId>,
     filter: (Tag) -> Boolean = { true },
-    onSelected: (Set<TagId>) -> Unit
+    onPick: (Set<TagId>) -> Unit,
 ) {
-    var mode: Mode by remember { mutableStateOf(Mode.CLOSED) }
+    var openPopup: Boolean by remember { mutableStateOf(false) }
 
-    SelectedTags(
-        selectedIds = selectedIds,
-        onUnselectRequest = { onSelected(selectedIds - it) },
-        onShowSelectorRequest = { mode = Mode.SHOW_SELECTOR }
+    PickedTagsField(
+        pickedTagIds = pickedTagIds,
+        onUnpickRequest = { onPick(pickedTagIds - it) },
+        onOpenPopupRequest = { openPopup = true }
     )
 
-    when (mode) {
-        Mode.SHOW_SELECTOR -> {
-            Selector(
-                selectedIds = selectedIds,
-                filter = filter,
-                onCloseRequest = { mode = Mode.CLOSED },
-                onSelected = {
-                    onSelected(it)
-                    mode = Mode.CLOSED
-                },
-                onShowQuickCreateRequest = { mode = Mode.SHOW_QUICK_CREATE }
-            )
-        }
-
-        Mode.SHOW_QUICK_CREATE -> {
-            QuickCreateTag(
-                onShowSelectorRequest = { mode = Mode.SHOW_SELECTOR }
-            )
-        }
-
-        else -> {}
+    if (openPopup) {
+        MultiPickerPopup(
+            title = title,
+            currentlyPickedTagIds = pickedTagIds,
+            filter = filter,
+            onCloseRequest = { openPopup = false },
+            onPicked = {
+                openPopup = false
+                onPick(it)
+            }
+        )
     }
 }
 
 @Composable
-private fun SelectedTags(
-    selectedIds: Set<TagId>,
-    onUnselectRequest: (TagId) -> Unit,
-    onShowSelectorRequest: () -> Unit
+private fun PickedTagsField(
+    pickedTagIds: Set<TagId>,
+    onUnpickRequest: (TagId) -> Unit,
+    onOpenPopupRequest: () -> Unit
 ) {
-    val selectedTags: List<TagWithCategory> = remember(selectedIds) {
-        tagService.getTagsWithCategoryByIds(selectedIds).sortedWith(TagWithCategory.DEFAULT_ORDER)
+    val pickedTags: List<TagWithCategory> = remember(pickedTagIds) {
+        StoryArchiveHolder.tagService.getTagsWithCategoryByIds(pickedTagIds).sortedWith(TagWithCategory.DEFAULT_ORDER)
     }
 
     ChipVerticalGrid {
-        selectedTags.forEach { tag ->
-            SelectedTag(tag) { onUnselectRequest(tag.tag.id) }
+        pickedTags.forEach { tag ->
+            PickedTag(tag) { onUnpickRequest(tag.tag.id) }
         }
-
-        Box(modifier = Modifier.clickable(onClick = onShowSelectorRequest)) {
+        Box(modifier = Modifier.clickable(onClick = onOpenPopupRequest)) {
             Icon(Icons.Filled.Add, null, modifier = Modifier.size(30.dp))
         }
     }
 }
 
 @Composable
-private fun SelectedTag(tag: TagWithCategory, onUnselect: () -> Unit) {
+private fun PickedTag(
+    tag: TagWithCategory,
+    onUnselect: () -> Unit
+) {
     PointerInsideTrackerBox { pointerInside ->
         Row(
             horizontalArrangement = Arrangement.spacedBy(5.dp),
@@ -116,42 +107,34 @@ private fun SelectedTag(tag: TagWithCategory, onUnselect: () -> Unit) {
 }
 
 @Composable
-private fun Selector(
-    selectedIds: Set<TagId>,
-    filter: (Tag) -> Boolean = { true },
+private fun MultiPickerPopup(
+    title: String,
+    currentlyPickedTagIds: Set<TagId>,
+    filter: (Tag) -> Boolean,
     onCloseRequest: () -> Unit,
-    onSelected: (Set<TagId>) -> Unit,
-    onShowQuickCreateRequest: () -> Unit,
+    onPicked: (Set<TagId>) -> Unit,
 ) {
-    val allTags = remember { tagService.getTagsWithCategory() }
-    SelectorPopup(
-        selectedIds,
-        allTags,
-        filter = { filter(it.tag) },
-        onCloseRequest = onCloseRequest,
-        onSelected = onSelected,
-        onShowQuickCreateRequest = onShowQuickCreateRequest
-    )
-}
+    // Reload all tags after quick create
+    var allTagsDirtyCounter: Int by remember { mutableStateOf(0) }
+    val allTags = remember(allTagsDirtyCounter) {
+        StoryArchiveHolder.tagService.getTagsWithCategory().sortedWith(TagWithCategory.DEFAULT_ORDER)
+    }
 
-@Composable
-private fun SelectorPopup(
-    initiallySelectedIds: Set<TagId>,
-    allTags: List<TagWithCategory>,
-    filter: (TagWithCategory) -> Boolean,
-    onCloseRequest: () -> Unit,
-    onSelected: (Set<TagId>) -> Unit,
-    onShowQuickCreateRequest: () -> Unit,
-) {
-    var selectedTags: Map<TagId, TagWithCategory> by remember(initiallySelectedIds) {
-        mutableStateOf(allTags.filter { initiallySelectedIds.contains(it.tag.id) }.associateBy { it.tag.id })
+    var showQuickCreate: Boolean by remember { mutableStateOf(false) }
+
+    var pickedTagIds: Set<TagId> by remember(allTagsDirtyCounter, currentlyPickedTagIds) {
+        mutableStateOf(currentlyPickedTagIds)
+    }
+    val pickedTags: List<TagWithCategory> = remember(pickedTagIds) {
+        allTags.filter { pickedTagIds.contains(it.tag.id) }
     }
 
     var searchText: String by remember { mutableStateOf("") }
-    val filteredTags: List<TagWithCategory> = remember(selectedTags, searchText) {
+    val availableToPickTags: List<TagWithCategory> = remember(allTagsDirtyCounter, pickedTagIds, searchText) {
+        val searchTextLowered = searchText.trim().lowercase()
         allTags.filter {
-            !selectedTags.containsKey(it.tag.id) && filter(it)
-                    && it.tag.name.value.lowercase().contains(searchText)
+            val tag = it.tag
+            !pickedTagIds.contains(tag.id) && filter(tag) && tag.name.value.lowercase().contains(searchTextLowered)
         }
     }
 
@@ -164,12 +147,13 @@ private fun SelectorPopup(
                     .heightIn(max = 600.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Text(text = "Selected ${selectedTags.size} tags:")
+                Text(title, style = MaterialTheme.typography.h6)
+                Text(text = "Picked ${pickedTags.size} tags:")
                 ChipVerticalGrid {
-                    selectedTags.forEach { (id, tag) ->
+                    pickedTags.forEach { tag ->
                         TagName(
                             tag = tag,
-                            onClick = { selectedTags = selectedTags - id }
+                            onClick = { pickedTagIds = pickedTagIds - tag.tag.id }
                         )
                     }
                 }
@@ -177,12 +161,12 @@ private fun SelectorPopup(
                     searchText = searchText,
                     onSearchTextChanged = { searchText = it }
                 )
-                Text(text = "Found ${filteredTags.size} tags:")
+                Text(text = "Found ${availableToPickTags.size} tags:")
                 ChipVerticalGrid(modifier = Modifier.heightIn(max = 400.dp)) {
-                    filteredTags.forEach {
+                    availableToPickTags.forEach {
                         TagName(
                             tag = it,
-                            onClick = { selectedTags = selectedTags + (it.tag.id to it) }
+                            onClick = { pickedTagIds = pickedTagIds + it.tag.id }
                         )
                     }
                 }
@@ -193,22 +177,26 @@ private fun SelectorPopup(
                         Text("Cancel")
                     }
                     Button(
-                        enabled = initiallySelectedIds != selectedTags.keys,
-                        onClick = { onSelected(selectedTags.keys) }
+                        enabled = currentlyPickedTagIds != pickedTagIds,
+                        onClick = { onPicked(pickedTagIds) }
                     ) {
                         Text("Confirm")
                     }
-                    Button(onClick = onShowQuickCreateRequest) {
+                    Button(onClick = { showQuickCreate = true }) {
                         Text("Quick create")
                     }
                 }
             }
         }
     }
-}
 
-private enum class Mode {
-    CLOSED,
-    SHOW_SELECTOR,
-    SHOW_QUICK_CREATE
+    if (showQuickCreate) {
+        QuickCreateTag(
+            onCloseRequest = { showQuickCreate = false },
+            onCreate = {
+                allTagsDirtyCounter++
+                showQuickCreate = false
+            }
+        )
+    }
 }

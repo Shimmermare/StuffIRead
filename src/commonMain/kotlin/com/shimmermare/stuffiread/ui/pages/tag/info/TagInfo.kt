@@ -100,7 +100,7 @@ fun TagInfo(tag: ExtendedTag) {
                 showDeleteDialog = false
                 Router.goTo(TagsPage())
             },
-            onDismiss = { showDeleteDialog = false }
+            onDismissRequest = { showDeleteDialog = false }
         )
     }
 }

@@ -107,16 +107,12 @@ fun TagTable(
         column(
             header = { Icon(Icons.Filled.Edit, null, modifier = Modifier.alpha(0F)) },
         ) { item ->
-            Icon(Icons.Filled.Edit, null, modifier = Modifier.clickable {
-                onEditRequest.invoke(item)
-            })
+            Icon(Icons.Filled.Edit, null, modifier = Modifier.clickable { onEditRequest(item) })
         }
         column(
             header = { Icon(Icons.Filled.Delete, null, modifier = Modifier.alpha(0F)) },
         ) { item ->
-            Icon(Icons.Filled.Delete, null, modifier = Modifier.clickable {
-                onDeleteRequest.invoke(item)
-            })
+            Icon(Icons.Filled.Delete, null, modifier = Modifier.clickable { onDeleteRequest(item) })
         }
     }
 }

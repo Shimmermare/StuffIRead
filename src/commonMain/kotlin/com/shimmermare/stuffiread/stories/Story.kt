@@ -2,6 +2,7 @@ package com.shimmermare.stuffiread.stories
 
 import com.shimmermare.stuffiread.stories.StoryId.Companion.None
 import com.shimmermare.stuffiread.tags.TagId
+import com.shimmermare.stuffiread.ui.util.TimeUtils
 import com.shimmermare.stuffiread.util.JsonVersionedSerializer
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
@@ -78,7 +79,7 @@ data class Story(
     /**
      * Date when story entry was created in archive.
      */
-    val created: Instant = Instant.fromEpochSeconds(0),
+    val created: Instant = TimeUtils.EPOCH_START,
     /**
      * Date when story entry was last updated in archive.
      */

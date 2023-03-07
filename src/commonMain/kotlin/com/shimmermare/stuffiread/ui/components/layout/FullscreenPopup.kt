@@ -29,9 +29,9 @@ inline fun FullscreenPopup(
         focusable = true,
     ) {
         val backgroundColor = if (theme == Theme.DARK) {
-            Color.Black.copy(alpha = 0.8F)
+            Color.White.copy(alpha = 0.15F)
         } else {
-            Color.White.copy(alpha = 0.7F)
+            Color.Black.copy(alpha = 0.6F)
         }
         Box(
             modifier = Modifier

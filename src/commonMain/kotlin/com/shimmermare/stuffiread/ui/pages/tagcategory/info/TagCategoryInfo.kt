@@ -104,7 +104,7 @@ fun TagCategoryInfo(category: TagCategory) {
                 showDeleteDialog = false
                 Router.goTo(TagCategoriesPage())
             },
-            onDismiss = {
+            onDismissRequest = {
                 showDeleteDialog = false
             }
         )

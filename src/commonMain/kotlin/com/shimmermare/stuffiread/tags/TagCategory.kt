@@ -1,6 +1,7 @@
 package com.shimmermare.stuffiread.tags
 
 import com.shimmermare.stuffiread.tags.TagCategoryId.Companion.None
+import com.shimmermare.stuffiread.ui.util.TimeUtils
 import com.shimmermare.stuffiread.util.JsonVersionedSerializer
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
@@ -29,7 +30,7 @@ data class TagCategory(
      * All tags of type will be displayed using this color.
      */
     val color: Int = DEFAULT_COLOR,
-    val created: Instant = Instant.fromEpochSeconds(0),
+    val created: Instant = TimeUtils.EPOCH_START,
     val updated: Instant = created,
 ) {
     init {

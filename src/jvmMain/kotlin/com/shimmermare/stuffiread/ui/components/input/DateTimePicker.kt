@@ -55,7 +55,13 @@ actual fun DateTimePicker(
         background = MaterialTheme.colors.background,
         factory = { picker },
         modifier = modifier,
-        update = { it.dateTime = value.toJavaLocalDateTime() }
+        update = { updating ->
+            updating.apply {
+                dateTime = value.toJavaLocalDateTime()
+                dateTimePicker.dateTimeChangeListeners.clear()
+                dateTimePicker.addDateTimeChangeListener { onValueChange(it.newDateTimeStrict.toKotlinLocalDateTime()) }
+            }
+        }
     )
 }
 
@@ -93,7 +99,7 @@ private class Picker(
                 setColor(DateArea.CalendarTextWeekNumbers, onSurfaceColor)
                 setColor(DateArea.TextClearLabel, onPrimaryColor)
                 setColor(DateArea.TextMonthAndYearMenuLabels, onSurfaceColor)
-                setColor(DateArea.TextMonthAndYearNavigationButtons, onPrimaryColor)
+                // setColor(DateArea.TextMonthAndYearNavigationButtons, onPrimaryColor)
                 setColor(DateArea.TextTodayLabel, onPrimaryColor)
                 setColor(DateArea.TextCalendarPanelLabelsOnHover, onSurfaceColor)
                 setColor(DateArea.TextFieldBackgroundDisallowedEmptyDate, errorColor)

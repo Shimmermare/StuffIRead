@@ -50,7 +50,7 @@ import com.shimmermare.stuffiread.ui.components.search.SearchBar
 import com.shimmermare.stuffiread.ui.components.story.SortBehavior.ASCENDING_UNKNOWN_FIRST
 import com.shimmermare.stuffiread.ui.components.story.SortBehavior.DESCENDING
 import com.shimmermare.stuffiread.ui.components.story.SortBehavior.DESCENDING_UNKNOWN_FIRST
-import com.shimmermare.stuffiread.ui.components.tag.MultiTagSelector
+import com.shimmermare.stuffiread.ui.components.tag.MultiTagPicker
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
@@ -224,9 +224,10 @@ private fun AdvancedStoryFilterFields(state: InputFormState<StoryFilter>) {
         getter = { it.tagsPresent },
         setter = { form, value -> form.copy(tagsPresent = value) },
     ) { value, _, onValueChange ->
-        MultiTagSelector(
-            selectedIds = value,
-            onSelected = onValueChange
+        MultiTagPicker(
+            title = "Pick tags to search for",
+            pickedTagIds = value,
+            onPick = onValueChange
         )
     }
     Row {

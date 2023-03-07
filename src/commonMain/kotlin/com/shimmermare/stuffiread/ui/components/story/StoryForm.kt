@@ -46,10 +46,11 @@ import com.shimmermare.stuffiread.ui.components.form.TextFormField
 import com.shimmermare.stuffiread.ui.components.form.UIntFormField
 import com.shimmermare.stuffiread.ui.components.form.ValidationResult
 import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollColumn
-import com.shimmermare.stuffiread.ui.components.tag.MultiTagSelector
+import com.shimmermare.stuffiread.ui.components.tag.MultiTagPicker
 import com.shimmermare.stuffiread.ui.util.ExtensionFileFilter
 import com.shimmermare.stuffiread.ui.util.FileDialog
 import com.shimmermare.stuffiread.ui.util.SelectionMode
+import com.shimmermare.stuffiread.ui.util.TimeUtils
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.launch
 
@@ -176,6 +177,7 @@ private fun FormContainer(
             state = state,
             name = "First published date",
             description = "Date when the story was initially published by author",
+            defaultValue = { TimeUtils.instantAtToday1200() },
             getter = { it.story.published },
             setter = { data, value ->
                 // If published is set to after changed - set changed to same as published
@@ -192,6 +194,7 @@ private fun FormContainer(
             state = state,
             name = "Last change date",
             description = "Date when the story was modified by author last time",
+            defaultValue = { state.data.story.published ?: TimeUtils.instantAtToday1200() },
             getter = { it.story.changed },
             setter = { data, value ->
                 // If changed is set to before published - set published to same as changed
@@ -210,9 +213,10 @@ private fun FormContainer(
             getter = { it.story.tags },
             setter = { data, value -> data.copy(story = data.story.copy(tags = value)) },
         ) { value, _, onValueChange ->
-            MultiTagSelector(
-                selectedIds = value,
-                onSelected = onValueChange
+            MultiTagPicker(
+                title = "Pick story tags",
+                pickedTagIds = value,
+                onPick = onValueChange
             )
         }
         FormField(
@@ -254,16 +258,34 @@ private fun FormContainer(
             state = state,
             name = "First read date",
             description = "Date when you read story the first time",
+            defaultValue = { TimeUtils.instantAtToday1200() },
             getter = { it.story.firstRead },
-            setter = { data, value -> data.copy(story = data.story.copy(firstRead = value)) },
+            setter = { data, value ->
+                // If firstRead is set to after lastRead - set changed to same as firstRead
+                val lastRead = if (value != null && data.story.lastRead != null && value > data.story.lastRead) {
+                    value
+                } else {
+                    data.story.lastRead
+                }
+                data.copy(story = data.story.copy(firstRead = value, lastRead = lastRead))
+            },
         )
         OptionalInstantFormField(
             id = "lastRead",
             state = state,
             name = "Last read date",
             description = "Date when you read story the last time",
+            defaultValue = { state.data.story.firstRead ?: TimeUtils.instantAtToday1200() },
             getter = { it.story.lastRead },
-            setter = { data, value -> data.copy(story = data.story.copy(lastRead = value)) },
+            setter = { data, value ->
+                // If lastRead is set to before firstRead - set firstRead to same as lastRead
+                val firstRead = if (value != null && data.story.firstRead != null && value < data.story.firstRead) {
+                    value
+                } else {
+                    data.story.firstRead
+                }
+                data.copy(story = data.story.copy(firstRead = firstRead, lastRead = value))
+            },
         )
         UIntFormField(
             id = "timesRead",

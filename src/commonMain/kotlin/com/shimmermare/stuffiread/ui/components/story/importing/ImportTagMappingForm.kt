@@ -26,7 +26,7 @@ import com.shimmermare.stuffiread.tags.TagId
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
 import com.shimmermare.stuffiread.ui.components.input.ExtendedOutlinedTextField
 import com.shimmermare.stuffiread.ui.components.story.StoryFormData
-import com.shimmermare.stuffiread.ui.components.tag.TagSelector
+import com.shimmermare.stuffiread.ui.components.tag.TagPicker
 
 /**
  * Map imported data to valid app story.
@@ -94,9 +94,10 @@ fun ImportTagMappingForm(
                         horizontalAlignment = Alignment.End,
                         modifier = Modifier.weight(1F)
                     ) {
-                        TagSelector(
-                            tagId = mappedTags.getOrDefault(tagName, TagId.None),
-                            onSelected = { mappedTags = mappedTags + (tagName to it) }
+                        TagPicker(
+                            title = "Pick mapped tack",
+                            pickedTagId = mappedTags.getOrDefault(tagName, TagId.None),
+                            onPick = { mappedTags = mappedTags + (tagName to it) }
                         )
                     }
                 }

@@ -94,11 +94,11 @@ class StoryInfoPage(val storyId: StoryId) : LoadedPage<Story>() {
         if (showDeleteDialog) {
             DeleteStoryDialog(
                 story = content!!,
-                onDelete = {
+                onDismissRequest = { showDeleteDialog = false },
+                onDeleted = {
                     showDeleteDialog = false
                     Router.goTo(StoriesPage())
-                },
-                onDismiss = { showDeleteDialog = false }
+                }
             )
         }
     }

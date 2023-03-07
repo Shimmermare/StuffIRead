@@ -20,8 +20,8 @@ import com.shimmermare.stuffiread.ui.components.form.FormField
 import com.shimmermare.stuffiread.ui.components.form.SubmittableInputForm
 import com.shimmermare.stuffiread.ui.components.form.TextFormField
 import com.shimmermare.stuffiread.ui.components.form.ValidationResult
-import com.shimmermare.stuffiread.ui.components.tag.MultiTagSelector
-import com.shimmermare.stuffiread.ui.components.tagcategory.TagCategorySelector
+import com.shimmermare.stuffiread.ui.components.tag.MultiTagPicker
+import com.shimmermare.stuffiread.ui.components.tagcategory.TagCategoryPicker
 import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPageMode.CREATE
 import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPageMode.EDIT
 
@@ -69,7 +69,11 @@ fun TagForm(
             setter = { form, value -> form.copy(categoryId = value) },
             validator = { validateTagCategory(tagService, it) },
         ) { value, _, onChange ->
-            TagCategorySelector(categoryId = value, onSelected = onChange)
+            TagCategoryPicker(
+                title = "Pick tag category",
+                pickedCategoryId = value,
+                onPick = onChange
+            )
         }
         TextFormField(
             id = "description",
@@ -90,7 +94,12 @@ fun TagForm(
             setter = { form, value -> form.copy(impliedTagIds = value) },
             validator = { validateImpliedTags(tagService, tag.id, it) },
         ) { value, _, onChange ->
-            MultiTagSelector(selectedIds = value, filter = { it.id != tag.id }, onSelected = onChange)
+            MultiTagPicker(
+                title = "Pick implied tags",
+                pickedTagIds = value,
+                filter = { it.id != tag.id },
+                onPick = onChange
+            )
         }
     }
 }
