@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.importer.ImportSource
 import com.shimmermare.stuffiread.importer.ImportedStory
 import com.shimmermare.stuffiread.importer.pastebin.PasteKey
+import com.shimmermare.stuffiread.ui.AppSettingsHolder.settings
 import com.shimmermare.stuffiread.ui.components.input.OptionalOutlinedEnumField
 import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollColumn
 
@@ -26,6 +27,12 @@ fun ImportFromSourceForm(
     onSourceSelected: (ImportSource?) -> Unit,
     onImported: (ImportedStory) -> Unit
 ) {
+    val enabledSources: Set<ImportSource> = remember(settings) {
+        ImportSource.values()
+            .let { if (settings.enablePonyIntegrations) it.toList() else it.filter { s -> !s.ponyIntegration } }
+            .toSet()
+    }
+
     var importSource: ImportSource? by remember { mutableStateOf(null) }
 
     Column(
@@ -39,7 +46,7 @@ fun ImportFromSourceForm(
             Text("Import from")
             OptionalOutlinedEnumField(
                 value = importSource,
-                allowedValues = setOf(ImportSource.PASTEBIN, ImportSource.PONEBIN, ImportSource.PONEPASTE),
+                allowedValues = enabledSources,
                 displayNameProvider = { it.getDisplayName() },
                 inputFieldModifier = Modifier.width(300.dp).height(36.dp),
                 onValueChange = {
@@ -73,8 +80,6 @@ fun ImportFromSourceForm(
                         examplePasteUrls = listOf("https://poneb.in/ABCDEFGH", "https://poneb.in/raw/ABCDEFGH"),
                         onImported = onImported
                     )
-
-                    else -> Text("NOT IMPLEMENTED")
                 }
             }
         }
@@ -83,12 +88,12 @@ fun ImportFromSourceForm(
 
 private fun ImportSource.getDisplayName(): String {
     return when (this) {
-        ImportSource.ARCHIVE_OF_OUR_OWN -> "archiveofourown.org"
         ImportSource.PASTEBIN -> "pastebin.com"
-        ImportSource.PONEBIN -> "poneb.in"
-        ImportSource.FIMFICTION -> "FimFiction.net"
         ImportSource.PONEPASTE -> "ponepaste.org"
-        ImportSource.FICBOOK -> "ficbook.net"
-        ImportSource.PONYFICTION -> "ponyfiction.org"
+        ImportSource.PONEBIN -> "poneb.in"
+        // ImportSource.FIMFICTION -> "FimFiction.net"
+        // ImportSource.ARCHIVE_OF_OUR_OWN -> "archiveofourown.org"
+        // ImportSource.FICBOOK -> "ficbook.net"
+        // ImportSource.PONYFICTION -> "ponyfiction.org"
     }
 }

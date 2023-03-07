@@ -290,7 +290,6 @@ private fun FormContainer(
 private fun StoryCoverFormField(
     state: InputFormState<StoryFormData>,
 ) {
-    val storyCoverService = storyCoverService
     FormField(
         id = "cover",
         state = state,

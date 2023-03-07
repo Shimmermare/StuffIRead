@@ -13,6 +13,7 @@ import com.shimmermare.stuffiread.settings.AppSettings
 import com.shimmermare.stuffiread.settings.ScoreDisplayType
 import com.shimmermare.stuffiread.settings.ThemeBehavior
 import com.shimmermare.stuffiread.ui.AppSettingsHolder
+import com.shimmermare.stuffiread.ui.components.form.BoolFormField
 import com.shimmermare.stuffiread.ui.components.form.EnumFormField
 import com.shimmermare.stuffiread.ui.components.form.SubmittableInputForm
 import com.shimmermare.stuffiread.ui.routing.Page
@@ -72,6 +73,20 @@ class SettingsPage : Page {
                             ScoreDisplayType.NUMBERS_1_TO_100 -> "Numbers 1/100"
                         }
                     }
+                )
+                BoolFormField(
+                    id = "openLastArchiveOnStartup",
+                    state = state,
+                    name = "On startup open last previously opened archive",
+                    getter = { it.openLastArchiveOnStartup },
+                    setter = { form, value -> form.copy(openLastArchiveOnStartup = value) },
+                )
+                BoolFormField(
+                    id = "ponyIntegrations",
+                    state = state,
+                    name = "Enable pony website integrations",
+                    getter = { it.enablePonyIntegrations },
+                    setter = { form, value -> form.copy(enablePonyIntegrations = value) },
                 )
             }
         }

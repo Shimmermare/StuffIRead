@@ -10,12 +10,13 @@ import com.shimmermare.stuffiread.importer.ponepaste.PonepasteUrlParser
 enum class ImportSource(
     val urlParser: UrlParser<*>,
     val importer: StoryImporter<out ImportSettings>,
+    val ponyIntegration: Boolean = false,
 ) {
-    ARCHIVE_OF_OUR_OWN(PastebinUrlParser, PastebinImporter),
     PASTEBIN(PastebinUrlParser, PastebinImporter),
-    PONEBIN(PonebinUrlParser, PonebinImporter),
-    FIMFICTION(PastebinUrlParser, PastebinImporter),
-    PONEPASTE(PonepasteUrlParser, PonepasteImporter),
-    FICBOOK(PastebinUrlParser, PastebinImporter),
-    PONYFICTION(PastebinUrlParser, PastebinImporter),
+    PONEPASTE(PonepasteUrlParser, PonepasteImporter, ponyIntegration = true),
+    PONEBIN(PonebinUrlParser, PonebinImporter, ponyIntegration = true),
+    // TODO ARCHIVE_OF_OUR_OWN(..., ...),
+    // TODO FIMFICTION(..., ..., ponyIntegration = true),
+    // TODO FICBOOK(..., ...), - also maybe add settings bool to disable non-english sources?
+    // TODO PONYFICTION(PastebinUrlParser, PastebinImporter, ponyIntegration = true),
 }

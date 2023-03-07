@@ -14,7 +14,6 @@ import com.shimmermare.stuffiread.ui.components.AboutApp
 fun AppMenu(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
-    onResetAppStateRequest: () -> Unit,
     onOpenSettingsRequest: () -> Unit
 ) {
     var showAbout: Boolean by remember { mutableStateOf(false) }
@@ -24,7 +23,7 @@ fun AppMenu(
         onDismissRequest = onDismissRequest
     ) {
         if (StoryArchiveHolder.isOpen) {
-            DropdownMenuItem(onClick = onResetAppStateRequest) {
+            DropdownMenuItem(onClick = { StoryArchiveHolder.closeStoryArchive() }) {
                 Text("Close archive")
             }
         }

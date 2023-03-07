@@ -31,7 +31,7 @@ import com.shimmermare.stuffiread.ui.theme.LocalTheme
 import com.shimmermare.stuffiread.ui.theme.Theme
 
 @Composable
-fun TopBar(onResetAppStateRequest: () -> Unit) {
+fun TopBar() {
     var menuOpened: Boolean by remember { mutableStateOf(false) }
 
     TopAppBar(
@@ -44,7 +44,6 @@ fun TopBar(onResetAppStateRequest: () -> Unit) {
                 AppMenu(
                     menuOpened,
                     onDismissRequest = { menuOpened = false },
-                    onResetAppStateRequest = onResetAppStateRequest,
                     onOpenSettingsRequest = { Router.goTo(SettingsPage()) },
                 )
             }

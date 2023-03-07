@@ -11,7 +11,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.shimmermare.stuffiread.ui.AppSettingsHolder.settings
 import com.shimmermare.stuffiread.ui.pages.error.ErrorPage
+import com.shimmermare.stuffiread.ui.pages.openarchive.OpenArchivePage
 import com.shimmermare.stuffiread.ui.routing.Router
 import com.shimmermare.stuffiread.ui.theme.LocalTheme
 import com.shimmermare.stuffiread.ui.theme.LocalThemeProvider
@@ -24,8 +26,8 @@ val Router: Router = Router()
 @Preview
 fun App() {
     LaunchedEffect(Unit) {
-        val lastOpenArchive = AppSettingsHolder.settings.recentlyOpenedArchives.firstOrNull()
-        if (lastOpenArchive != null) {
+        val lastOpenArchive = settings.recentlyOpenedArchives.firstOrNull()
+        if (settings.openLastArchiveOnStartup && lastOpenArchive != null) {
             try {
                 StoryArchiveHolder.openStoryArchive(lastOpenArchive, false)
             } catch (e: Exception) {
@@ -38,6 +40,8 @@ fun App() {
                     )
                 )
             }
+        } else {
+            Router.goTo(OpenArchivePage())
         }
     }
 
@@ -55,11 +59,7 @@ private fun AppContent() {
         }
     ) {
         Scaffold(
-            topBar = {
-                TopBar(
-                    onResetAppStateRequest = { StoryArchiveHolder.closeStoryArchive() }
-                )
-            }
+            topBar = { TopBar() }
         ) {
             Box(
                 modifier = Modifier.fillMaxSize(),

@@ -6,6 +6,8 @@ import java.nio.file.Path
 data class AppSettings(
     val themeBehavior: ThemeBehavior = DEFAULT_THEME_BEHAVIOR,
     val scoreDisplayType: ScoreDisplayType = DEFAULT_SCORE_DISPLAY_TYPE,
+    val openLastArchiveOnStartup: Boolean = DEFAULT_OPEN_LAST_ARCHIVE_ON_STARTUP,
+    val enablePonyIntegrations: Boolean = DEFAULT_ENABLE_PONY_INTEGRATIONS,
     /**
      * Ordered from most to least recent.
      * Contains no more than [RECENTLY_OPENED_TO_KEEP] paths and contains no duplicates.
@@ -24,6 +26,8 @@ data class AppSettings(
     companion object {
         val DEFAULT_THEME_BEHAVIOR = ThemeBehavior.USE_SYSTEM
         val DEFAULT_SCORE_DISPLAY_TYPE = ScoreDisplayType.STARS_10
+        const val DEFAULT_OPEN_LAST_ARCHIVE_ON_STARTUP = true
+        const val DEFAULT_ENABLE_PONY_INTEGRATIONS = true
 
         const val RECENTLY_OPENED_TO_KEEP: UInt = 10u
     }
