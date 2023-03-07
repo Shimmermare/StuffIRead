@@ -3,13 +3,13 @@ package com.shimmermare.stuffiread.ui.pages.tags
 import androidx.compose.runtime.Composable
 import com.shimmermare.stuffiread.tags.ExtendedTag
 import com.shimmermare.stuffiread.tags.TagId
-import com.shimmermare.stuffiread.ui.AppState
+import com.shimmermare.stuffiread.ui.Router
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder
 import com.shimmermare.stuffiread.ui.components.tag.DeleteTagDialog
 import com.shimmermare.stuffiread.ui.pages.MutableTablePage
 import com.shimmermare.stuffiread.ui.pages.error.ErrorPage
 import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPage
 import com.shimmermare.stuffiread.ui.pages.tag.info.TagInfoPage
-import com.shimmermare.stuffiread.ui.router
 import com.shimmermare.stuffiread.ui.routing.Router
 import io.github.aakira.napier.Napier
 
@@ -21,21 +21,20 @@ class TagsPage : MutableTablePage<TagId, ExtendedTag>() {
 
     override fun ExtendedTag.name(): String = tag.name.value
 
-    override suspend fun load(app: AppState): Map<TagId, ExtendedTag> {
-        return app.storyArchive!!.tagService.getTagsExtended().associateBy { it.tag.id }
+    override suspend fun load(): Map<TagId, ExtendedTag> {
+        return StoryArchiveHolder.tagService.getTagsExtended().associateBy { it.tag.id }
     }
 
     @Composable
-    override fun LoadingError(app: AppState) {
+    override fun LoadingError() {
         Napier.e(error) { "Failed to load tags" }
 
-        val router = router
-        router.goTo(
+        Router.goTo(
             ErrorPage(
                 title = "Failed to load tags",
                 exception = error,
                 actions = listOf(ErrorPage.Action("Try Again") {
-                    router.goTo(TagsPage())
+                    Router.goTo(TagsPage())
                 })
             )
         )
@@ -50,7 +49,7 @@ class TagsPage : MutableTablePage<TagId, ExtendedTag>() {
     }
 
     @Composable
-    override fun DeleteDialog(app: AppState, item: ExtendedTag, onDeleted: () -> Unit, onDismiss: () -> Unit) {
+    override fun DeleteDialog(item: ExtendedTag, onDeleted: () -> Unit, onDismiss: () -> Unit) {
         DeleteTagDialog(
             tag = item,
             onDeleted = {
@@ -64,15 +63,13 @@ class TagsPage : MutableTablePage<TagId, ExtendedTag>() {
 
     @Composable
     override fun TableContent(
-        app: AppState,
         items: Collection<ExtendedTag>,
         onDeleteRequest: (ExtendedTag) -> Unit
     ) {
-        val router = router
         TagTable(
             tags = items,
-            onRowClick = { router.goTo(TagInfoPage(it.tag.id)) },
-            onEditRequest = { router.goTo(EditTagPage.edit(it.tag)) },
+            onRowClick = { Router.goTo(TagInfoPage(it.tag.id)) },
+            onEditRequest = { Router.goTo(EditTagPage.edit(it.tag)) },
             onDeleteRequest = onDeleteRequest
         )
     }

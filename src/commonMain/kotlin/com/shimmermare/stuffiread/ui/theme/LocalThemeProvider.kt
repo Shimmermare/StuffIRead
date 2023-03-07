@@ -10,7 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.shimmermare.stuffiread.settings.ThemeBehavior
-import com.shimmermare.stuffiread.ui.appSettings
+import com.shimmermare.stuffiread.ui.AppSettingsHolder
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlin.time.Duration.Companion.milliseconds
@@ -22,8 +22,7 @@ private val SYSTEM_THEME_SYNC_INTERVAL = 5000.milliseconds
 
 @Composable
 fun LocalThemeProvider(content: @Composable () -> Unit) {
-    val appSettings = appSettings
-
+    val appSettings = AppSettingsHolder.settings
     var theme: Theme by remember(appSettings) { mutableStateOf(Theme.fromBehavior(appSettings.themeBehavior)) }
 
     LaunchedEffect(appSettings) {

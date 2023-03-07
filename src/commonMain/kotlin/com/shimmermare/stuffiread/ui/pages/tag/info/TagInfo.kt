@@ -33,6 +33,8 @@ import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.stories.StoryFilter
 import com.shimmermare.stuffiread.tags.ExtendedTag
 import com.shimmermare.stuffiread.tags.TagId
+import com.shimmermare.stuffiread.ui.Router
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storySearchService
 import com.shimmermare.stuffiread.ui.components.date.Date
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
 import com.shimmermare.stuffiread.ui.components.layout.LoadingContainer
@@ -43,15 +45,12 @@ import com.shimmermare.stuffiread.ui.components.tagcategory.TagCategoryNameRouta
 import com.shimmermare.stuffiread.ui.pages.stories.StoriesPage
 import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPage
 import com.shimmermare.stuffiread.ui.pages.tags.TagsPage
-import com.shimmermare.stuffiread.ui.router
-import com.shimmermare.stuffiread.ui.storySearchService
 import kotlinx.coroutines.flow.toList
 
 private const val STORIES_WITH_TAG_PREVIEW_COUNT = 5
 
 @Composable
 fun TagInfo(tag: ExtendedTag) {
-    val router = router
 
     var showDeleteDialog: Boolean by remember { mutableStateOf(false) }
 
@@ -61,10 +60,10 @@ fun TagInfo(tag: ExtendedTag) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                FloatingActionButton(onClick = { router.goTo(EditTagPage.createCopy(tag.tag)) }) {
+                FloatingActionButton(onClick = { Router.goTo(EditTagPage.createCopy(tag.tag)) }) {
                     Icon(Icons.Filled.ContentCopy, null)
                 }
-                FloatingActionButton(onClick = { router.goTo(EditTagPage.edit(tag.tag)) }) {
+                FloatingActionButton(onClick = { Router.goTo(EditTagPage.edit(tag.tag)) }) {
                     Icon(Icons.Filled.Edit, null)
                 }
                 FloatingActionButton(onClick = { showDeleteDialog = true }) {
@@ -99,7 +98,7 @@ fun TagInfo(tag: ExtendedTag) {
             tag = tag,
             onDeleted = {
                 showDeleteDialog = false
-                router.goTo(TagsPage())
+                Router.goTo(TagsPage())
             },
             onDismiss = { showDeleteDialog = false }
         )
@@ -197,8 +196,6 @@ private fun PropertiesBlock(tag: ExtendedTag) {
 private fun StatsBlock(
     tagId: TagId
 ) {
-    val router = router
-    val storySearchService = storySearchService
     Column(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
@@ -226,7 +223,7 @@ private fun StatsBlock(
                 Button(
                     onClick = {
                         val filter = StoryFilter(tagsPresent = setOf(tagId))
-                        router.goTo(StoriesPage(presetFilter = filter))
+                        Router.goTo(StoriesPage(presetFilter = filter))
                     }
                 ) {
                     Text("Show all")

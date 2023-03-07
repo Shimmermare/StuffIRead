@@ -20,7 +20,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.stories.Story
 import com.shimmermare.stuffiread.stories.StoryId
-import com.shimmermare.stuffiread.ui.AppState
+import com.shimmermare.stuffiread.ui.Router
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storyService
 import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollColumn
 import com.shimmermare.stuffiread.ui.components.story.DeleteStoryDialog
 import com.shimmermare.stuffiread.ui.components.story.StoryInfo
@@ -36,7 +37,7 @@ class StoryInfoPage(val storyId: StoryId) : LoadedPage<Story>() {
     }
 
     @Composable
-    override fun Title(app: AppState) {
+    override fun Title() {
         val title = remember(status) {
             when (status) {
                 Status.LOADING -> "Loading story ID $storyId..."
@@ -47,27 +48,27 @@ class StoryInfoPage(val storyId: StoryId) : LoadedPage<Story>() {
         Text(text = title, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 
-    override suspend fun load(app: AppState): Story {
-        return app.storyArchive!!.storyService.getStoryByIdOrThrow(storyId)
+    override suspend fun load(): Story {
+        return storyService.getStoryByIdOrThrow(storyId)
     }
 
     @Composable
-    override fun LoadingError(app: AppState) {
+    override fun LoadingError() {
         Napier.e(error) { "Failed to load story $storyId" }
 
-        app.router.goTo(
+        Router.goTo(
             ErrorPage(
                 title = "Failed to load story $storyId",
                 exception = error,
                 actions = listOf(ErrorPage.Action("Try Again") {
-                    app.router.goTo(StoryInfoPage(storyId))
+                    Router.goTo(StoryInfoPage(storyId))
                 })
             )
         )
     }
 
     @Composable
-    override fun LoadedContent(app: AppState) {
+    override fun LoadedContent() {
         var showDeleteDialog: Boolean by remember { mutableStateOf(false) }
 
         Scaffold(
@@ -76,7 +77,7 @@ class StoryInfoPage(val storyId: StoryId) : LoadedPage<Story>() {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
-                    FloatingActionButton(onClick = { app.router.goTo(EditStoryPage(content!!.id)) }) {
+                    FloatingActionButton(onClick = { Router.goTo(EditStoryPage(content!!.id)) }) {
                         Icon(Icons.Filled.Edit, null)
                     }
                     FloatingActionButton(onClick = { showDeleteDialog = true }) {
@@ -92,11 +93,10 @@ class StoryInfoPage(val storyId: StoryId) : LoadedPage<Story>() {
 
         if (showDeleteDialog) {
             DeleteStoryDialog(
-                app.storyArchive!!.storyService,
                 story = content!!,
                 onDelete = {
                     showDeleteDialog = false
-                    app.router.goTo(StoriesPage())
+                    Router.goTo(StoriesPage())
                 },
                 onDismiss = { showDeleteDialog = false }
             )

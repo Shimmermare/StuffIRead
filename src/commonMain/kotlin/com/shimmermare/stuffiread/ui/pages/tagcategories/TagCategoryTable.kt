@@ -33,7 +33,8 @@ fun TagCategoryTable(
 ) {
     // TODO: Should be done properly using measuring
     val indexColumnWidth: Dp = remember(categories) {
-        min((categories.maxOf { it.sortOrder }.toString().length * 12).dp, 100.dp)
+        val calculatedWidth = (categories.maxOfOrNull { it.sortOrder } ?: 0).toString().length * 12
+        min(calculatedWidth.dp, 100.dp)
     }
 
     Table(

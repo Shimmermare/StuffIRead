@@ -15,6 +15,7 @@ import com.shimmermare.stuffiread.tags.TagDescription
 import com.shimmermare.stuffiread.tags.TagId
 import com.shimmermare.stuffiread.tags.TagName
 import com.shimmermare.stuffiread.tags.TagService
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
 import com.shimmermare.stuffiread.ui.components.form.FormField
 import com.shimmermare.stuffiread.ui.components.form.SubmittableInputForm
 import com.shimmermare.stuffiread.ui.components.form.TextFormField
@@ -23,7 +24,6 @@ import com.shimmermare.stuffiread.ui.components.tag.MultiTagSelector
 import com.shimmermare.stuffiread.ui.components.tagcategory.TagCategorySelector
 import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPageMode.CREATE
 import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPageMode.EDIT
-import com.shimmermare.stuffiread.ui.tagService
 
 @Composable
 fun TagForm(
@@ -33,7 +33,6 @@ fun TagForm(
     onBack: () -> Unit,
     onSubmit: (Tag) -> Unit
 ) {
-    val tagService = tagService
     SubmittableInputForm(
         data = tag,
         modifier = modifier,

@@ -12,7 +12,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.shimmermare.stuffiread.ui.AppState
 import com.shimmermare.stuffiread.ui.components.animation.AnimatedFadeIn
 import com.shimmermare.stuffiread.ui.routing.Page
 import io.github.aakira.napier.Napier
@@ -33,7 +32,7 @@ abstract class LoadedPage<Loadable>(
     protected var error: Exception? by mutableStateOf(null)
 
     @Composable
-    override fun Body(app: AppState) {
+    override fun Body() {
         LaunchedEffect(this, reloadNeeded) {
             if (status != Status.LOADING && !reloadNeeded) {
                 return@LaunchedEffect
@@ -45,7 +44,7 @@ abstract class LoadedPage<Loadable>(
             error = null
 
             try {
-                content = withTimeout(timeout) { load(app) }
+                content = withTimeout(timeout) { load() }
                 status = Status.LOADED
             } catch (e: Exception) {
                 error = e
@@ -62,26 +61,26 @@ abstract class LoadedPage<Loadable>(
 
             Status.LOADED -> {
                 AnimatedFadeIn(key = this) {
-                    LoadedContent(app)
+                    LoadedContent()
                 }
             }
 
             Status.FAILED -> {
-                LoadingError(app)
+                LoadingError()
             }
         }
     }
 
-    protected abstract suspend fun load(app: AppState): Loadable
+    protected abstract suspend fun load(): Loadable
 
     @Composable
-    protected open fun LoadingError(app: AppState) {
+    protected open fun LoadingError() {
         Napier.e(error) { "Failed to load page content" }
         Text("Failed to load page content", style = MaterialTheme.typography.h5)
     }
 
     @Composable
-    protected abstract fun LoadedContent(app: AppState)
+    protected abstract fun LoadedContent()
 
     protected fun reload() {
         reloadNeeded = true

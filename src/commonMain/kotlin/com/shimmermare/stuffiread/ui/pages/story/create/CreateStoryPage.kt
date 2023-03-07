@@ -20,24 +20,22 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.stories.Story
 import com.shimmermare.stuffiread.stories.StoryName
-import com.shimmermare.stuffiread.ui.AppState
+import com.shimmermare.stuffiread.ui.Router
 import com.shimmermare.stuffiread.ui.components.animation.AnimatedFadeIn
 import com.shimmermare.stuffiread.ui.components.story.SavingStoryForm
 import com.shimmermare.stuffiread.ui.components.story.StoryFormData
 import com.shimmermare.stuffiread.ui.components.story.importing.StoryImportForm
 import com.shimmermare.stuffiread.ui.pages.story.info.StoryInfoPage
-import com.shimmermare.stuffiread.ui.router
 import com.shimmermare.stuffiread.ui.routing.Page
 
 class CreateStoryPage : Page {
     @Composable
-    override fun Title(app: AppState) {
+    override fun Title() {
         Text(text = "New story", maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 
     @Composable
-    override fun Body(app: AppState) {
-        val router = router
+    override fun Body() {
 
         var formData: StoryFormData? by remember { mutableStateOf(null) }
 
@@ -57,7 +55,7 @@ class CreateStoryPage : Page {
                         SavingStoryForm(
                             prefillData = formData!!,
                             onSubmittedAndSaved = {
-                                router.goTo(StoryInfoPage(it.story.id))
+                                Router.goTo(StoryInfoPage(it.story.id))
                             },
                             onBack = { formData = null },
                             creationMode = true

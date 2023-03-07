@@ -6,10 +6,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.ui.components.input.OutlinedEnumField
-import kotlin.reflect.KClass
 
 /**
- * @param allowedValues restrict available enum values. By default all values are selectable.
  * @param displayNameProvider to use custom enum names. By default [Enum.name] will be used.
  */
 @Composable
@@ -20,8 +18,7 @@ fun <FormData, E : Enum<E>> EnumFormField(
     description: String? = null,
     getter: (FormData) -> E,
     setter: (FormData, E) -> FormData,
-    enumType: KClass<E>,
-    allowedValues: Set<E> = enumType.java.enumConstants.toSet(),
+    allowedValues: Set<E>,
     displayNameProvider: (E) -> String = { it.name },
     inputModifier: Modifier = Modifier.fillMaxWidth().height(36.dp),
 ) {
@@ -35,11 +32,10 @@ fun <FormData, E : Enum<E>> EnumFormField(
     ) { value, _, onValueChange ->
         OutlinedEnumField(
             value = value,
-            enumType = enumType,
             allowedValues = allowedValues,
             displayNameProvider = displayNameProvider,
             inputFieldModifier = inputModifier,
-            onValueChange = { onValueChange(it!!) }
+            onValueChange = { onValueChange(it) }
         )
     }
 }

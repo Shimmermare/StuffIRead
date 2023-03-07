@@ -10,13 +10,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.stories.Story
-import com.shimmermare.stuffiread.stories.StoryService
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storyService
 import com.shimmermare.stuffiread.ui.components.dialog.FixedAlertDialog
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun DeleteStoryDialog(storyService: StoryService, story: Story, onDelete: () -> Unit, onDismiss: () -> Unit) {
+fun DeleteStoryDialog(story: Story, onDelete: () -> Unit, onDismiss: () -> Unit) {
     val coroutineScope = rememberCoroutineScope()
 
     FixedAlertDialog(

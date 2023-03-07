@@ -6,7 +6,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.text.style.TextOverflow
 import com.shimmermare.stuffiread.tags.ExtendedTag
 import com.shimmermare.stuffiread.tags.TagId
-import com.shimmermare.stuffiread.ui.AppState
+import com.shimmermare.stuffiread.ui.Router
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
 import com.shimmermare.stuffiread.ui.pages.LoadedPage
 import com.shimmermare.stuffiread.ui.pages.error.ErrorPage
 import io.github.aakira.napier.Napier
@@ -17,9 +18,9 @@ class TagInfoPage(private val tagId: TagId) : LoadedPage<ExtendedTag>() {
     }
 
     @Composable
-    override fun Title(app: AppState) {
+    override fun Title() {
         val title = remember(tagId) {
-            val tag = app.storyArchive!!.tagService.getTagById(tagId)
+            val tag = tagService.getTagById(tagId)
             if (tag == null) {
                 "Tag $tagId not found!"
             } else {
@@ -29,27 +30,27 @@ class TagInfoPage(private val tagId: TagId) : LoadedPage<ExtendedTag>() {
         Text(text = title, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 
-    override suspend fun load(app: AppState): ExtendedTag {
-        return app.storyArchive!!.tagService.getExtendedTagByIdOrThrow(tagId)
+    override suspend fun load(): ExtendedTag {
+        return tagService.getExtendedTagByIdOrThrow(tagId)
     }
 
     @Composable
-    override fun LoadingError(app: AppState) {
+    override fun LoadingError() {
         Napier.e(error) { "Failed to load tag $tagId" }
 
-        app.router.goTo(
+        Router.goTo(
             ErrorPage(
                 title = "Failed to load tag $tagId",
                 exception = error,
                 actions = listOf(ErrorPage.Action("Try Again") {
-                    app.router.goTo(TagInfoPage(tagId))
+                    Router.goTo(TagInfoPage(tagId))
                 })
             )
         )
     }
 
     @Composable
-    override fun LoadedContent(app: AppState) {
+    override fun LoadedContent() {
         TagInfo(content!!)
     }
 }

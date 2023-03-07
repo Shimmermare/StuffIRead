@@ -9,9 +9,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.tags.TagCategory
+import com.shimmermare.stuffiread.ui.Router
 import com.shimmermare.stuffiread.ui.components.text.FilledNameText
 import com.shimmermare.stuffiread.ui.pages.tagcategory.info.TagCategoryInfoPage
-import com.shimmermare.stuffiread.ui.router
 
 /**
  * Go to tag category page on click
@@ -22,12 +22,11 @@ fun TagCategoryNameRoutable(
     fontSize: TextUnit = MaterialTheme.typography.subtitle1.fontSize,
     modifier: Modifier = Modifier.height(30.dp),
 ) {
-    val router = router
     TagCategoryName(
         category = category,
         fontSize = fontSize,
         modifier = modifier,
-        onClick = { router.goTo(TagCategoryInfoPage(category.id)) }
+        onClick = { Router.goTo(TagCategoryInfoPage(category.id)) }
     )
 }
 

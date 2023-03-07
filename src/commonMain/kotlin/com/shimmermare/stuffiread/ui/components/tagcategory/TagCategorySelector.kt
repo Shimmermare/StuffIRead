@@ -23,13 +23,13 @@ import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.tags.TagCategory
 import com.shimmermare.stuffiread.tags.TagCategoryId
 import com.shimmermare.stuffiread.tags.TagCategoryName
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
 import com.shimmermare.stuffiread.ui.components.layout.FullscreenPopup
 import com.shimmermare.stuffiread.ui.components.search.SearchBar
 import com.shimmermare.stuffiread.ui.components.text.FilledNameText
 import com.shimmermare.stuffiread.ui.pages.tagcategory.edit.EditTagCategoryPageMode
 import com.shimmermare.stuffiread.ui.pages.tagcategory.edit.TagCategoryForm
-import com.shimmermare.stuffiread.ui.tagService
 
 @Composable
 fun TagCategorySelector(
@@ -69,7 +69,6 @@ fun TagCategorySelector(
 private fun SelectedCategory(
     categoryId: TagCategoryId, onShowSelectorRequest: () -> Unit
 ) {
-    val tagService = tagService
 
     val category: TagCategory? = remember(categoryId) {
         if (categoryId == TagCategoryId.None) null else tagService.getCategoryById(categoryId)
@@ -94,7 +93,6 @@ private fun Selector(
     onSelected: (TagCategoryId) -> Unit,
     onShowQuickCreateRequest: () -> Unit,
 ) {
-    val tagService = tagService
 
     val allCategories: List<TagCategory> = remember { tagService.getCategories() }
 
@@ -165,7 +163,6 @@ private fun Selector(
 
 @Composable
 private fun QuickCreate(onShowSelectorRequest: () -> Unit) {
-    val tagService = tagService
     FullscreenPopup {
         TagCategoryForm(
             mode = EditTagCategoryPageMode.CREATE,

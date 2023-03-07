@@ -4,7 +4,11 @@ import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.shimmermare.stuffiread.ui.components.AboutApp
 
 @Composable
 fun AppMenu(
@@ -13,12 +17,13 @@ fun AppMenu(
     onResetAppStateRequest: () -> Unit,
     onOpenSettingsRequest: () -> Unit
 ) {
-    val uriHandler = LocalUriHandler.current
+    var showAbout: Boolean by remember { mutableStateOf(false) }
+
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismissRequest
     ) {
-        if (storyArchive != null) {
+        if (StoryArchiveHolder.isOpen) {
             DropdownMenuItem(onClick = onResetAppStateRequest) {
                 Text("Close archive")
             }
@@ -26,8 +31,12 @@ fun AppMenu(
         DropdownMenuItem(onClick = onOpenSettingsRequest) {
             Text("Settings")
         }
-        DropdownMenuItem(onClick = { uriHandler.openUri(GITHUB_URL) }) {
-            Text("Open GitHub")
+        DropdownMenuItem(onClick = { showAbout = true }) {
+            Text("About")
         }
+    }
+
+    if (showAbout) {
+        AboutApp(onDismissRequest = { showAbout = false })
     }
 }

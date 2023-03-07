@@ -33,6 +33,8 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.tags.TagCategory
 import com.shimmermare.stuffiread.tags.TagWithCategory
+import com.shimmermare.stuffiread.ui.Router
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
 import com.shimmermare.stuffiread.ui.components.date.Date
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
 import com.shimmermare.stuffiread.ui.components.tag.TagNameRoutable
@@ -40,8 +42,6 @@ import com.shimmermare.stuffiread.ui.components.tagcategory.DeleteTagCategoryDia
 import com.shimmermare.stuffiread.ui.components.tagcategory.TagCategoryNameRoutable
 import com.shimmermare.stuffiread.ui.pages.tagcategories.TagCategoriesPage
 import com.shimmermare.stuffiread.ui.pages.tagcategory.edit.EditTagCategoryPage
-import com.shimmermare.stuffiread.ui.router
-import com.shimmermare.stuffiread.ui.tagService
 import com.shimmermare.stuffiread.ui.util.ColorUtils.blueInt
 import com.shimmermare.stuffiread.ui.util.ColorUtils.greenInt
 import com.shimmermare.stuffiread.ui.util.ColorUtils.redInt
@@ -49,7 +49,6 @@ import com.shimmermare.stuffiread.ui.util.ColorUtils.toHexColor
 
 @Composable
 fun TagCategoryInfo(category: TagCategory) {
-    val router = router
 
     var showDeleteDialog: Boolean by remember { mutableStateOf(false) }
 
@@ -60,12 +59,12 @@ fun TagCategoryInfo(category: TagCategory) {
                 horizontalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 FloatingActionButton(
-                    onClick = { router.goTo(EditTagCategoryPage.createCopy(category)) }
+                    onClick = { Router.goTo(EditTagCategoryPage.createCopy(category)) }
                 ) {
                     Icon(Icons.Filled.ContentCopy, null)
                 }
                 FloatingActionButton(
-                    onClick = { router.goTo(EditTagCategoryPage(category)) }
+                    onClick = { Router.goTo(EditTagCategoryPage(category)) }
                 ) {
                     Icon(Icons.Filled.Edit, null)
                 }
@@ -103,7 +102,7 @@ fun TagCategoryInfo(category: TagCategory) {
             category,
             onDeleted = {
                 showDeleteDialog = false
-                router.goTo(TagCategoriesPage())
+                Router.goTo(TagCategoriesPage())
             },
             onDismiss = {
                 showDeleteDialog = false
@@ -161,7 +160,6 @@ private fun PropertiesBlock(category: TagCategory) {
 
 @Composable
 private fun StatsBlock(category: TagCategory) {
-    val tagService = tagService
 
     val tagsInCategoryIncludingImplied: List<TagWithCategory> = remember(category.id) {
         tagService.getTagsInCategoryIncludingImplied(category.id)

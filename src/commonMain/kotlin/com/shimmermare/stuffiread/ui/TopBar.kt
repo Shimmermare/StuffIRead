@@ -32,11 +32,10 @@ import com.shimmermare.stuffiread.ui.theme.Theme
 
 @Composable
 fun TopBar(onResetAppStateRequest: () -> Unit) {
-    val router = router
     var menuOpened: Boolean by remember { mutableStateOf(false) }
 
     TopAppBar(
-        title = { router.CurrentPageTitle() },
+        title = { Router.CurrentPageTitle() },
         navigationIcon = {
             Box {
                 IconButton(onClick = { menuOpened = true }) {
@@ -46,16 +45,16 @@ fun TopBar(onResetAppStateRequest: () -> Unit) {
                     menuOpened,
                     onDismissRequest = { menuOpened = false },
                     onResetAppStateRequest = onResetAppStateRequest,
-                    onOpenSettingsRequest = { router.goTo(SettingsPage()) },
+                    onOpenSettingsRequest = { Router.goTo(SettingsPage()) },
                 )
             }
         },
         actions = {
-            if (storyArchive != null) {
+            if (StoryArchiveHolder.isOpen) {
                 GoToPageActionButton("Stories") { StoriesPage() }
                 GoToPageActionButton("Tags") { TagsPage() }
                 GoToPageActionButton("Tag categories") { TagCategoriesPage() }
-            } else if (router.currentPage !is OpenArchivePage) {
+            } else if (Router.currentPage !is OpenArchivePage) {
                 GoToPageActionButton("Open archive") { OpenArchivePage() }
             }
         }
@@ -67,8 +66,7 @@ private inline fun <reified T : Page> GoToPageActionButton(
     pageName: String,
     crossinline pageSupplier: () -> T
 ) {
-    val router = router
-    ActionButton(pageName, router.currentPage !is T, onClick = { router.goTo(pageSupplier()) })
+    ActionButton(pageName, Router.currentPage !is T, onClick = { Router.goTo(pageSupplier()) })
 }
 
 @Composable

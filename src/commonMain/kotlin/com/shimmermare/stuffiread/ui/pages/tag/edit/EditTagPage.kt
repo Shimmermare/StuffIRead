@@ -8,7 +8,8 @@ import com.shimmermare.stuffiread.tags.Tag
 import com.shimmermare.stuffiread.tags.TagCategoryId
 import com.shimmermare.stuffiread.tags.TagId
 import com.shimmermare.stuffiread.tags.TagName
-import com.shimmermare.stuffiread.ui.AppState
+import com.shimmermare.stuffiread.ui.Router
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
 import com.shimmermare.stuffiread.ui.components.animation.AnimatedFadeIn
 import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPageMode.CREATE
 import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPageMode.EDIT
@@ -22,12 +23,12 @@ class EditTagPage(
     private val prefillWith: Tag,
 ) : Page {
     @Composable
-    override fun Title(app: AppState) {
+    override fun Title() {
         val title = remember(mode, editingTagId) {
             when (mode) {
                 CREATE -> "New tag"
                 EDIT -> {
-                    val tag = app.storyArchive!!.tagService.getTagByIdOrThrow(editingTagId)
+                    val tag = tagService.getTagByIdOrThrow(editingTagId)
                     "Tag (Editing) - ${tag.name} [${editingTagId}]"
                 }
             }
@@ -36,23 +37,23 @@ class EditTagPage(
     }
 
     @Composable
-    override fun Body(app: AppState) {
+    override fun Body() {
         AnimatedFadeIn {
             TagForm(
                 mode = mode,
                 tag = prefillWith,
                 onBack = {
                     when (mode) {
-                        CREATE -> app.router.goTo(TagsPage())
-                        EDIT -> app.router.goTo(TagInfoPage(editingTagId))
+                        CREATE -> Router.goTo(TagsPage())
+                        EDIT -> Router.goTo(TagInfoPage(editingTagId))
                     }
                 },
                 onSubmit = {
                     val tag = when (mode) {
-                        CREATE -> app.storyArchive!!.tagService.createTag(it)
-                        EDIT -> app.storyArchive!!.tagService.updateTag(it)
+                        CREATE -> tagService.createTag(it)
+                        EDIT -> tagService.updateTag(it)
                     }
-                    app.router.goTo(TagInfoPage(tag.id))
+                    Router.goTo(TagInfoPage(tag.id))
                 }
             )
         }

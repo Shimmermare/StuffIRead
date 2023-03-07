@@ -11,8 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.tags.TagCategory
 import com.shimmermare.stuffiread.tags.TagCategoryId
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
 import com.shimmermare.stuffiread.ui.components.dialog.FixedAlertDialog
-import com.shimmermare.stuffiread.ui.tagService
 
 /**
  * Dialog that presents to user option to safely delete tag category.
@@ -26,7 +26,6 @@ fun DeleteTagCategoryDialog(
     onDeleted: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val tagService = tagService
 
     val tagsInCategoryCount: UInt = remember(category.id) { tagService.getTagCountInCategory(category.id) }
     var replacementCategoryId: TagCategoryId by remember { mutableStateOf(TagCategoryId.None) }

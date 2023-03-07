@@ -12,29 +12,29 @@ import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.settings.AppSettings
 import com.shimmermare.stuffiread.settings.ScoreDisplayType
 import com.shimmermare.stuffiread.settings.ThemeBehavior
-import com.shimmermare.stuffiread.ui.AppState
+import com.shimmermare.stuffiread.ui.AppSettingsHolder
 import com.shimmermare.stuffiread.ui.components.form.EnumFormField
 import com.shimmermare.stuffiread.ui.components.form.SubmittableInputForm
 import com.shimmermare.stuffiread.ui.routing.Page
 
 class SettingsPage : Page {
     @Composable
-    override fun Body(app: AppState) {
+    override fun Body() {
         Column(
             modifier = Modifier.padding(20.dp).sizeIn(maxWidth = 600.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             SubmittableInputForm(
-                data = app.settings,
+                data = AppSettingsHolder.settings,
                 modifier = Modifier.padding(20.dp).sizeIn(maxWidth = 800.dp),
                 submitButtonText = "Save",
                 onSubmit = {
-                    app.updateSettings(it)
+                    AppSettingsHolder.update(it)
                 },
                 actions = { state ->
                     Button(
                         onClick = {
-                            app.resetSettings()
+                            AppSettingsHolder.reset()
                         },
                         enabled = state.data != AppSettings()
                     ) {
@@ -46,7 +46,7 @@ class SettingsPage : Page {
                     id = "theme",
                     state = state,
                     name = "Theme",
-                    enumType = ThemeBehavior::class,
+                    allowedValues = ThemeBehavior.values,
                     getter = { it.themeBehavior },
                     setter = { form, value -> form.copy(themeBehavior = value) },
                     displayNameProvider = {
@@ -61,7 +61,7 @@ class SettingsPage : Page {
                     id = "scoreDisplay",
                     state = state,
                     name = "Score display",
-                    enumType = ScoreDisplayType::class,
+                    allowedValues = ScoreDisplayType.values,
                     getter = { it.scoreDisplayType },
                     setter = { form, value -> form.copy(scoreDisplayType = value) },
                     displayNameProvider = {

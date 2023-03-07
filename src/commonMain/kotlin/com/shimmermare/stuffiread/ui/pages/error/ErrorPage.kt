@@ -14,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.shimmermare.stuffiread.ui.AppState
 import com.shimmermare.stuffiread.ui.components.error.ErrorCard
 import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollColumn
 import com.shimmermare.stuffiread.ui.routing.Page
@@ -27,7 +26,7 @@ class ErrorPage(
     private val actions: List<Action> = emptyList()
 ) : Page {
     @Composable
-    override fun Body(app: AppState) {
+    override fun Body() {
         Scaffold(
             bottomBar = {
                 Row(

@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.importer.ImportSource
 import com.shimmermare.stuffiread.importer.ImportedStory
 import com.shimmermare.stuffiread.importer.pastebin.PasteKey
-import com.shimmermare.stuffiread.ui.components.input.OutlinedEnumField
+import com.shimmermare.stuffiread.ui.components.input.OptionalOutlinedEnumField
 import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollColumn
 
 @Composable
@@ -37,11 +37,10 @@ fun ImportFromSourceForm(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text("Import from")
-            OutlinedEnumField(
+            OptionalOutlinedEnumField(
                 value = importSource,
-                enumType = ImportSource::class,
+                allowedValues = setOf(ImportSource.PASTEBIN, ImportSource.PONEBIN, ImportSource.PONEPASTE),
                 displayNameProvider = { it.getDisplayName() },
-                canBeCleared = true,
                 inputFieldModifier = Modifier.width(300.dp).height(36.dp),
                 onValueChange = {
                     if (importSource != it) {
@@ -62,16 +61,19 @@ fun ImportFromSourceForm(
                         examplePasteUrls = listOf("https://pastebin.com/NdYBi384", "https://pastebin.com/raw/NdYBi384"),
                         onImported = onImported
                     )
+
                     ImportSource.PONEPASTE -> PasteImportForm<PasteKey>(
                         source = importSource,
                         examplePasteUrls = listOf("https://ponepaste.org/5680", "https://ponepaste.org/raw/5680"),
                         onImported = onImported
                     )
+
                     ImportSource.PONEBIN -> PasteImportForm<PasteKey>(
                         source = importSource,
                         examplePasteUrls = listOf("https://poneb.in/ABCDEFGH", "https://poneb.in/raw/ABCDEFGH"),
                         onImported = onImported
                     )
+
                     else -> Text("NOT IMPLEMENTED")
                 }
             }

@@ -24,7 +24,7 @@ fun FilledText(
     fontSize: TextUnit = TextUnit.Unspecified,
     textStyle: TextStyle = TextStyle.Default.copy(
         color = Color.White,
-        shadow = Shadow(color = Color.Black, blurRadius = 1F)
+        shadow = Shadow(color = Color.Black, blurRadius = 0.5F)
     )
 ) {
     Box(

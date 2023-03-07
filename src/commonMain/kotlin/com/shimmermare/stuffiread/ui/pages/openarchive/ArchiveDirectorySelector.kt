@@ -3,25 +3,36 @@ package com.shimmermare.stuffiread.ui.pages.openarchive
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.shimmermare.stuffiread.ui.AppSettingsHolder
 import com.shimmermare.stuffiread.ui.components.dialog.FixedAlertDialog
+import com.shimmermare.stuffiread.ui.components.layout.PointerInsideTrackerBox
 import com.shimmermare.stuffiread.ui.util.DirectoriesOnlyFileFilter
 import com.shimmermare.stuffiread.ui.util.FileDialog
 import com.shimmermare.stuffiread.ui.util.FileFilter
 import com.shimmermare.stuffiread.ui.util.SelectionMode
 import java.nio.file.Path
+import kotlin.io.path.absolutePathString
 import kotlin.io.path.exists
 import kotlin.io.path.notExists
 
 
 @Composable
 fun ArchiveDirectorySelector(onSelected: ((archiveDirectory: Path, createIfNotExists: Boolean) -> Unit)) {
+    val recentlyOpened by rememberUpdatedState(AppSettingsHolder.settings.recentlyOpenedArchives)
+
     Column(
         verticalArrangement = Arrangement.spacedBy(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -39,6 +50,20 @@ fun ArchiveDirectorySelector(onSelected: ((archiveDirectory: Path, createIfNotEx
             horizontalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             ArchiveDirSelectorButtons(onSelected)
+        }
+
+        if (recentlyOpened.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(20.dp))
+            Text("Recent", style = MaterialTheme.typography.h6)
+
+            Column(
+                horizontalAlignment = Alignment.Start,
+                verticalArrangement = Arrangement.spacedBy((-10).dp)
+            ) {
+                recentlyOpened.forEach { archiveDirectory ->
+                    RecentlyOpenedItem(archiveDirectory) { onSelected(archiveDirectory, false) }
+                }
+            }
         }
     }
 }
@@ -139,4 +164,31 @@ private fun CreateArchiveDirButton(onSelected: (Path) -> Unit) {
 
 private fun storyArchiveFileFilter(): FileFilter {
     return DirectoriesOnlyFileFilter("Story archive directory")
+}
+
+@Composable
+private fun RecentlyOpenedItem(archiveDirectory: Path, onClick: () -> Unit) {
+    PointerInsideTrackerBox { pointerInside ->
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(end = if (pointerInside) 0.dp else 48.dp)
+        ) {
+            TextButton(onClick = onClick) {
+                Text(archiveDirectory.absolutePathString())
+            }
+            if (pointerInside) {
+                IconButton(
+                    onClick = {
+                        AppSettingsHolder.settings.let {
+                            it.copy(recentlyOpenedArchives = it.recentlyOpenedArchives.minusElement(archiveDirectory))
+                        }.also { AppSettingsHolder.update(it) }
+                    },
+                    modifier = Modifier.width(48.dp)
+                ) {
+                    Icon(Icons.Filled.Clear, null)
+                }
+            }
+        }
+    }
 }

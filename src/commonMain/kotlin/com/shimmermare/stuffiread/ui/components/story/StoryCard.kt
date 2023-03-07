@@ -23,11 +23,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.stories.Story
 import com.shimmermare.stuffiread.tags.TagWithCategory
+import com.shimmermare.stuffiread.ui.Router
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
 import com.shimmermare.stuffiread.ui.components.tag.TagNameRoutable
 import com.shimmermare.stuffiread.ui.pages.story.info.StoryInfoPage
-import com.shimmermare.stuffiread.ui.router
-import com.shimmermare.stuffiread.ui.tagService
 
 private const val PREVIEW_TAG_COUNT = 20
 
@@ -52,9 +52,6 @@ fun StoryCard(
 private fun VisibleStoryCard(
     story: Story,
 ) {
-    val router = router
-    val tagService = tagService
-
     val tags = remember(story.id) {
         tagService.getTagsWithCategoryByIds(story.tags).sortedWith(TagWithCategory.DEFAULT_ORDER)
     }
@@ -62,7 +59,7 @@ private fun VisibleStoryCard(
     Surface(
         modifier = Modifier
             .border(1.dp, Color.LightGray)
-            .clickable { router.goTo(StoryInfoPage(storyId = story.id)) },
+            .clickable { Router.goTo(StoryInfoPage(storyId = story.id)) },
         elevation = 3.dp
     ) {
         Row(

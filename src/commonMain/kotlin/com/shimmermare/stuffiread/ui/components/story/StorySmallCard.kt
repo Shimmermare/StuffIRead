@@ -18,8 +18,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.stories.Story
+import com.shimmermare.stuffiread.ui.Router
 import com.shimmermare.stuffiread.ui.pages.story.info.StoryInfoPage
-import com.shimmermare.stuffiread.ui.router
 
 val StorySmallCardDefaultModifier = Modifier
     .padding(start = 2.5.dp, end = 5.dp, top = 2.5.dp, bottom = 5.dp)
@@ -68,12 +68,11 @@ fun SmallStoryCardRoutableWithPreview(
     modifier: Modifier = StorySmallCardDefaultModifier,
     contentModifier: Modifier = StorySmallCardDefaultContentModifier,
 ) {
-    val router = router
     SmallStoryCardWithPreview(
         story = story,
         modifier = modifier,
         contentModifier = contentModifier,
-        onClick = { router.goTo(StoryInfoPage(storyId = story.id)) }
+        onClick = { Router.goTo(StoryInfoPage(storyId = story.id)) }
     )
 }
 

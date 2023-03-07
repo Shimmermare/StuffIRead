@@ -1,6 +1,5 @@
 package com.shimmermare.stuffiread.ui.components.story
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,14 +22,15 @@ import com.shimmermare.stuffiread.stories.Story
 import com.shimmermare.stuffiread.stories.StoryFilter
 import com.shimmermare.stuffiread.stories.StoryId
 import com.shimmermare.stuffiread.tags.TagWithCategory
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storyFilesService
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storySearchService
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storyService
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
 import com.shimmermare.stuffiread.ui.components.date.Date
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
 import com.shimmermare.stuffiread.ui.components.layout.LoadingContainer
 import com.shimmermare.stuffiread.ui.components.tag.TagNameRoutable
-import com.shimmermare.stuffiread.ui.storyFilesService
-import com.shimmermare.stuffiread.ui.storySearchService
-import com.shimmermare.stuffiread.ui.storyService
-import com.shimmermare.stuffiread.ui.tagService
+import com.shimmermare.stuffiread.ui.components.text.TextURI
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.toList
 
@@ -60,8 +60,6 @@ fun StoryInfo(story: Story) {
 
 @Composable
 private fun LeftBlock(story: Story) {
-    val tagService = tagService
-
     val tags = remember {
         tagService.getExtendedTagsByIds(story.tags).flatMap { tag ->
             buildList {
@@ -119,13 +117,7 @@ private fun LeftBlock(story: Story) {
         if (story.url.isPresent) {
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 Text("URL", style = MaterialTheme.typography.h6)
-                val uriHandler = LocalUriHandler.current
-                Text(
-                    text = story.url.toString(),
-                    style = MaterialTheme.typography.subtitle1,
-                    color = MaterialTheme.colors.primary,
-                    modifier = Modifier.clickable { uriHandler.openUri(story.url.toString()) },
-                )
+                TextURI(story.url.toString(), style = MaterialTheme.typography.subtitle1)
             }
         }
 
@@ -146,8 +138,6 @@ private fun LeftBlock(story: Story) {
 
 @Composable
 private fun StorySequels(ids: Set<StoryId>) {
-    val storyService = storyService
-
     if (ids.isNotEmpty()) {
         Column(
             verticalArrangement = Arrangement.spacedBy(5.dp)
@@ -165,8 +155,6 @@ private fun StorySequels(ids: Set<StoryId>) {
 
 @Composable
 private fun StoryPrequels(id: StoryId) {
-    val storySearchService = storySearchService
-
     Column(
         verticalArrangement = Arrangement.spacedBy(5.dp)
     ) {
@@ -182,8 +170,6 @@ private fun StoryPrequels(id: StoryId) {
 
 @Composable
 private fun StoryFilesInfo(story: Story) {
-    val storyFilesService = storyFilesService
-
     LoadingContainer(
         key = story.id,
         loader = { storyFilesService.getStoryFilesMeta(it) }

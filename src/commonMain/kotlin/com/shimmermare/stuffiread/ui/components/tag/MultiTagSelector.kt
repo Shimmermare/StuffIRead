@@ -26,12 +26,12 @@ import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.tags.Tag
 import com.shimmermare.stuffiread.tags.TagId
 import com.shimmermare.stuffiread.tags.TagWithCategory
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
 import com.shimmermare.stuffiread.ui.components.layout.FullscreenPopup
 import com.shimmermare.stuffiread.ui.components.layout.PointerInsideTrackerBox
 import com.shimmermare.stuffiread.ui.components.layout.PopupContent
 import com.shimmermare.stuffiread.ui.components.search.SearchBar
-import com.shimmermare.stuffiread.ui.tagService
 
 /**
  * Input to select multiple unique tags from list of all tags.
@@ -83,8 +83,6 @@ private fun SelectedTags(
     onUnselectRequest: (TagId) -> Unit,
     onShowSelectorRequest: () -> Unit
 ) {
-    val tagService = tagService
-
     val selectedTags: List<TagWithCategory> = remember(selectedIds) {
         tagService.getTagsWithCategoryByIds(selectedIds).sortedWith(TagWithCategory.DEFAULT_ORDER)
     }
@@ -125,7 +123,6 @@ private fun Selector(
     onSelected: (Set<TagId>) -> Unit,
     onShowQuickCreateRequest: () -> Unit,
 ) {
-    val tagService = tagService
     val allTags = remember { tagService.getTagsWithCategory() }
     SelectorPopup(
         selectedIds,

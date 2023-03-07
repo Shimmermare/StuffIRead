@@ -23,10 +23,10 @@ import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.importer.ImportedStory
 import com.shimmermare.stuffiread.stories.Story
 import com.shimmermare.stuffiread.tags.TagId
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
 import com.shimmermare.stuffiread.ui.components.input.ExtendedOutlinedTextField
 import com.shimmermare.stuffiread.ui.components.story.StoryFormData
 import com.shimmermare.stuffiread.ui.components.tag.TagSelector
-import com.shimmermare.stuffiread.ui.tagService
 
 /**
  * Map imported data to valid app story.
@@ -36,8 +36,6 @@ fun ImportTagMappingForm(
     importedStory: ImportedStory,
     onMapped: (StoryFormData) -> Unit
 ) {
-    val tagService = tagService
-
     var formData: StoryFormData by remember {
         mutableStateOf(
             StoryFormData(

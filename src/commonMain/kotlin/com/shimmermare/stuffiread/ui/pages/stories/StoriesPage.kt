@@ -13,7 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.stories.StoryFilter
-import com.shimmermare.stuffiread.ui.AppState
+import com.shimmermare.stuffiread.ui.Router
 import com.shimmermare.stuffiread.ui.components.story.StoryListWithSearch
 import com.shimmermare.stuffiread.ui.pages.story.create.CreateStoryPage
 import com.shimmermare.stuffiread.ui.routing.Page
@@ -22,7 +22,7 @@ class StoriesPage(
     val presetFilter: StoryFilter = StoryFilter.DEFAULT
 ) : Page {
     @Composable
-    override fun Body(app: AppState) {
+    override fun Body() {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             floatingActionButton = {
@@ -31,7 +31,7 @@ class StoriesPage(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     FloatingActionButton(
-                        onClick = { app.router.goTo(CreateStoryPage()) }
+                        onClick = { Router.goTo(CreateStoryPage()) }
                     ) {
                         Icon(Icons.Filled.Add, null)
                     }

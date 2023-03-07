@@ -31,12 +31,12 @@ import androidx.compose.ui.window.Popup
 import com.shimmermare.stuffiread.stories.Story
 import com.shimmermare.stuffiread.stories.StoryFilter
 import com.shimmermare.stuffiread.stories.StoryId
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storySearchService
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storyService
 import com.shimmermare.stuffiread.ui.components.layout.LoadingContainer
 import com.shimmermare.stuffiread.ui.components.layout.PopupContent
 import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollColumn
 import com.shimmermare.stuffiread.ui.components.search.SearchBar
-import com.shimmermare.stuffiread.ui.storySearchService
-import com.shimmermare.stuffiread.ui.storyService
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.onEach
@@ -54,8 +54,6 @@ fun MultiStorySelector(
     filter: (Story) -> Boolean = { true },
     onSelect: (Set<StoryId>) -> Unit
 ) {
-    val storyService = storyService
-
     var showPopup: Boolean by remember { mutableStateOf(false) }
 
     LoadingContainer(
@@ -110,7 +108,6 @@ private fun SelectorPopup(
     filter: (Story) -> Boolean,
     onSelected: (Set<StoryId>) -> Unit,
 ) {
-    val storySearchService = storySearchService
     val coroutineScope = rememberCoroutineScope()
 
     var selectedStories: Map<StoryId, Story> by remember(initiallySelectedStories) {

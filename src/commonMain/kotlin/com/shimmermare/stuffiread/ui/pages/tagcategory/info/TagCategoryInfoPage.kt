@@ -6,7 +6,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.text.style.TextOverflow
 import com.shimmermare.stuffiread.tags.TagCategory
 import com.shimmermare.stuffiread.tags.TagCategoryId
-import com.shimmermare.stuffiread.ui.AppState
+import com.shimmermare.stuffiread.ui.Router
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
 import com.shimmermare.stuffiread.ui.pages.LoadedPage
 import com.shimmermare.stuffiread.ui.pages.error.ErrorPage
 import io.github.aakira.napier.Napier
@@ -20,9 +21,9 @@ class TagCategoryInfoPage(private val categoryId: TagCategoryId) : LoadedPage<Ta
     }
 
     @Composable
-    override fun Title(app: AppState) {
+    override fun Title() {
         val title = remember(categoryId) {
-            val category = app.storyArchive!!.tagService.getCategoryById(categoryId)
+            val category = tagService.getCategoryById(categoryId)
             if (category == null) {
                 "Tag category $categoryId not found!"
             } else {
@@ -32,27 +33,27 @@ class TagCategoryInfoPage(private val categoryId: TagCategoryId) : LoadedPage<Ta
         Text(text = title, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 
-    override suspend fun load(app: AppState): TagCategory {
-        return app.storyArchive!!.tagService.getCategoryByIdOrThrow(categoryId)
+    override suspend fun load(): TagCategory {
+        return tagService.getCategoryByIdOrThrow(categoryId)
     }
 
     @Composable
-    override fun LoadingError(app: AppState) {
+    override fun LoadingError() {
         Napier.e(error) { "Failed to load tag category $categoryId" }
 
-        app.router.goTo(
+        Router.goTo(
             ErrorPage(
                 title = "Failed to load tag category $categoryId",
                 exception = error,
                 actions = listOf(ErrorPage.Action("Try Again") {
-                    app.router.goTo(TagCategoryInfoPage(categoryId))
+                    Router.goTo(TagCategoryInfoPage(categoryId))
                 })
             )
         )
     }
 
     @Composable
-    override fun LoadedContent(app: AppState) {
+    override fun LoadedContent() {
         TagCategoryInfo(content!!)
     }
 }

@@ -34,6 +34,7 @@ import com.shimmermare.stuffiread.stories.Score
 import com.shimmermare.stuffiread.stories.Story
 import com.shimmermare.stuffiread.stories.StoryFilter
 import com.shimmermare.stuffiread.stories.StoryId
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storySearchService
 import com.shimmermare.stuffiread.ui.components.error.ErrorCard
 import com.shimmermare.stuffiread.ui.components.error.ErrorInfo
 import com.shimmermare.stuffiread.ui.components.form.InputForm
@@ -50,7 +51,6 @@ import com.shimmermare.stuffiread.ui.components.story.SortBehavior.ASCENDING_UNK
 import com.shimmermare.stuffiread.ui.components.story.SortBehavior.DESCENDING
 import com.shimmermare.stuffiread.ui.components.story.SortBehavior.DESCENDING_UNKNOWN_FIRST
 import com.shimmermare.stuffiread.ui.components.tag.MultiTagSelector
-import com.shimmermare.stuffiread.ui.storySearchService
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
@@ -368,8 +368,6 @@ private fun AdvancedStoryFilterFields(state: InputFormState<StoryFilter>) {
 
 @Composable
 private fun StoryList(filter: StoryFilter) {
-    val storySearchService = storySearchService
-
     var sortBy: SortBy by remember { mutableStateOf(SortBy.DEFAULT) }
     var sortBehavior: SortBehavior by remember { mutableStateOf(SortBehavior.DEFAULT) }
     val comparator: Comparator<Story> = remember(sortBy, sortBehavior) { buildComparator(sortBy, sortBehavior) }
@@ -445,16 +443,16 @@ private fun StoryList(filter: StoryFilter) {
             ) {
                 OutlinedEnumField(
                     value = sortBy,
-                    enumType = SortBy::class,
+                    allowedValues = SortBy.values,
                     displayNameProvider = { "Sort by: " + it.displayName },
-                    onValueChange = { sortBy = it!! },
+                    onValueChange = { sortBy = it },
                     inputFieldModifier = Modifier.width(300.dp).height(36.dp)
                 )
                 OutlinedEnumField(
                     value = sortBehavior,
-                    enumType = SortBehavior::class,
+                    allowedValues = SortBehavior.values,
                     displayNameProvider = { it.displayName },
-                    onValueChange = { sortBehavior = it!! },
+                    onValueChange = { sortBehavior = it },
                     inputFieldModifier = Modifier.width(250.dp).height(36.dp)
                 )
             }
@@ -549,6 +547,9 @@ private enum class SortBy(
 
     companion object {
         val DEFAULT = NAME
+
+        // To avoid alloc
+        val values: Set<SortBy> = values().toSet()
     }
 }
 
@@ -562,5 +563,8 @@ private enum class SortBehavior(
 
     companion object {
         val DEFAULT = ASCENDING
+
+        // To avoid alloc
+        val values: Set<SortBehavior> = values().toSet()
     }
 }

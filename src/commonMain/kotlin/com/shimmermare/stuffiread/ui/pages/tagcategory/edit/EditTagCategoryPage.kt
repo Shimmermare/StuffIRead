@@ -9,7 +9,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import com.shimmermare.stuffiread.tags.TagCategory
 import com.shimmermare.stuffiread.tags.TagCategoryId
 import com.shimmermare.stuffiread.tags.TagCategoryName
-import com.shimmermare.stuffiread.ui.AppState
+import com.shimmermare.stuffiread.ui.Router
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
 import com.shimmermare.stuffiread.ui.components.animation.AnimatedFadeIn
 import com.shimmermare.stuffiread.ui.pages.tagcategories.TagCategoriesPage
 import com.shimmermare.stuffiread.ui.pages.tagcategory.edit.EditTagCategoryPageMode.CREATE
@@ -29,7 +30,7 @@ class EditTagCategoryPage(
     }
 
     @Composable
-    override fun Title(app: AppState) {
+    override fun Title() {
         val title by remember(mode, category.id, category.name) {
             mutableStateOf(
                 when (mode) {
@@ -42,23 +43,23 @@ class EditTagCategoryPage(
     }
 
     @Composable
-    override fun Body(app: AppState) {
+    override fun Body() {
         AnimatedFadeIn {
             TagCategoryForm(
                 mode = mode,
                 category = category,
                 onBack = {
                     when (mode) {
-                        CREATE -> app.router.goTo(TagCategoriesPage())
-                        EDIT -> app.router.goTo(TagCategoryInfoPage(category.id))
+                        CREATE -> Router.goTo(TagCategoriesPage())
+                        EDIT -> Router.goTo(TagCategoryInfoPage(category.id))
                     }
                 },
                 onSubmit = {
                     val category = when (mode) {
-                        CREATE -> app.storyArchive!!.tagService.createCategory(it)
-                        EDIT -> app.storyArchive!!.tagService.updateCategory(it)
+                        CREATE -> tagService.createCategory(it)
+                        EDIT -> tagService.updateCategory(it)
                     }
-                    app.router.goTo(TagCategoryInfoPage(category.id))
+                    Router.goTo(TagCategoryInfoPage(category.id))
                 }
             )
         }

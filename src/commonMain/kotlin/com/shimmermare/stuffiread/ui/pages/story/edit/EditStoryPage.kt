@@ -10,7 +10,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.stories.StoryId
-import com.shimmermare.stuffiread.ui.AppState
+import com.shimmermare.stuffiread.ui.Router
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storyCoverService
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storyFilesService
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storyService
 import com.shimmermare.stuffiread.ui.components.story.SavingStoryForm
 import com.shimmermare.stuffiread.ui.components.story.StoryFormData
 import com.shimmermare.stuffiread.ui.pages.LoadedPage
@@ -23,7 +26,7 @@ class EditStoryPage(
     private val storyId: StoryId,
 ) : LoadedPage<StoryFormData>() {
     @Composable
-    override fun Title(app: AppState) {
+    override fun Title() {
         val title = remember(storyId, status) {
             when (status) {
                 Status.LOADING -> "Loading story $storyId..."
@@ -35,11 +38,11 @@ class EditStoryPage(
         Text(text = title, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 
-    override suspend fun load(app: AppState): StoryFormData {
+    override suspend fun load(): StoryFormData {
         return withContext(coroutineContext) {
-            val story = async { app.storyArchive!!.storyService.getStoryByIdOrThrow(storyId) }
-            val cover = async { app.storyArchive!!.storyCoverService.getStoryCover(storyId) }
-            val files = async { app.storyArchive!!.storyFilesService.getStoryFiles(storyId) }
+            val story = async { storyService.getStoryByIdOrThrow(storyId) }
+            val cover = async { storyCoverService.getStoryCover(storyId) }
+            val files = async { storyFilesService.getStoryFiles(storyId) }
             StoryFormData(
                 story = story.await(),
                 cover = cover.await(),
@@ -49,7 +52,7 @@ class EditStoryPage(
     }
 
     @Composable
-    override fun LoadedContent(app: AppState) {
+    override fun LoadedContent() {
 
         Scaffold(
             modifier = Modifier
@@ -59,9 +62,9 @@ class EditStoryPage(
             SavingStoryForm(
                 prefillData = content!!,
                 onSubmittedAndSaved = {
-                    app.router.goTo(StoryInfoPage(it.story.id))
+                    Router.goTo(StoryInfoPage(it.story.id))
                 },
-                onBack = { app.router.goTo(StoryInfoPage(storyId)) },
+                onBack = { Router.goTo(StoryInfoPage(storyId)) },
                 creationMode = false,
             )
         }

@@ -10,9 +10,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.tags.ExtendedTag
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
 import com.shimmermare.stuffiread.ui.components.dialog.FixedAlertDialog
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
-import com.shimmermare.stuffiread.ui.tagService
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -21,8 +21,6 @@ fun DeleteTagDialog(
     onDeleted: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val tagService = tagService
-
     FixedAlertDialog(
         onDismissRequest = onDismiss,
         title = {

@@ -11,9 +11,9 @@ import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.tags.ExtendedTag
 import com.shimmermare.stuffiread.tags.Tag
 import com.shimmermare.stuffiread.tags.TagWithCategory
+import com.shimmermare.stuffiread.ui.Router
 import com.shimmermare.stuffiread.ui.components.text.FilledNameText
 import com.shimmermare.stuffiread.ui.pages.tag.info.TagInfoPage
-import com.shimmermare.stuffiread.ui.router
 
 @Composable
 fun TagNameRoutable(
@@ -22,13 +22,12 @@ fun TagNameRoutable(
     fontSize: TextUnit = MaterialTheme.typography.subtitle1.fontSize,
     modifier: Modifier = Modifier.height(30.dp),
 ) {
-    val router = router
     TagName(
         tag = tag,
         indirect = indirect,
         fontSize = fontSize,
         modifier = modifier,
-        onClick = { router.goTo(TagInfoPage(tag.tag.id)) }
+        onClick = { Router.goTo(TagInfoPage(tag.tag.id)) }
     )
 }
 
@@ -39,13 +38,12 @@ fun TagNameRoutable(
     fontSize: TextUnit = MaterialTheme.typography.subtitle1.fontSize,
     modifier: Modifier = Modifier.height(30.dp),
 ) {
-    val router = router
     TagName(
         tag = tag,
         indirect = indirect,
         fontSize = fontSize,
         modifier = modifier,
-        onClick = { router.goTo(TagInfoPage(tag.tag.id)) }
+        onClick = { Router.goTo(TagInfoPage(tag.tag.id)) }
     )
 }
 

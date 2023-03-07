@@ -24,13 +24,13 @@ import com.shimmermare.stuffiread.tags.Tag
 import com.shimmermare.stuffiread.tags.TagCategoryId
 import com.shimmermare.stuffiread.tags.TagId
 import com.shimmermare.stuffiread.tags.TagWithCategory
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
 import com.shimmermare.stuffiread.ui.components.layout.FullscreenPopup
 import com.shimmermare.stuffiread.ui.components.search.SearchBar
 import com.shimmermare.stuffiread.ui.components.text.FilledNameText
 import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPageMode
 import com.shimmermare.stuffiread.ui.pages.tag.edit.TagForm
-import com.shimmermare.stuffiread.ui.tagService
 
 @Composable
 fun TagSelector(
@@ -70,7 +70,6 @@ fun TagSelector(
 private fun SelectedTag(
     tagId: TagId, onShowSelectorRequest: () -> Unit
 ) {
-    val tagService = tagService
 
     val tag: TagWithCategory? = remember(tagId) {
         if (tagId == TagId.None) null else tagService.getTagWithCategoryById(tagId)
@@ -95,7 +94,6 @@ private fun Selector(
     onSelected: (TagId) -> Unit,
     onShowQuickCreateRequest: () -> Unit,
 ) {
-    val tagService = tagService
 
     val allTags: List<TagWithCategory> = remember { tagService.getTagsWithCategory() }
 
@@ -166,7 +164,6 @@ private fun Selector(
 
 @Composable
 fun QuickCreateTag(onShowSelectorRequest: () -> Unit) {
-    val tagService = tagService
     FullscreenPopup {
         TagForm(
             mode = EditTagPageMode.CREATE,

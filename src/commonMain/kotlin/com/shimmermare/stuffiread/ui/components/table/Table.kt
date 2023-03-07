@@ -159,8 +159,9 @@ private fun <T> TableRow(index: Int, item: T, columns: List<TableColumn<T>>, onR
         verticalAlignment = Alignment.CenterVertically,
     ) {
         columns.forEach { column ->
-            Column(modifier = Modifier.fillMaxHeight().padding(vertical = 2.5.dp)
-                .let { if (column.columnWeight == null) it else it.weight(column.columnWeight) },
+            Column(
+                modifier = Modifier.fillMaxHeight().padding(vertical = 2.5.dp)
+                    .let { if (column.columnWeight == null) it else it.weight(column.columnWeight) },
                 verticalArrangement = Arrangement.Center
             ) {
                 column.cell.invoke(index, item)

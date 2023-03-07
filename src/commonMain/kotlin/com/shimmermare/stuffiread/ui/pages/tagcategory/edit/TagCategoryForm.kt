@@ -15,6 +15,7 @@ import com.shimmermare.stuffiread.tags.TagCategoryDescription
 import com.shimmermare.stuffiread.tags.TagCategoryId
 import com.shimmermare.stuffiread.tags.TagCategoryName
 import com.shimmermare.stuffiread.tags.TagService
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
 import com.shimmermare.stuffiread.ui.components.form.FormField
 import com.shimmermare.stuffiread.ui.components.form.RangedIntFormField
 import com.shimmermare.stuffiread.ui.components.form.SubmittableInputForm
@@ -24,7 +25,6 @@ import com.shimmermare.stuffiread.ui.components.input.PopupColorPicker
 import com.shimmermare.stuffiread.ui.components.text.FilledNameText
 import com.shimmermare.stuffiread.ui.pages.tagcategory.edit.EditTagCategoryPageMode.CREATE
 import com.shimmermare.stuffiread.ui.pages.tagcategory.edit.EditTagCategoryPageMode.EDIT
-import com.shimmermare.stuffiread.ui.tagService
 
 @Composable
 fun TagCategoryForm(
@@ -33,7 +33,6 @@ fun TagCategoryForm(
     onBack: () -> Unit,
     onSubmit: (TagCategory) -> Unit
 ) {
-    val tagService = tagService
     SubmittableInputForm(
         data = category,
         modifier = Modifier.padding(20.dp).sizeIn(maxWidth = 800.dp),

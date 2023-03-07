@@ -9,6 +9,12 @@
 -dontwarn org.jetbrains.skiko.redrawer.LinuxOpenGLRedrawer*
 -dontwarn org.jetbrains.skiko.redrawer.SoftwareRedrawer*
 
+# JSR305 not needed in runtime
+-dontwarn javax.annotation.**
+
+# SLF4J not used
+-dontwarn org.slf4j.impl.**
+
 # Otherwise logging will fail - accessing stacktrace with hardcoded index at io.github.aakira.napier.DebugAntilog.kt:81
 -keep class io.github.aakira.napier.Napier* { *; }
 

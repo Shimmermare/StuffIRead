@@ -3,7 +3,8 @@ package com.shimmermare.stuffiread.ui.pages.tagcategories
 import androidx.compose.runtime.Composable
 import com.shimmermare.stuffiread.tags.TagCategory
 import com.shimmermare.stuffiread.tags.TagCategoryId
-import com.shimmermare.stuffiread.ui.AppState
+import com.shimmermare.stuffiread.ui.Router
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
 import com.shimmermare.stuffiread.ui.components.tagcategory.DeleteTagCategoryDialog
 import com.shimmermare.stuffiread.ui.pages.MutableTablePage
 import com.shimmermare.stuffiread.ui.pages.error.ErrorPage
@@ -20,20 +21,20 @@ class TagCategoriesPage : MutableTablePage<TagCategoryId, TagCategory>() {
 
     override fun TagCategory.name(): String = name.value
 
-    override suspend fun load(app: AppState): Map<TagCategoryId, TagCategory> {
-        return app.storyArchive!!.tagService.getCategories().associateBy { it.id }
+    override suspend fun load(): Map<TagCategoryId, TagCategory> {
+        return tagService.getCategories().associateBy { it.id }
     }
 
     @Composable
-    override fun LoadingError(app: AppState) {
+    override fun LoadingError() {
         Napier.e(error) { "Failed to load tag categories" }
 
-        app.router.goTo(
+        Router.goTo(
             ErrorPage(
                 title = "Failed to load tag categories",
                 exception = error,
                 actions = listOf(ErrorPage.Action("Try Again") {
-                    app.router.goTo(TagCategoriesPage())
+                    Router.goTo(TagCategoriesPage())
                 })
             )
         )
@@ -46,7 +47,7 @@ class TagCategoriesPage : MutableTablePage<TagCategoryId, TagCategory>() {
     override fun Router.goToCreatePage() = goTo(EditTagCategoryPage.create())
 
     @Composable
-    override fun DeleteDialog(app: AppState, item: TagCategory, onDeleted: () -> Unit, onDismiss: () -> Unit) {
+    override fun DeleteDialog(item: TagCategory, onDeleted: () -> Unit, onDismiss: () -> Unit) {
         DeleteTagCategoryDialog(
             item,
             onDeleted,
@@ -56,14 +57,13 @@ class TagCategoriesPage : MutableTablePage<TagCategoryId, TagCategory>() {
 
     @Composable
     override fun TableContent(
-        app: AppState,
         items: Collection<TagCategory>,
         onDeleteRequest: (TagCategory) -> Unit
     ) {
         TagCategoryTable(
             categories = items,
-            onClickRequest = { app.router.goTo(TagCategoryInfoPage(it.id)) },
-            onEditRequest = { app.router.goTo(EditTagCategoryPage(it)) },
+            onClickRequest = { Router.goTo(TagCategoryInfoPage(it.id)) },
+            onEditRequest = { Router.goTo(EditTagCategoryPage(it)) },
             onDeleteRequest = onDeleteRequest
         )
     }

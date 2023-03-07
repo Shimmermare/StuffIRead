@@ -34,6 +34,9 @@ import com.shimmermare.stuffiread.stories.StoryURL
 import com.shimmermare.stuffiread.stories.cover.StoryCover
 import com.shimmermare.stuffiread.stories.cover.StoryCoverFormat
 import com.shimmermare.stuffiread.stories.file.StoryFile
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storyCoverService
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storyFilesService
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storyService
 import com.shimmermare.stuffiread.ui.components.form.FormField
 import com.shimmermare.stuffiread.ui.components.form.InputFormState
 import com.shimmermare.stuffiread.ui.components.form.OptionalFormField
@@ -44,9 +47,6 @@ import com.shimmermare.stuffiread.ui.components.form.UIntFormField
 import com.shimmermare.stuffiread.ui.components.form.ValidationResult
 import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollColumn
 import com.shimmermare.stuffiread.ui.components.tag.MultiTagSelector
-import com.shimmermare.stuffiread.ui.storyCoverService
-import com.shimmermare.stuffiread.ui.storyFilesService
-import com.shimmermare.stuffiread.ui.storyService
 import com.shimmermare.stuffiread.ui.util.ExtensionFileFilter
 import com.shimmermare.stuffiread.ui.util.FileDialog
 import com.shimmermare.stuffiread.ui.util.SelectionMode
@@ -63,10 +63,6 @@ fun SavingStoryForm(
     onBack: () -> Unit,
     creationMode: Boolean,
 ) {
-    val storyService = storyService
-    val storyCoverService = storyCoverService
-    val storyFilesService = storyFilesService
-
     val coroutineScope = rememberCoroutineScope()
 
     StoryForm(

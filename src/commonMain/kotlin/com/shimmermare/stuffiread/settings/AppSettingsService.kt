@@ -1,6 +1,6 @@
 package com.shimmermare.stuffiread.settings
 
-interface SettingsService {
+interface AppSettingsService {
     fun getSettings(): AppSettings
 
     fun updateSettings(settings: AppSettings)
