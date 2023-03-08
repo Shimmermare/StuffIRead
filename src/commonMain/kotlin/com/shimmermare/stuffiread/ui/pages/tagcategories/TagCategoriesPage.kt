@@ -47,11 +47,11 @@ class TagCategoriesPage : MutableTablePage<TagCategoryId, TagCategory>() {
     override fun Router.goToCreatePage() = goTo(EditTagCategoryPage.create())
 
     @Composable
-    override fun DeleteDialog(item: TagCategory, onDeleted: () -> Unit, onDismiss: () -> Unit) {
+    override fun DeleteDialog(item: TagCategory, onDeleted: () -> Unit, onDismissRequest: () -> Unit) {
         DeleteTagCategoryDialog(
             item,
             onDeleted,
-            onDismiss
+            onDismissRequest
         )
     }
 

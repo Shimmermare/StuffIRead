@@ -25,7 +25,7 @@ abstract class MutableTablePage<Id, Item> : LoadedPage<Map<Id, Item>>() {
         // SnapshotStateMap is either bugged or PITA to use, immutability FTW
         var itemsById: Map<Id, Item> by remember(this, content) { mutableStateOf(content!!) }
 
-        var showDeleteDialogFor: Item? by remember(this, itemsById) { mutableStateOf(null) }
+        var showDeleteDialogFor: Item? by remember(this) { mutableStateOf(null) }
 
         Scaffold(
             modifier = Modifier.fillMaxSize(),
@@ -51,9 +51,7 @@ abstract class MutableTablePage<Id, Item> : LoadedPage<Map<Id, Item>>() {
                     itemsById = itemsById - showDeleteDialogFor!!.id()
                     showDeleteDialogFor = null
                 },
-                onDismiss = {
-                    showDeleteDialogFor = null
-                }
+                onDismissRequest = { showDeleteDialogFor = null },
             )
         }
     }
@@ -73,5 +71,5 @@ abstract class MutableTablePage<Id, Item> : LoadedPage<Map<Id, Item>>() {
     )
 
     @Composable
-    protected abstract fun DeleteDialog(item: Item, onDeleted: () -> Unit, onDismiss: () -> Unit)
+    protected abstract fun DeleteDialog(item: Item, onDeleted: () -> Unit, onDismissRequest: () -> Unit)
 }

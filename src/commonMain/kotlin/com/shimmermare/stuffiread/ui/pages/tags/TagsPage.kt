@@ -49,7 +49,7 @@ class TagsPage : MutableTablePage<TagId, ExtendedTag>() {
     }
 
     @Composable
-    override fun DeleteDialog(item: ExtendedTag, onDeleted: () -> Unit, onDismiss: () -> Unit) {
+    override fun DeleteDialog(item: ExtendedTag, onDeleted: () -> Unit, onDismissRequest: () -> Unit) {
         DeleteTagDialog(
             tag = item,
             onDeleted = {
@@ -57,7 +57,7 @@ class TagsPage : MutableTablePage<TagId, ExtendedTag>() {
                 // Reload whole table because other tags can be changed too
                 reload()
             },
-            onDismissRequest = onDismiss
+            onDismissRequest = onDismissRequest
         )
     }
 
