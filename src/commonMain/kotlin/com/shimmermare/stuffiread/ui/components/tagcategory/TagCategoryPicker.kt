@@ -85,10 +85,10 @@ private fun PickerPopup(
 
     var showQuickCreate: Boolean by remember { mutableStateOf(false) }
 
-    var pickedCategoryId: TagCategoryId by remember(allCategoriesDirtyCounter, currentlyPickedCategoryId) {
+    var pickedCategoryId: TagCategoryId by remember(currentlyPickedCategoryId) {
         mutableStateOf(currentlyPickedCategoryId)
     }
-    val pickedCategory: TagCategory? = remember(pickedCategoryId) {
+    val pickedCategory: TagCategory? = remember(allCategoriesDirtyCounter, pickedCategoryId) {
         tagService.getCategoryById(pickedCategoryId)
     }
 

@@ -85,10 +85,10 @@ private fun PickerPopup(
 
     var showQuickCreate: Boolean by remember { mutableStateOf(false) }
 
-    var pickedTagId: TagId by remember(allTagsDirtyCounter, currentlyPickedTagId) {
+    var pickedTagId: TagId by remember(currentlyPickedTagId) {
         mutableStateOf(currentlyPickedTagId)
     }
-    val pickedTag: TagWithCategory? = remember(pickedTagId) {
+    val pickedTag: TagWithCategory? = remember(allTagsDirtyCounter, pickedTagId) {
         tagService.getTagWithCategoryById(pickedTagId)
     }
 

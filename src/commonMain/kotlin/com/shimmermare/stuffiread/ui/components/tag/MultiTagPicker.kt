@@ -122,10 +122,10 @@ private fun MultiPickerPopup(
 
     var showQuickCreate: Boolean by remember { mutableStateOf(false) }
 
-    var pickedTagIds: Set<TagId> by remember(allTagsDirtyCounter, currentlyPickedTagIds) {
+    var pickedTagIds: Set<TagId> by remember(currentlyPickedTagIds) {
         mutableStateOf(currentlyPickedTagIds)
     }
-    val pickedTags: List<TagWithCategory> = remember(pickedTagIds) {
+    val pickedTags: List<TagWithCategory> = remember(allTagsDirtyCounter, pickedTagIds) {
         allTags.filter { pickedTagIds.contains(it.tag.id) }
     }
 
