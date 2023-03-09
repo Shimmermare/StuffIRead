@@ -1,9 +1,11 @@
 package com.shimmermare.stuffiread.ui.components.text
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -28,12 +30,17 @@ fun FilledText(
     )
 ) {
     Box(
-        modifier = Modifier.background(color, shape = RoundedCornerShape(5.dp)).then(modifier),
+        modifier = Modifier
+            .background(color, shape = RoundedCornerShape(5.dp))
+            .border(2.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.15F), RoundedCornerShape(5.dp))
+            .then(modifier),
         contentAlignment = Alignment.CenterStart
     ) {
         Text(
             text = text,
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp).then(textModifier),
+            modifier = Modifier
+                .padding(horizontal = 10.dp, vertical = 5.dp)
+                .then(textModifier),
             maxLines = maxLines,
             fontSize = fontSize,
             style = textStyle,
