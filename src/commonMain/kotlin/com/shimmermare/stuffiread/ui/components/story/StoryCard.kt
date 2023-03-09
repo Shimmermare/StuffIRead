@@ -60,7 +60,7 @@ private fun VisibleStoryCard(
         modifier = Modifier
             .border(1.dp, Color.LightGray)
             .clickable { Router.goTo(StoryInfoPage(storyId = story.id)) },
-        elevation = 3.dp
+        elevation = 2.dp
     ) {
         Row(
             modifier = Modifier

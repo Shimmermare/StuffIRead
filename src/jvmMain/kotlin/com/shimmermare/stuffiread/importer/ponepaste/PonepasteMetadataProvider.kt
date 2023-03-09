@@ -11,8 +11,7 @@ import java.time.format.DateTimeFormatter
 /**
  * Same problem as Pastebin - ponepaste has no API to get meta, so we have to parse HTML.
  *
- * Because relying on HTML structure inevitably will lead to problems later,
- * the only "required" field is paste name. Other fields will be replaced with placeholders if failed.
+ *  Because relying on HTML structure is fragile, all fields will be replaced with placeholders if extraction failed.
  */
 actual object PonepasteMetadataProvider {
     // E.g. 16th July 2021 09:31:33 PM
@@ -22,14 +21,21 @@ actual object PonepasteMetadataProvider {
         val html = Jsoup.connect(PonepasteImporter.getPasteUrl(pasteId)).get()
 
         val author = try {
-            html.select("a[href^='/user/']")[0].text() ?: error("No author")
+            html.selectFirst("a[href^='/user/']")!!.text()
         } catch (e: Exception) {
             Napier.e(e) { "Failed to parse paste author for $pasteId" }
             "Failed to get author"
         }
-        val name = html.select("h1.title")[0].text()
+
+        val name = try {
+            html.selectFirst("h1.title")!!.text()
+        } catch (e: Exception) {
+            Napier.e(e) { "Failed to parse paste author for $pasteId" }
+            "Failed to parse name"
+        }
+
         val date = try {
-            val textDate = html.select("small.title")[0].textNodes()
+            val textDate = html.selectFirst("small.title")!!.textNodes()
                 .map { it.text().trim() }
                 .first { it.startsWith("Created: ") }
                 .removePrefix("Created: ")

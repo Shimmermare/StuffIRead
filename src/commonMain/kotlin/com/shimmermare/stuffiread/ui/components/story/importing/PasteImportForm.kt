@@ -1,20 +1,8 @@
 package com.shimmermare.stuffiread.ui.components.story.importing
 
-import ResetFormButton
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.layout.width
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.importer.ImportSource
@@ -22,14 +10,9 @@ import com.shimmermare.stuffiread.importer.ImportedStory
 import com.shimmermare.stuffiread.importer.UrlParser
 import com.shimmermare.stuffiread.importer.pastebased.PasteBasedStoryImporter
 import com.shimmermare.stuffiread.importer.pastebased.PasteImportSettings
-import com.shimmermare.stuffiread.ui.components.error.ErrorCard
-import com.shimmermare.stuffiread.ui.components.error.ErrorInfo
 import com.shimmermare.stuffiread.ui.components.form.InputFormState
-import com.shimmermare.stuffiread.ui.components.form.SubmittableInputForm
 import com.shimmermare.stuffiread.ui.components.form.TextFormField
 import com.shimmermare.stuffiread.ui.components.form.ValidationResult
-import io.github.aakira.napier.Napier
-import kotlinx.coroutines.launch
 
 @Suppress("UNCHECKED_CAST")
 @Composable
@@ -41,57 +24,18 @@ fun <PasteId> PasteImportForm(
     val urlParser = source.urlParser as UrlParser<PasteId>
     val importer = source.importer as PasteBasedStoryImporter<PasteId>
 
-    val coroutineScope = rememberCoroutineScope()
-
-    var formData: PasteImportFormData by remember { mutableStateOf(PasteImportFormData()) }
-    var inProcess: Boolean by remember { mutableStateOf(false) }
-    var error: ErrorInfo? by remember { mutableStateOf(null) }
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically),
-    ) {
-        error?.let { error ->
-            ErrorCard(error, modifier = Modifier.width(600.dp))
-        }
-
-        if (inProcess) {
-            Text("Importing...")
-            CircularProgressIndicator()
-        } else {
-            SubmittableInputForm(
-                data = formData,
-                modifier = Modifier.width(600.dp),
-                submitButtonText = "Import",
-                canSubmitWithoutChanges = true,
-                onSubmit = { data ->
-                    formData = data
-
-                    coroutineScope.launch {
-                        val importSettings = data.toImportSettings(source.urlParser)
-                        inProcess = true
-                        try {
-                            val story = importer.import(importSettings)
-                            inProcess = false
-                            onImported(story)
-                        } catch (e: Exception) {
-                            Napier.e(e) { "Failed to import story from $source with settings: $importSettings" }
-                            inProcess = false
-                            error = ErrorInfo(title = "Import failed", exception = e)
-                        }
-                    }
-                },
-                actions = {
-                    ResetFormButton(
-                        state = it,
-                        originalData = PasteImportFormData(),
-                        name = "Clear",
-                    )
-                }
-            ) { state ->
-                PasteUrlsFormField(urlParser, examplePasteUrls, state)
-            }
-        }
+    BaseSourceImportForm(
+        source = source,
+        defaultData = { PasteImportFormData() },
+        importer = { formData ->
+            val importSettings = PasteImportSettings(
+                pasteIds = formData.urls.map { urlParser.parse(it) }
+            )
+            importer.import(importSettings)
+        },
+        onImported = onImported
+    ) { state ->
+        PasteUrlsFormField(urlParser, examplePasteUrls, state)
     }
 }
 
@@ -150,10 +94,4 @@ private fun <PasteId> PasteUrlsFormField(
 
 private data class PasteImportFormData(
     var urls: List<String> = emptyList()
-) {
-    fun <PasteId> toImportSettings(urlParser: UrlParser<PasteId>): PasteImportSettings<PasteId> {
-        return PasteImportSettings(
-            pasteIds = urls.map { urlParser.parse(it) }
-        )
-    }
-}
+)

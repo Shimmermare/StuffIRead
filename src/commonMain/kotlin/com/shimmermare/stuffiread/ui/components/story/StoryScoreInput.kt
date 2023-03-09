@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
@@ -42,9 +41,9 @@ private fun StarsInput(score: Score, starCount: Int, onValueChange: (Score) -> U
         for (index in 1..starCount) {
             val filled = index <= filledStars
             val color = if (filled) {
-                MaterialTheme.colors.secondary
+                ScoreColor
             } else {
-                MaterialTheme.colors.secondary.copy(alpha = 0.2F)
+                ScoreColor.copy(alpha = 0.2F)
             }
             Icon(
                 Icons.Filled.Star,

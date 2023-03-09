@@ -4,7 +4,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
@@ -25,6 +27,7 @@ import com.shimmermare.stuffiread.stories.Story
 import com.shimmermare.stuffiread.tags.TagId
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
 import com.shimmermare.stuffiread.ui.components.input.ExtendedOutlinedTextField
+import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollColumn
 import com.shimmermare.stuffiread.ui.components.story.StoryFormData
 import com.shimmermare.stuffiread.ui.components.tag.TagPicker
 
@@ -72,15 +75,16 @@ fun ImportTagMappingForm(
     }
 
     if (importedStory.tags.isNotEmpty()) {
-        Column(
+        VerticalScrollColumn(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(10.dp),
+            modifier = Modifier.fillMaxWidth().padding(20.dp),
         ) {
             Text("Map imported tags")
             importedStory.tags.forEach { tagName ->
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    modifier = Modifier.width(600.dp).height(30.dp)
+                    modifier = Modifier.width(800.dp).height(30.dp)
                 ) {
                     ExtendedOutlinedTextField(
                         value = tagName,

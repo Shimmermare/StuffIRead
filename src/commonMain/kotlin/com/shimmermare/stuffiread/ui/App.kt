@@ -5,9 +5,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
-import androidx.compose.material.darkColors
-import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -15,6 +14,11 @@ import com.shimmermare.stuffiread.ui.AppSettingsHolder.settings
 import com.shimmermare.stuffiread.ui.pages.error.ErrorPage
 import com.shimmermare.stuffiread.ui.pages.openarchive.OpenArchivePage
 import com.shimmermare.stuffiread.ui.routing.Router
+import com.shimmermare.stuffiread.ui.theme.DarkColors
+import com.shimmermare.stuffiread.ui.theme.DarkExtendedColors
+import com.shimmermare.stuffiread.ui.theme.LightColors
+import com.shimmermare.stuffiread.ui.theme.LightExtendedColors
+import com.shimmermare.stuffiread.ui.theme.LocalExtendedColors
 import com.shimmermare.stuffiread.ui.theme.LocalTheme
 import com.shimmermare.stuffiread.ui.theme.LocalThemeProvider
 import com.shimmermare.stuffiread.ui.theme.Theme
@@ -54,18 +58,25 @@ fun App() {
 private fun AppContent() {
     MaterialTheme(
         colors = when (LocalTheme.current) {
-            Theme.LIGHT -> lightColors()
-            Theme.DARK -> darkColors()
+            Theme.LIGHT -> LightColors
+            Theme.DARK -> DarkColors
         }
     ) {
-        Scaffold(
-            topBar = { TopBar() }
+        CompositionLocalProvider(
+            LocalExtendedColors provides when (LocalTheme.current) {
+                Theme.LIGHT -> LightExtendedColors
+                Theme.DARK -> DarkExtendedColors
+            }
         ) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.TopCenter,
+            Scaffold(
+                topBar = { TopBar() }
             ) {
-                Router.CurrentPageBody()
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.TopCenter,
+                ) {
+                    Router.CurrentPageBody()
+                }
             }
         }
     }

@@ -96,7 +96,6 @@ fun FormFieldInfo(
         if (!valid) {
             Text(
                 text = error ?: "Invalid value",
-                style = MaterialTheme.typography.body1,
                 color = MaterialTheme.colors.error
             )
         }

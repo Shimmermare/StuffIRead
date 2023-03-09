@@ -40,7 +40,8 @@ fun SmallStoryCard(
     ) {
         Surface(
             modifier = Modifier.border(1.dp, Color.LightGray)
-                .let { if (onClick != null) it.clickable(onClick = onClick) else it }, elevation = 3.dp
+                .let { if (onClick != null) it.clickable(onClick = onClick) else it },
+            elevation = 2.dp
         ) {
             Column(
                 modifier = contentModifier

@@ -1,5 +1,6 @@
 package com.shimmermare.stuffiread.stories.file
 
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 
@@ -15,7 +16,7 @@ data class StoryFileMeta(
     val fileName: String,
     val format: StoryFileFormat,
     val originalName: String,
-    val added: Instant,
+    val added: Instant = Clock.System.now(),
     val wordCount: UInt,
     val size: UInt,
 )

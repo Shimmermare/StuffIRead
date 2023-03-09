@@ -10,8 +10,7 @@ import java.time.format.DateTimeFormatter
 /**
  * Same problem as Pastebin - poneb.in has no API to get meta, so we have to parse HTML.
  *
- * Because relying on HTML structure inevitably will lead to problems later,
- * the only "required" field is paste name. Other fields will be replaced with placeholders if failed.
+ *  Because relying on HTML structure is fragile, all fields will be replaced with placeholders if extraction failed.
  */
 actual object PonebinMetadataProvider {
     // E.g. 2014.11.29 19:04:57 UTC
@@ -21,13 +20,18 @@ actual object PonebinMetadataProvider {
         val html = Jsoup.connect(PonebinImporter.getPasteUrl(pasteKey)).get()
 
         val author = try {
-            html.select(".author > a")[0].text() ?: error("No author")
+            html.selectFirst(".author > a")!!.text()
         } catch (e: Exception) {
             Napier.e(e) { "Failed to parse paste author for $pasteKey" }
-            "Failed to get author"
+            "Failed to parse author"
         }
 
-        val name = html.select(".title")[0].text()
+        val name = try {
+            html.selectFirst(".title")!!.text()
+        } catch (e: Exception) {
+            Napier.e(e) { "Failed to parse paste author for $pasteKey" }
+            "Failed to parse name"
+        }
 
         val (addedDate, modifiedDate) = try {
             val texts = html.select(".code > span")

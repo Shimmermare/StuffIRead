@@ -17,6 +17,8 @@ import com.shimmermare.stuffiread.stories.Score
 import com.shimmermare.stuffiread.ui.AppSettingsHolder.settings
 import kotlin.math.roundToInt
 
+val ScoreColor @Composable get() = MaterialTheme.colors.primary
+
 @Composable
 fun StoryScore(score: Score) {
     when (settings.scoreDisplayType) {
@@ -34,9 +36,9 @@ private fun StarsScore(score: Score, starCount: Int) {
         for (i in 1..starCount) {
             val filled = i <= filledStars
             val color = if (filled) {
-                MaterialTheme.colors.secondary
+                ScoreColor
             } else {
-                MaterialTheme.colors.secondary.copy(alpha = 0.2F)
+                ScoreColor.copy(alpha = 0.2F)
             }
             Icon(
                 Icons.Filled.Star,

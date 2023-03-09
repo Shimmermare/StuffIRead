@@ -80,6 +80,8 @@ fun ImportFromSourceForm(
                         examplePasteUrls = listOf("https://poneb.in/ABCDEFGH", "https://poneb.in/raw/ABCDEFGH"),
                         onImported = onImported
                     )
+
+                    ImportSource.ARCHIVE_OF_OUR_OWN -> ArchiveOfOurOwnImportForm(onImported = onImported)
                 }
             }
         }
@@ -91,8 +93,8 @@ private fun ImportSource.getDisplayName(): String {
         ImportSource.PASTEBIN -> "pastebin.com"
         ImportSource.PONEPASTE -> "ponepaste.org"
         ImportSource.PONEBIN -> "poneb.in"
+        ImportSource.ARCHIVE_OF_OUR_OWN -> "archiveofourown.org"
         // ImportSource.FIMFICTION -> "FimFiction.net"
-        // ImportSource.ARCHIVE_OF_OUR_OWN -> "archiveofourown.org"
         // ImportSource.FICBOOK -> "ficbook.net"
         // ImportSource.PONYFICTION -> "ponyfiction.org"
     }

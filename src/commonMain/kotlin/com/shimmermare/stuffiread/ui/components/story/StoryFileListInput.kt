@@ -43,7 +43,6 @@ import com.shimmermare.stuffiread.ui.util.SelectionMode
 import com.shimmermare.stuffiread.util.dropAt
 import com.shimmermare.stuffiread.util.replaceAt
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import kotlin.io.path.extension
 import kotlin.io.path.name
 import kotlin.io.path.readBytes
@@ -193,7 +192,6 @@ private fun openAndLoadStoryFile(): StoryFile? {
             fileName = filePath.name,
             format = format,
             originalName = filePath.name,
-            added = Clock.System.now(),
             wordCount = countWords(content),
             size = content.size.toUInt()
         ),

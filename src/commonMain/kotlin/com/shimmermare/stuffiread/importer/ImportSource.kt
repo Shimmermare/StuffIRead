@@ -1,5 +1,7 @@
 package com.shimmermare.stuffiread.importer
 
+import com.shimmermare.stuffiread.importer.archiveofourown.ArchiveOfOurOwnImporter
+import com.shimmermare.stuffiread.importer.archiveofourown.ArchiveOfOurOwnUrlParser
 import com.shimmermare.stuffiread.importer.pastebin.PastebinImporter
 import com.shimmermare.stuffiread.importer.pastebin.PastebinUrlParser
 import com.shimmermare.stuffiread.importer.ponebin.PonebinImporter
@@ -15,7 +17,7 @@ enum class ImportSource(
     PASTEBIN(PastebinUrlParser, PastebinImporter),
     PONEPASTE(PonepasteUrlParser, PonepasteImporter, ponyIntegration = true),
     PONEBIN(PonebinUrlParser, PonebinImporter, ponyIntegration = true),
-    // TODO ARCHIVE_OF_OUR_OWN(..., ...),
+    ARCHIVE_OF_OUR_OWN(ArchiveOfOurOwnUrlParser, ArchiveOfOurOwnImporter),
     // TODO FIMFICTION(..., ..., ponyIntegration = true),
     // TODO FICBOOK(..., ...), - also maybe add settings bool to disable non-english sources?
     // TODO PONYFICTION(PastebinUrlParser, PastebinImporter, ponyIntegration = true),
