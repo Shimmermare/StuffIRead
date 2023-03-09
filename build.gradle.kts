@@ -63,8 +63,12 @@ compose.desktop {
         mainClass = "com.shimmermare.stuffiread.MainKt"
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Exe, TargetFormat.Deb)
-            packageName = "StuffIRead"
-            packageVersion = "1.0.0"
+            packageName = name
+            packageVersion = version.toString()
+            copyright = "Shimmermare 2023"
+
+            vendor = "Shimmermare"
+            licenseFile.set(layout.projectDirectory.file("LICENSE.txt"))
 
             windows {
                 shortcut = true

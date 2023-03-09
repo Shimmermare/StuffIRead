@@ -120,7 +120,7 @@ private fun PickerPopup(
                     searchText = searchText,
                     onSearchTextChanged = { searchText = it }
                 )
-                Text("Found ${availableToPickCategories.size} tags:")
+                Text("Found ${availableToPickCategories.size} categories:")
                 ChipVerticalGrid(modifier = Modifier.heightIn(max = 400.dp)) {
                     availableToPickCategories.forEach {
                         TagCategoryName(it, onClick = { pickedCategoryId = it.id })

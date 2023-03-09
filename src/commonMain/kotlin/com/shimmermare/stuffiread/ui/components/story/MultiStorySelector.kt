@@ -24,7 +24,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
@@ -36,6 +40,7 @@ import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storyService
 import com.shimmermare.stuffiread.ui.components.layout.LoadingContainer
 import com.shimmermare.stuffiread.ui.components.layout.PopupContent
 import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollColumn
+import com.shimmermare.stuffiread.ui.components.search.DefaultSearchBarModifier
 import com.shimmermare.stuffiread.ui.components.search.SearchBar
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
@@ -102,6 +107,7 @@ private fun SelectedStoryName(story: Story, onUnselect: () -> Unit) {
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun SelectorPopup(
     initiallySelectedStories: List<Story>,
@@ -120,6 +126,24 @@ private fun SelectorPopup(
     var searchText: String by remember { mutableStateOf("") }
     var searchTextUsed: String by remember { mutableStateOf("") }
     val foundStories: MutableList<Story> = remember { mutableStateListOf() }
+
+    fun canSearch(): Boolean {
+        return searchText.isNotBlank() && searchText != searchTextUsed
+    }
+
+    fun doSearch() {
+        coroutineScope.launch {
+            searchTextUsed = searchText
+            foundStories.clear()
+            val searchFilter = StoryFilter(nameContains = searchTextUsed)
+            storySearchService.getStoriesByFilter(searchFilter)
+                .filter(filter)
+                .onEach { story ->
+                    foundStories.add(story)
+                    foundStories.sortBy { it.name }
+                }.collect()
+        }
+    }
 
     Popup(
         focusable = true,
@@ -147,24 +171,20 @@ private fun SelectorPopup(
                         SearchBar(
                             searchText = searchText,
                             placeholderText = "Search by name",
-                            onSearchTextChanged = { searchText = it.ifBlank { "" } }
+                            onSearchTextChanged = { searchText = it.ifBlank { "" } },
+                            modifier = DefaultSearchBarModifier.onKeyEvent {
+                                if (it.key == Key.Enter && canSearch()) {
+                                    doSearch()
+                                    true
+                                } else {
+                                    false
+                                }
+                            },
                         )
                     }
                     Button(
-                        enabled = searchText.isNotBlank() && searchText != searchTextUsed,
-                        onClick = {
-                            coroutineScope.launch {
-                                searchTextUsed = searchText
-                                foundStories.clear()
-                                val searchFilter = StoryFilter(nameContains = searchTextUsed)
-                                storySearchService.getStoriesByFilter(searchFilter)
-                                    .filter(filter)
-                                    .onEach { story ->
-                                        foundStories.add(story)
-                                        foundStories.sortBy { it.name }
-                                    }.collect()
-                            }
-                        }
+                        enabled = canSearch(),
+                        onClick = ::doSearch
                     ) {
                         Text("Search")
                     }

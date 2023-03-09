@@ -155,15 +155,17 @@ private fun StorySequels(ids: Set<StoryId>) {
 
 @Composable
 private fun StoryPrequels(id: StoryId) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(5.dp)
-    ) {
-        Text("Prequels", style = MaterialTheme.typography.h6)
-        LoadingContainer(
-            key = id,
-            loader = { storySearchService.getStoriesByFilter(StoryFilter(isPrequelOf = setOf(id))).toList() }
-        ) { stories ->
-            stories.forEach { SmallStoryCardRoutableWithPreview(story = it) }
+    LoadingContainer(
+        key = id,
+        loader = { storySearchService.getStoriesByFilter(StoryFilter(isPrequelOf = setOf(id))).toList() }
+    ) { stories ->
+        if (stories.isNotEmpty()) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(5.dp)
+            ) {
+                Text("Prequels", style = MaterialTheme.typography.h6)
+                stories.forEach { SmallStoryCardRoutableWithPreview(story = it) }
+            }
         }
     }
 }

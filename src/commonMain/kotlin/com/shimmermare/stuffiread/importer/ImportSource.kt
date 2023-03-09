@@ -14,10 +14,10 @@ enum class ImportSource(
     val importer: StoryImporter<out ImportSettings>,
     val ponyIntegration: Boolean = false,
 ) {
+    ARCHIVE_OF_OUR_OWN(ArchiveOfOurOwnUrlParser, ArchiveOfOurOwnImporter),
     PASTEBIN(PastebinUrlParser, PastebinImporter),
     PONEPASTE(PonepasteUrlParser, PonepasteImporter, ponyIntegration = true),
     PONEBIN(PonebinUrlParser, PonebinImporter, ponyIntegration = true),
-    ARCHIVE_OF_OUR_OWN(ArchiveOfOurOwnUrlParser, ArchiveOfOurOwnImporter),
     // TODO FIMFICTION(..., ..., ponyIntegration = true),
     // TODO FICBOOK(..., ...), - also maybe add settings bool to disable non-english sources?
     // TODO PONYFICTION(PastebinUrlParser, PastebinImporter, ponyIntegration = true),

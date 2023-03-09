@@ -1,6 +1,8 @@
 package com.shimmermare.stuffiread.ui.pages.settings
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material.Button
@@ -12,10 +14,12 @@ import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.settings.AppSettings
 import com.shimmermare.stuffiread.settings.ScoreDisplayType
 import com.shimmermare.stuffiread.settings.ThemeBehavior
+import com.shimmermare.stuffiread.stories.Score
 import com.shimmermare.stuffiread.ui.AppSettingsHolder
 import com.shimmermare.stuffiread.ui.components.form.BoolFormField
 import com.shimmermare.stuffiread.ui.components.form.EnumFormField
 import com.shimmermare.stuffiread.ui.components.form.SubmittableInputForm
+import com.shimmermare.stuffiread.ui.components.story.StoryScore
 import com.shimmermare.stuffiread.ui.routing.Page
 
 class SettingsPage : Page {
@@ -74,6 +78,13 @@ class SettingsPage : Page {
                         }
                     }
                 )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text("Example score:")
+                    StoryScore(state.data.scoreDisplayType, Score(0.49F))
+                }
                 BoolFormField(
                     id = "openLastArchiveOnStartup",
                     state = state,

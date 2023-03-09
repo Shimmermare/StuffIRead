@@ -23,16 +23,19 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.ui.components.input.ExtendedOutlinedTextField
 
+val DefaultSearchBarModifier: Modifier
+    @Composable get() = Modifier
+        .fillMaxWidth()
+        .height(42.dp)
+        .padding(vertical = 2.dp)
+        .background(color = MaterialTheme.colors.onBackground.copy(alpha = 0.1F), shape = RoundedCornerShape(5.dp))
+
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SearchBar(
     searchText: String,
     placeholderText: String = "",
-    modifier: Modifier = Modifier
-        .fillMaxWidth()
-        .height(42.dp)
-        .padding(vertical = 2.dp)
-        .background(color = MaterialTheme.colors.onBackground.copy(alpha = 0.1F), shape = RoundedCornerShape(5.dp)),
+    modifier: Modifier = DefaultSearchBarModifier,
     onSearchTextChanged: (String) -> Unit,
     onClearClick: () -> Unit = { onSearchTextChanged("") }
 ) {

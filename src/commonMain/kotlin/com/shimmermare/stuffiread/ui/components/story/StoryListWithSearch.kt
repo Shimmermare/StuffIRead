@@ -28,7 +28,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.stories.Score
 import com.shimmermare.stuffiread.stories.Story
@@ -46,6 +50,7 @@ import com.shimmermare.stuffiread.ui.components.form.RangedOptionalIntFormField
 import com.shimmermare.stuffiread.ui.components.form.TextFormField
 import com.shimmermare.stuffiread.ui.components.input.OutlinedEnumField
 import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollColumn
+import com.shimmermare.stuffiread.ui.components.search.DefaultSearchBarModifier
 import com.shimmermare.stuffiread.ui.components.search.SearchBar
 import com.shimmermare.stuffiread.ui.components.story.SortBehavior.ASCENDING_UNKNOWN_FIRST
 import com.shimmermare.stuffiread.ui.components.story.SortBehavior.DESCENDING
@@ -72,6 +77,7 @@ fun StoryListWithSearch(presetFilter: StoryFilter = StoryFilter.DEFAULT) {
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun StoryFilterControls(currentFilter: StoryFilter, onFilterChange: (StoryFilter) -> Unit) {
     var filter: StoryFilter by remember(currentFilter) { mutableStateOf(currentFilter) }
@@ -93,6 +99,14 @@ private fun StoryFilterControls(currentFilter: StoryFilter, onFilterChange: (Sto
                     searchText = filter.nameContains ?: "",
                     placeholderText = "Search by name",
                     onSearchTextChanged = { filter = filter.copy(nameContains = it.ifBlank { null }) },
+                    modifier = DefaultSearchBarModifier.onKeyEvent {
+                        if (it.key == Key.Enter && currentFilter != filter) {
+                            onFilterChange(filter)
+                            true
+                        } else {
+                            false
+                        }
+                    },
                     onClearClick = { filter = filter.copy(nameContains = null) },
                 )
             }

@@ -1,70 +1,175 @@
 # Stuff I Read
 
-Desktop app for keeping track of stories you read.
+Desktop app for keeping track of stories (books, fanfics) you read.
 
-## When you may need this
+## Do you need this?
 
-You are reading tons of stories, probably most of them are fanfics.
-Excel spreadsheet with all that you read is 10 screens long and searching is a nightmare.
-Also, you like to score stories and write reviews, even if only for yourself.
-Maybe you also like to re-read stories sometimes.
+1. You read a lot of different stuff. Like in hundreds or even thousands.
+2. You can't remember everything you read, and you have to keep track of that.
+3. Also, you like to score stories and write reviews, even if only for yourself.
+4. Maybe, you even re-read some stories.
+5. Excel spreadsheet is not enough anymore.
 
 ## Development and support
 
-This app was created for personal usage and as a way to explore Compose framework.
-**That means support and further development is not guaranteed.**
+**Stuff I Read** was created and tailored for my personal use-case,
+but I will add features by request if there's a need.
+
+### Technology
+
+Built using [Compose Multiplatform](https://github.com/JetBrains/compose-multiplatform) framework (selected as
+experiment/research).  
+My personal opinion after working with it: don't use it for serious multiplatform development until 2025 or so.
+Standard library is lacking, and framework is fragile. You will waste time re-implementing basic components,
+exploring internals because documentation is minimal, and fighting obscure bugs.
 
 ## Features
 
-### Review and score stories that you read
-
-TODO
-
 ### Browse stories with extensive search
 
-TODO
+You can browse your archive using advanced search. You can search by author, description,
+publishing/last update dates, tags, score, review, content, word count and other parameters.
 
-### Tag system: tag categories, implied tags, search expressions
+<details open>
+<summary><b>Example</b></summary>
 
-TODO
+![Story search](readme-examples/story-search.png)
+</details>
+
+### Review and score stories that you read
+
+Write reviews and score stories, so you won't forget why you enjoyed reading a story.
+
+#### Score formats
+Multiple score formats are supported, including 5 stars, 10 stars, 10/10, 100/100.
+Format can be changed at any time without breaking existing scores.
+
+<details open>
+<summary><b>Example</b></summary>
+
+![Score display types](readme-examples/score-display.png)
+</details>
+
+### Tag system: tag categories, implied tags, search
+
+To help with categorization stories can have fully customizable tags.
+
+#### Tag category
+
+Category provides order and color of the tag. Ordering can be very useful when story has dozens of tags.
+
+![Tag order](readme-examples/tag-order.png)
+
+#### Tag implications
+
+Tags can imply other tags. For example, tag of character can imply their species, and now you can search
+for stories with that species without explicitly adding the species tag.  
+You can edit implications at any moment and all stories will be affected by the change.
+
+<details open>
+<summary><b>Examples of tags, you can create your own at any moment</b></summary>
+
+![Tag table](readme-examples/tag-table.png)
+</details>
 
 ### Sequels & prequels
 
-TODO  
-Stories can have their sequels/prequels linked for easy navigation
+Easy navigation for story sequels/prequels.
+
+<details open>
+<summary><b>Example</b></summary>
+
+![Story sequels/prequels](readme-examples/sequels-prequels.png)
+</details>
 
 ### Local story archive
 
-TODO  
-Multiple formats supported: EPUB, HTML, PDF, TXT.
+Files with story content can be locally archived. Strictly speaking all formats are supported,
+but EPUB, HTML, PDF and TXT have special handling, for example word counting.  
+Files can represent not only the whole story, but individual chapters as well as any additional content too.
 
-### Import from various story/fanfiction websites
+<details open>
+<summary><b>Example</b></summary>
 
-TODO: Currently supported:
+![Story files](readme-examples/story-files.png)
+</details>
 
-- [archiveofourown.org](https://archiveofourown.org/)
-- [pastebin.com](https://pastebin.com/)
-- [poneb.in](https://poneb.in/)
-- [FimFiction.net](https://fimfiction.net/) (MLP)
-- [ponepaste.org](https://ponepaste.org/) (MLP)
-- [ficbook.net](https://ficbook.net) (Russian)
-- [ponyfiction.org](https://ponyfiction.org) (MLP, Russian)
+### Import stories from selection of websites
 
-### Export to CSV/Excel
+Currently supported:
 
-TODO
+- [archiveofourown.org](https://archiveofourown.org/)  
+  Work can be imported in multiple file formats if needed.
+- [pastebin.com](https://pastebin.com/)  
+  Multiple pastes can be imported as one story.
+- [poneb.in](https://poneb.in/) (Pony)  
+  Multiple pastes can be imported as one story.
+- [ponepaste.org](https://ponepaste.org/) (Pony)  
+  Multiple pastes can be imported as one story.
+
+||Don't worry, you can hide pony website integrations in settings||  
+If website has story tags - they can be imported and mapped to local tags:
+
+<details open>
+<summary><b>Example</b></summary>
+
+![Tag mapping](readme-examples/tag-mapping.png)
+</details>
+
+### Misc
+
+#### Dark / light theme
+Use system theme or select one yourself.
+
+<details open>
+<summary><b>Example</b></summary>
+
+![Light/dark theme](readme-examples/light-dark-themes.png)
+</details>
+
+## Planned features
+
+### Localization support
+
+Support at least English and Russian. Also support language-based import sources settings.
+
+### More import sources
+
+Feel free to request other websites!
+
+- FimFiction.net - Pony (has excellent API, but need to request access).
+- PonyFiction.org - Pony, Russian
+- FicBook.net - Russian
+
+### Read Later and In Reading Lists
+
+Read Later List: stuff that you want to read sometime. Prioritized, with notes, url, date added, etc.  
+In Reading List: stuff that you are reading right now.  
+Also, a way to move stories between lists: Read Later -> In Reading -> Archive
 
 ### Stats and graphs
 
-TODO
+Page with aggregated stats on everything you read, including: total word count, score distribution,
+time distribution, and so on.
 
-## Storage format
+### File format conversions
 
-Story archive is stored as collection JSON files: one for tags: `tags.json`, and individual directories for stories.
+To be able to convert EPUB to PDF, TXT to HTML and so on.
+
+### Track individual reads
+
+As of now only first read and last read dates are supported, but I think it would be cool to know about
+specific dates when you read something.
+
+### Android version
+
+Compose Multiplatform "supports" it, but I personally don't need it. So it's low priority.
+
+## Story archive format
+
+**Story archive** is a folder and consists of **tags** (`tags.json`),
+**stories** (individual folders with story info in `story.json` and archived `files`).
 
 Q: Why use separate files instead of something like SQLite database?  
-A: I wanted story archive to be usable with Git/other VCS.
-
-## Attributions
-App Icon: [Books free icon by Freepik - Flaticon](https://www.flaticon.com/free-icon/books_4890961)  
-Example Story Covers: [Image by Freepik](https://www.freepik.com/free-vector/gradient-abstract-landscape-covers-collection_16133726.htm)  
+A: I wanted story archive to be easily versioned. E.g. Git/other VCS, or clouds like Google Drive.
+SQLite DB with a thousand stories can be GB-sized - you don't want to upload that each time new story is added.

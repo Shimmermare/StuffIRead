@@ -21,7 +21,12 @@ val ScoreColor @Composable get() = MaterialTheme.colors.primary
 
 @Composable
 fun StoryScore(score: Score) {
-    when (settings.scoreDisplayType) {
+    StoryScore(settings.scoreDisplayType, score)
+}
+
+@Composable
+fun StoryScore(displayType: ScoreDisplayType, score: Score) {
+    when (displayType) {
         ScoreDisplayType.STARS_5 -> StarsScore(score, 5)
         ScoreDisplayType.STARS_10 -> StarsScore(score, 10)
         ScoreDisplayType.NUMBERS_1_TO_10 -> NumbersScore(score, 10)
