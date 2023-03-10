@@ -42,9 +42,10 @@ fun MultiTagPicker(
     title: String,
     pickedTagIds: Set<TagId>,
     filter: (Tag) -> Boolean = { true },
+    defaultOpenPopup: Boolean = false,
     onPick: (Set<TagId>) -> Unit,
 ) {
-    var openPopup: Boolean by remember { mutableStateOf(false) }
+    var openPopup: Boolean by remember { mutableStateOf(defaultOpenPopup) }
 
     PickedTagsField(
         pickedTagIds = pickedTagIds,

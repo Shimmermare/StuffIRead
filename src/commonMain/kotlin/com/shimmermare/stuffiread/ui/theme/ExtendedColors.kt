@@ -21,9 +21,9 @@ data class ExtendedColors(
 )
 
 val LightColors = lightColors(
-    primary = Color(0xFF2196F3), // Blue 500
-    primaryVariant = Color(0xFF3F51B5), // Indigo 500
-    secondary = Color(0xFF009688), // Teal 500
+    primary = Color(0xFF1E88E5), // Blue 600
+    primaryVariant = Color(0xFF5E35B1), // Indigo 600
+    secondary = Color(0xFF26A69A), // Teal 400
     error = Color(0xFFEF5350), // Red 400
 )
 val LightExtendedColors = ExtendedColors(
@@ -38,7 +38,7 @@ val LightExtendedColors = ExtendedColors(
 val DarkColors = darkColors(
     primary = Color(0xFF1976D2), // Blue 700
     primaryVariant = Color(0xFF303F9F), // Indigo 700
-    secondary = Color(0xFF00796B), // Teal 700
+    secondary = Color(0xFF00897B), // Teal 600
     error = Color(0xFFE53935), // Red 600
 )
 val DarkExtendedColors = ExtendedColors(

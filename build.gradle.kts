@@ -47,7 +47,6 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation("org.jsoup:jsoup:${extra["jsoup.version"]}")
-                implementation("com.github.lgooddatepicker:LGoodDatePicker:${extra["lgooddatepicker.version"]}")
             }
         }
 

@@ -10,6 +10,12 @@ import kotlinx.datetime.toLocalDateTime
 object TimeUtils {
     val EPOCH_START = Instant.fromEpochSeconds(0)
 
+    fun instantAtTodayMidnight(): Instant {
+        return Clock.System.now()
+            .toLocalDateTime(TimeZone.currentSystemDefault())
+            .date.atTime(0, 0)
+            .toInstant(TimeZone.currentSystemDefault())
+    }
     fun instantAtToday1200(): Instant {
         return Clock.System.now()
             .toLocalDateTime(TimeZone.currentSystemDefault())

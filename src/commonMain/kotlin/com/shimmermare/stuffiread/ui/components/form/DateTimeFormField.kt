@@ -1,67 +1,12 @@
 package com.shimmermare.stuffiread.ui.components.form
 
 import androidx.compose.runtime.Composable
-import com.shimmermare.stuffiread.ui.components.input.DateTimePicker
+import com.shimmermare.stuffiread.ui.components.input.datetime.DateTimePicker
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
-
-@Composable
-fun <FormData> DateTimeFormField(
-    id: String,
-    state: InputFormState<FormData>,
-    name: String? = null,
-    description: String? = null,
-    getter: (FormData) -> LocalDateTime,
-    setter: (FormData, LocalDateTime) -> FormData,
-    validator: suspend (LocalDateTime) -> ValidationResult = { ValidationResult.Valid },
-) {
-    FormField(
-        id = id,
-        state = state,
-        name = name,
-        description = description,
-        getter = getter,
-        setter = setter,
-        validator = validator,
-    ) { value, _, onValueChange ->
-        DateTimePicker(
-            value = value,
-            onValueChange = onValueChange
-        )
-    }
-}
-
-@Composable
-fun <FormData> OptionalDateTimeFormField(
-    id: String,
-    state: InputFormState<FormData>,
-    name: String? = null,
-    description: String? = null,
-    defaultValue: () -> LocalDateTime = { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()) },
-    getter: (FormData) -> LocalDateTime?,
-    setter: (FormData, LocalDateTime?) -> FormData,
-    validator: suspend (LocalDateTime?) -> ValidationResult = { ValidationResult.Valid },
-) {
-    OptionalFormField(
-        id = id,
-        state = state,
-        name = name,
-        description = description,
-        defaultValue = defaultValue,
-        getter = getter,
-        setter = setter,
-        validator = validator,
-    ) { value, _, onValueChange ->
-        DateTimePicker(
-            value = value,
-            onValueChange = onValueChange
-        )
-    }
-}
 
 @Composable
 fun <FormData> OptionalInstantFormField(
@@ -70,6 +15,7 @@ fun <FormData> OptionalInstantFormField(
     name: String? = null,
     description: String? = null,
     timeZone: TimeZone = TimeZone.currentSystemDefault(),
+    showSeconds: Boolean = false,
     defaultValue: () -> Instant = { Clock.System.now() },
     getter: (FormData) -> Instant?,
     setter: (FormData, Instant?) -> FormData,
@@ -87,6 +33,40 @@ fun <FormData> OptionalInstantFormField(
     ) { value, _, onValueChange ->
         DateTimePicker(
             value = value.toLocalDateTime(timeZone),
+            showSeconds = showSeconds,
+            onValueChange = { onValueChange(it.toInstant(timeZone)) }
+        )
+    }
+}
+
+@Composable
+fun <FormData> OptionalInstantRangeFormField(
+    id: String,
+    state: InputFormState<FormData>,
+    name: String? = null,
+    description: String? = null,
+    timeZone: TimeZone = TimeZone.currentSystemDefault(),
+    showSeconds: Boolean = false,
+    defaultValue: () -> Instant,
+    fromGetter: (FormData) -> Instant?,
+    toGetter: (FormData) -> Instant?,
+    setter: (FormData, lower: Instant?, upper: Instant?) -> FormData,
+    validator: suspend (from: Instant?, to: Instant?) -> ValidationResult = { _, _ -> ValidationResult.Valid },
+) {
+    OptionalRangeFormField(
+        id = id,
+        state = state,
+        name = name,
+        description = description,
+        defaultValue = defaultValue,
+        fromGetter = fromGetter,
+        toGetter = toGetter,
+        setter = setter,
+        validator = validator,
+    ) { value, _, onValueChange ->
+        DateTimePicker(
+            value = value.toLocalDateTime(timeZone),
+            showSeconds = showSeconds,
             onValueChange = { onValueChange(it.toInstant(timeZone)) }
         )
     }

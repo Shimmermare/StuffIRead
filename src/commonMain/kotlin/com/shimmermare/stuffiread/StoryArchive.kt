@@ -48,7 +48,7 @@ class StoryArchive(
 
         tagService = TagServiceImpl(FileBasedTagTreeService(directory))
 
-        storySearchService = StorySearchServiceImpl(storyService, tagService)
+        storySearchService = StorySearchServiceImpl(storyService, storyFilesService, tagService)
     }
 
     private fun usePreset(presetName: String) {

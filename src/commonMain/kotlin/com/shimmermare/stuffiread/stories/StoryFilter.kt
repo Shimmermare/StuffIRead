@@ -108,6 +108,23 @@ data class StoryFilter(
      * Inclusive.
      */
     val updatedBefore: Instant? = null,
+    /**
+     * Inclusive.
+     * Word count is combined from all files of story.
+     */
+    val wordCountGreaterOrEqual: UInt? = null,
+    /**
+     * Inclusive.
+     * Word count is combined from all files of story.
+     */
+    val wordCountLessOrEqual: UInt? = null,
+    /**
+     * Case-insensitive.
+     * Story content contains text.
+     * Only supported for story files of known formats.
+     * TODO: For now only supported by TXT and HTML formats
+     */
+    val contentContains: String? = null,
 ) {
     init {
         require(idIn == null || idNotIn == null) {
@@ -136,6 +153,9 @@ data class StoryFilter(
         }
         require(updatedAfter == null || updatedBefore == null || updatedAfter <= updatedBefore) {
             "updated date filter has invalid range ($updatedBefore > $updatedAfter)"
+        }
+        require(wordCountGreaterOrEqual == null || wordCountLessOrEqual == null || wordCountGreaterOrEqual <= wordCountLessOrEqual) {
+            "Word count filter has invalid range ($wordCountGreaterOrEqual > $wordCountLessOrEqual)"
         }
     }
 

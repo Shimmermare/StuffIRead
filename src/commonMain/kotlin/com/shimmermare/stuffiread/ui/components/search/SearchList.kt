@@ -64,8 +64,7 @@ private fun <T> Sequence<T>.filterByName(
     searchFor: String,
     nameGetter: (T) -> String,
 ): Sequence<T> {
-    if (searchFor.isEmpty()) return this
-    val searchForPrepared = searchFor.lowercase().trim()
-
-    return filter { nameGetter(it).lowercase().contains(searchForPrepared.lowercase()) }
+    if (searchFor.isBlank()) return this
+    val searchForTrimmed = searchFor.trim()
+    return filter { nameGetter(it).contains(searchForTrimmed, ignoreCase = true) }
 }

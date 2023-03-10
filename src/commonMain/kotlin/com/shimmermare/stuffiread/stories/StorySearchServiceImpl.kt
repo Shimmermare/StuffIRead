@@ -1,5 +1,9 @@
 package com.shimmermare.stuffiread.stories
 
+import com.shimmermare.stuffiread.stories.file.StoryFile
+import com.shimmermare.stuffiread.stories.file.StoryFileFormat
+import com.shimmermare.stuffiread.stories.file.StoryFileMeta
+import com.shimmermare.stuffiread.stories.file.StoryFilesService
 import com.shimmermare.stuffiread.tags.TagService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.buffer
@@ -7,6 +11,7 @@ import kotlinx.coroutines.flow.filter
 
 class StorySearchServiceImpl(
     private val storyService: StoryService,
+    private val storyFilesService: StoryFilesService,
     private val tagService: TagService,
 ) : StorySearchService {
     override suspend fun getStoriesByFilter(filter: StoryFilter, ignoreInvalidStories: Boolean): Flow<Story> {
@@ -44,6 +49,8 @@ class StorySearchServiceImpl(
         stories = stories.filterRange(filter.timesReadGreaterOrEqual, filter.timesReadLessOrEqual) { it.timesRead }
         stories = stories.filterRange(filter.createdAfter, filter.createdBefore) { it.created }
         stories = stories.filterRange(filter.updatedAfter, filter.updatedBefore) { it.updated }
+
+        stories = stories.filterOnFiles(filter)
 
         return stories
     }
@@ -91,6 +98,51 @@ class StorySearchServiceImpl(
             }
 
             else -> this
+        }
+    }
+
+    private fun Flow<Story>.filterOnFiles(filter: StoryFilter): Flow<Story> {
+        val filterOnFileMeta = filter.wordCountGreaterOrEqual != null || filter.wordCountLessOrEqual != null
+        val filterOnFileContent = filter.contentContains != null
+
+        if (!filterOnFileMeta && !filterOnFileContent) return this
+
+        return filter { story ->
+            val files: List<StoryFile>? = if (filterOnFileContent) {
+                storyFilesService.getStoryFiles(story.id)
+            } else {
+                null
+            }
+            val filesMeta: List<StoryFileMeta>? = if (filterOnFileMeta) {
+                files?.map { it.meta } ?: storyFilesService.getStoryFilesMeta(story.id)
+            } else {
+                null
+            }
+
+            if (filter.wordCountGreaterOrEqual != null || filter.wordCountLessOrEqual != null) {
+                val totalWordCount = filesMeta!!.sumOf { it.wordCount }
+                filter.wordCountGreaterOrEqual?.let {
+                    if (totalWordCount < it) return@filter false
+                }
+                filter.wordCountLessOrEqual?.let {
+                    if (totalWordCount > it) return@filter false
+                }
+            }
+
+            if (filter.contentContains != null) {
+                val contains = files!!.any {
+                    when (it.meta.format) {
+                        StoryFileFormat.TXT, StoryFileFormat.HTML -> {
+                            val contentText = String(it.content, Charsets.UTF_8)
+                            contentText.contains(filter.contentContains, ignoreCase = true)
+                        }
+
+                        else -> false
+                    }
+                }
+                if (!contains) return@filter false
+            }
+            true
         }
     }
 }

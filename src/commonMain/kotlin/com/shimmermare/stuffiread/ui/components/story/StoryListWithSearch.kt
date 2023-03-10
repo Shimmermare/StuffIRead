@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
@@ -44,11 +45,12 @@ import com.shimmermare.stuffiread.ui.components.error.ErrorInfo
 import com.shimmermare.stuffiread.ui.components.form.InputForm
 import com.shimmermare.stuffiread.ui.components.form.InputFormState
 import com.shimmermare.stuffiread.ui.components.form.OptionalFormField
-import com.shimmermare.stuffiread.ui.components.form.OptionalInstantFormField
-import com.shimmermare.stuffiread.ui.components.form.OptionalUIntFormField
+import com.shimmermare.stuffiread.ui.components.form.OptionalInstantRangeFormField
+import com.shimmermare.stuffiread.ui.components.form.OptionalRangeFormField
 import com.shimmermare.stuffiread.ui.components.form.RangedOptionalIntFormField
 import com.shimmermare.stuffiread.ui.components.form.TextFormField
 import com.shimmermare.stuffiread.ui.components.input.OutlinedEnumField
+import com.shimmermare.stuffiread.ui.components.input.OutlinedUIntField
 import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollColumn
 import com.shimmermare.stuffiread.ui.components.search.DefaultSearchBarModifier
 import com.shimmermare.stuffiread.ui.components.search.SearchBar
@@ -56,6 +58,7 @@ import com.shimmermare.stuffiread.ui.components.story.SortBehavior.ASCENDING_UNK
 import com.shimmermare.stuffiread.ui.components.story.SortBehavior.DESCENDING
 import com.shimmermare.stuffiread.ui.components.story.SortBehavior.DESCENDING_UNKNOWN_FIRST
 import com.shimmermare.stuffiread.ui.components.tag.MultiTagPicker
+import com.shimmermare.stuffiread.ui.util.TimeUtils
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
@@ -80,7 +83,7 @@ fun StoryListWithSearch(presetFilter: StoryFilter = StoryFilter.DEFAULT) {
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun StoryFilterControls(currentFilter: StoryFilter, onFilterChange: (StoryFilter) -> Unit) {
-    var filter: StoryFilter by remember(currentFilter) { mutableStateOf(currentFilter) }
+    val state = remember(currentFilter) { InputFormState(currentFilter) }
     var showAdvanced: Boolean by remember { mutableStateOf(false) }
 
     Column(
@@ -96,18 +99,18 @@ private fun StoryFilterControls(currentFilter: StoryFilter, onFilterChange: (Sto
                 modifier = Modifier.width(600.dp)
             ) {
                 SearchBar(
-                    searchText = filter.nameContains ?: "",
+                    searchText = state.data.nameContains ?: "",
                     placeholderText = "Search by name",
-                    onSearchTextChanged = { filter = filter.copy(nameContains = it.ifBlank { null }) },
+                    onSearchTextChanged = { state.data = state.data.copy(nameContains = it.ifBlank { null }) },
                     modifier = DefaultSearchBarModifier.onKeyEvent {
-                        if (it.key == Key.Enter && currentFilter != filter) {
-                            onFilterChange(filter)
+                        if (it.key == Key.Enter && state.isValid && currentFilter != state.data) {
+                            onFilterChange(state.data)
                             true
                         } else {
                             false
                         }
                     },
-                    onClearClick = { filter = filter.copy(nameContains = null) },
+                    onClearClick = { state.data = state.data.copy(nameContains = null) },
                 )
             }
 
@@ -120,32 +123,25 @@ private fun StoryFilterControls(currentFilter: StoryFilter, onFilterChange: (Sto
             }
             Button(
                 onClick = { onFilterChange(StoryFilter.DEFAULT) },
-                enabled = filter != StoryFilter.DEFAULT,
+                enabled = state.data != StoryFilter.DEFAULT,
             ) {
                 Text("Reset")
             }
             Button(
-                onClick = { if (currentFilter != filter) onFilterChange(filter) },
-                enabled = currentFilter != filter
+                onClick = { if (state.isValid && currentFilter != state.data) onFilterChange(state.data) },
+                enabled = state.isValid && currentFilter != state.data
             ) {
                 Text("Search")
             }
         }
         if (showAdvanced) {
-            AdvancedStoryFilterControls(filter) { filter = it }
+            AdvancedStoryFilterControls(state)
         }
     }
 }
 
 @Composable
-private fun AdvancedStoryFilterControls(filter: StoryFilter, onFilterChange: (StoryFilter) -> Unit) {
-    val state = remember(filter) { InputFormState(filter) }
-
-    LaunchedEffect(state.data) {
-        if (filter != state.data) {
-            onFilterChange(state.data)
-        }
-    }
+private fun AdvancedStoryFilterControls(state: InputFormState<StoryFilter>) {
     Box(
         modifier = Modifier.heightIn(max = 300.dp)
     ) {
@@ -189,46 +185,24 @@ private fun AdvancedStoryFilterFields(state: InputFormState<StoryFilter>) {
         setter = { data, value -> data.copy(descriptionContains = value.ifBlank { null }) },
         singleLine = false
     )
-    Row {
-        Row(modifier = Modifier.weight(1F)) {
-            OptionalInstantFormField(
-                id = "publishedAfter",
-                state = state,
-                name = "Published after",
-                getter = { it.publishedAfter },
-                setter = { data, value -> data.copy(publishedAfter = value) }
-            )
-        }
-        Row(modifier = Modifier.weight(1F)) {
-            OptionalInstantFormField(
-                id = "publishedBefore",
-                state = state,
-                name = "Published before",
-                getter = { it.publishedBefore },
-                setter = { data, value -> data.copy(publishedBefore = value) }
-            )
-        }
-    }
-    Row {
-        Row(modifier = Modifier.weight(1F)) {
-            OptionalInstantFormField(
-                id = "changedAfter",
-                state = state,
-                name = "Changed after",
-                getter = { it.changedAfter },
-                setter = { data, value -> data.copy(changedAfter = value) }
-            )
-        }
-        Row(modifier = Modifier.weight(1F)) {
-            OptionalInstantFormField(
-                id = "changedBefore",
-                state = state,
-                name = "Changed before",
-                getter = { it.changedBefore },
-                setter = { data, value -> data.copy(changedBefore = value) }
-            )
-        }
-    }
+    OptionalInstantRangeFormField(
+        id = "publishedRange",
+        state = state,
+        name = "Published date range (inclusive)",
+        defaultValue = { TimeUtils.instantAtTodayMidnight() },
+        fromGetter = { it.publishedAfter },
+        toGetter = { it.publishedBefore },
+        setter = { data, from, to -> data.copy(publishedAfter = from, publishedBefore = to) },
+    )
+    OptionalInstantRangeFormField(
+        id = "changedRange",
+        state = state,
+        name = "Changed date range (inclusive)",
+        defaultValue = { TimeUtils.instantAtTodayMidnight() },
+        fromGetter = { it.changedAfter },
+        toGetter = { it.changedBefore },
+        setter = { data, from, to -> data.copy(changedAfter = from, changedBefore = to) },
+    )
     OptionalFormField(
         id = "tags",
         state = state,
@@ -241,34 +215,44 @@ private fun AdvancedStoryFilterFields(state: InputFormState<StoryFilter>) {
         MultiTagPicker(
             title = "Pick tags to search for",
             pickedTagIds = value,
+            defaultOpenPopup = true,
             onPick = onValueChange
         )
     }
-    Row {
-        Row(modifier = Modifier.weight(1F)) {
-            OptionalFormField(
-                id = "scoreGreaterOrEqual",
-                state = state,
-                name = "Score greater than or equal",
-                defaultValue = { Score(0F) },
-                getter = { it.scoreGreaterOrEqual },
-                setter = { data, value -> data.copy(scoreGreaterOrEqual = value) },
-            ) { value, _, onValueChange ->
-                StoryScoreInput(value, onValueChange)
-            }
-        }
-        Row(modifier = Modifier.weight(1F)) {
-            OptionalFormField(
-                id = "scoreLessOrEqual",
-                state = state,
-                name = "Score less than or equal",
-                defaultValue = { Score(1F) },
-                getter = { it.scoreLessOrEqual },
-                setter = { data, value -> data.copy(scoreLessOrEqual = value) },
-            ) { value, _, onValueChange ->
-                StoryScoreInput(value, onValueChange)
-            }
-        }
+    OptionalRangeFormField(
+        id = "wordCountRange",
+        state = state,
+        name = "Word count range (inclusive)",
+        defaultValue = { 0u },
+        fromGetter = { it.wordCountGreaterOrEqual },
+        toGetter = { it.wordCountLessOrEqual },
+        setter = { data, from, to -> data.copy(wordCountGreaterOrEqual = from, wordCountLessOrEqual = to) }
+    ) { value, valid, onValueChange ->
+        OutlinedUIntField(
+            value = value,
+            isError = !valid,
+            modifier = Modifier.widthIn(max = 120.dp).height(36.dp),
+            onValueChange = onValueChange
+        )
+    }
+    TextFormField(
+        id = "contentContains",
+        state = state,
+        name = "Content contains",
+        getter = { it.contentContains ?: "" },
+        setter = { data, value -> data.copy(contentContains = value.ifBlank { null }) },
+        singleLine = false
+    )
+    OptionalRangeFormField(
+        id = "scoreRange",
+        state = state,
+        name = "Score range (inclusive)",
+        defaultValue = { Score(0F) },
+        fromGetter = { it.scoreGreaterOrEqual },
+        toGetter = { it.scoreLessOrEqual },
+        setter = { data, from, to -> data.copy(scoreGreaterOrEqual = from, scoreLessOrEqual = to) }
+    ) { value, _, onValueChange ->
+        StoryScoreInput(value, onValueChange)
     }
     TextFormField(
         id = "reviewContains",
@@ -278,107 +262,58 @@ private fun AdvancedStoryFilterFields(state: InputFormState<StoryFilter>) {
         setter = { data, value -> data.copy(reviewContains = value.ifBlank { null }) },
         singleLine = false
     )
-    Row {
-        Row(modifier = Modifier.weight(1F)) {
-            OptionalInstantFormField(
-                id = "firstReadAfter",
-                state = state,
-                name = "First read after",
-                getter = { it.firstReadAfter },
-                setter = { data, value -> data.copy(firstReadAfter = value) }
-            )
-        }
-        Row(modifier = Modifier.weight(1F)) {
-            OptionalInstantFormField(
-                id = "firstReadBefore",
-                state = state,
-                name = "First read before",
-                getter = { it.firstReadBefore },
-                setter = { data, value -> data.copy(firstReadBefore = value) }
-            )
-        }
+    OptionalInstantRangeFormField(
+        id = "firstReadRange",
+        state = state,
+        name = "First read date range (inclusive)",
+        defaultValue = { TimeUtils.instantAtTodayMidnight() },
+        fromGetter = { it.firstReadAfter },
+        toGetter = { it.firstReadBefore },
+        setter = { data, from, to -> data.copy(firstReadAfter = from, firstReadBefore = to) },
+    )
+    OptionalInstantRangeFormField(
+        id = "lastReadRange",
+        state = state,
+        name = "First read date range (inclusive)",
+        defaultValue = { TimeUtils.instantAtTodayMidnight() },
+        fromGetter = { it.lastReadAfter },
+        toGetter = { it.lastReadBefore },
+        setter = { data, from, to -> data.copy(lastReadAfter = from, lastReadBefore = to) },
+    )
+    OptionalRangeFormField(
+        id = "timesReadRange",
+        state = state,
+        name = "Times read range (inclusive)",
+        defaultValue = { 0u },
+        fromGetter = { it.timesReadGreaterOrEqual },
+        toGetter = { it.timesReadLessOrEqual },
+        setter = { data, from, to -> data.copy(timesReadGreaterOrEqual = from, timesReadLessOrEqual = to) }
+    ) { value, valid, onValueChange ->
+        OutlinedUIntField(
+            value = value,
+            isError = !valid,
+            modifier = Modifier.widthIn(max = 80.dp).height(36.dp),
+            onValueChange = onValueChange
+        )
     }
-    Row {
-        Row(modifier = Modifier.weight(1F)) {
-            OptionalInstantFormField(
-                id = "lastReadAfter",
-                state = state,
-                name = "Last read after",
-                getter = { it.lastReadAfter },
-                setter = { data, value -> data.copy(lastReadAfter = value) }
-            )
-        }
-        Row(modifier = Modifier.weight(1F)) {
-            OptionalInstantFormField(
-                id = "lastReadBefore",
-                state = state,
-                name = "Last read before",
-                getter = { it.lastReadBefore },
-                setter = { data, value -> data.copy(lastReadBefore = value) }
-            )
-        }
-    }
-    Row {
-        Row(modifier = Modifier.weight(1F)) {
-            OptionalUIntFormField(
-                id = "timesReadGreaterOrEqual",
-                state = state,
-                name = "Times read greater than or equal",
-                getter = { it.timesReadGreaterOrEqual },
-                setter = { data, value -> data.copy(timesReadGreaterOrEqual = value) },
-            )
-        }
-        Row(modifier = Modifier.weight(1F)) {
-            OptionalUIntFormField(
-                id = "timesReadLessOrEqual",
-                state = state,
-                name = "Times read less than or equal",
-                defaultValue = 5u,
-                getter = { it.timesReadLessOrEqual },
-                setter = { data, value -> data.copy(timesReadLessOrEqual = value) },
-            )
-        }
-    }
-    Row {
-        Row(modifier = Modifier.weight(1F)) {
-            OptionalInstantFormField(
-                id = "createdAfter",
-                state = state,
-                name = "Created after",
-                getter = { it.createdAfter },
-                setter = { data, value -> data.copy(createdAfter = value) }
-            )
-        }
-        Row(modifier = Modifier.weight(1F)) {
-            OptionalInstantFormField(
-                id = "createdBefore",
-                state = state,
-                name = "Created before",
-                getter = { it.createdBefore },
-                setter = { data, value -> data.copy(createdBefore = value) }
-            )
-        }
-    }
-    Row {
-        Row(modifier = Modifier.weight(1F)) {
-            OptionalInstantFormField(
-                id = "updatedAfter",
-                state = state,
-                name = "Updated after",
-                getter = { it.updatedAfter },
-                setter = { data, value -> data.copy(updatedAfter = value) }
-            )
-        }
-        Row(modifier = Modifier.weight(1F)) {
-            OptionalInstantFormField(
-                id = "updatedBefore",
-                state = state,
-                name = "Updated before",
-                getter = { it.updatedBefore },
-                setter = { data, value -> data.copy(updatedBefore = value) }
-            )
-        }
-    }
+    OptionalInstantRangeFormField(
+        id = "createdRange",
+        state = state,
+        name = "Created date range (inclusive)",
+        defaultValue = { TimeUtils.instantAtTodayMidnight() },
+        fromGetter = { it.createdAfter },
+        toGetter = { it.createdBefore },
+        setter = { data, from, to -> data.copy(createdAfter = from, createdBefore = to) },
+    )
+    OptionalInstantRangeFormField(
+        id = "updatedRange",
+        state = state,
+        name = "Created date range (inclusive)",
+        defaultValue = { TimeUtils.instantAtTodayMidnight() },
+        fromGetter = { it.updatedAfter },
+        toGetter = { it.updatedBefore },
+        setter = { data, from, to -> data.copy(updatedAfter = from, updatedBefore = to) },
+    )
 }
 
 @Composable
