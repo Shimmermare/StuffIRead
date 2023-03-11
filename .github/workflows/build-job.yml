@@ -1,0 +1,71 @@
+# Build app to all targets and store binaries as artifact named ${{ github.sha }}-binaries
+name: Build Job
+
+on:
+  workflow_call:
+    inputs:
+      upload-artifacts:
+        default: false
+        required: false
+        type: boolean
+
+
+# Prevent concurrent runs to use cache better
+concurrency:
+  group: build-${{ github.sha }}
+
+jobs:
+  # Use cached build output for same commit hash
+  build:
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - id: cache-restore
+        name: Try get binaries from cache
+        uses: actions/cache/restore@v3
+        with:
+          key: ${{ github.sha }}-${{ matrix.os }}-binaries
+          path: binaries
+
+      - uses: actions/checkout@v3
+        if: steps.cache-restore.outputs.cache-hit != 'true'
+
+      - uses: actions/setup-java@v3
+        if: steps.cache-restore.outputs.cache-hit != 'true'
+        with:
+          distribution: temurin
+          java-version: 18
+
+      - name: Setup Gradle
+        if: steps.cache-restore.outputs.cache-hit != 'true'
+        uses: gradle/gradle-build-action@v2
+
+      - name: Build Packages
+        if: steps.cache-restore.outputs.cache-hit != 'true'
+        run: ./gradlew preparePackagedReleaseDistributionForCurrentOS
+
+      - name: Build Portable (Windows)
+        if: matrix.os == 'windows-latest' && steps.cache-restore.outputs.cache-hit != 'true'
+        run: ./gradlew preparePortableReleaseDistributionForWindows
+
+      - name: List built binaries
+        run: ls -R binaries/ || true
+
+      - id: cache-save
+        name: Cache binaries
+        if: steps.cache-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v3
+        with:
+          key: ${{ steps.cache-restore.outputs.cache-primary-key }}
+          path: binaries
+
+      - name: Save Artifacts
+        if: inputs.upload-artifacts == true
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ github.sha }}-binaries
+          path: binaries
+          retention-days: 7
+          if-no-files-found: error

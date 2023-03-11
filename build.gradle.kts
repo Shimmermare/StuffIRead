@@ -62,7 +62,7 @@ compose.desktop {
     application {
         mainClass = "com.shimmermare.stuffiread.MainKt"
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Exe, TargetFormat.Deb)
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = name
             packageVersion = version.toString()
             copyright = "Shimmermare 2023"
@@ -86,4 +86,53 @@ compose.desktop {
             configurationFiles.from(project.file("compose-desktop.pro"))
         }
     }
+}
+
+
+tasks.register<Copy>("preparePackagedReleaseDistributionForCurrentOS") {
+    dependsOn("check", "packageReleaseDistributionForCurrentOS")
+
+    doFirst { println("Copying package files:") }
+
+    from(
+        // This fails to match binaries in GitHub actions for some reason
+        // fileTree(layout.buildDirectory.dir("compose/binaries/main-release"))
+        //    .apply { exclude("**/app/**") }
+        //    .files
+        // Specify package dirs explicitly:
+        TargetFormat.values()
+            .filter { it.outputDirName != "app" }
+            .map { layout.buildDirectory.dir("compose/binaries/main-release/${it.outputDirName}") }
+    ).apply {
+        includeEmptyDirs = false
+    }
+
+    into(layout.projectDirectory.dir("binaries"))
+
+    eachFile { println(path) }
+}
+
+tasks.register<Zip>("preparePortableReleaseDistributionForWindows") {
+    dependsOn("check", "createReleaseDistributable")
+
+    doFirst {
+        if (!TargetFormat.Exe.isCompatibleWithCurrentOS) {
+            throw IllegalStateException("This task can't be executed on non-Windows OS")
+        }
+        println("Zipping portable files:")
+    }
+
+    from(
+        layout.buildDirectory.dir("compose/binaries/main-release/app/${project.name}"),
+        layout.projectDirectory.file("LICENSE.txt"),
+        layout.projectDirectory.file("README.md"),
+        layout.projectDirectory.file("ATTRIBUTIONS.md"),
+    ).apply {
+        includeEmptyDirs = false
+    }
+
+    archiveFileName.set("${project.name}-${project.version}-Portable-Windows.zip")
+    destinationDirectory.set(layout.projectDirectory.dir("binaries"))
+
+    eachFile { println(path) }
 }
