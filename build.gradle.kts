@@ -87,3 +87,24 @@ compose.desktop {
         }
     }
 }
+
+tasks.register<Copy>("preparePackagedReleaseDistributionForCurrentOS") {
+    dependsOn("packageReleaseDistributionForCurrentOS")
+
+    val destination = layout.projectDirectory.dir("installers")
+    delete(destination)
+
+    from(layout.buildDirectory.dir("compose/binaries/main-release"))
+    exclude("/app/**")
+    into(destination)
+}
+
+tasks.register<Copy>("preparePortableReleaseDistribution") {
+    dependsOn("createReleaseDistributable")
+
+    val destination = layout.projectDirectory.dir("portable")
+    delete(destination)
+
+    from(layout.buildDirectory.dir("compose/binaries/main-release/app/${rootProject.name}"))
+    into(destination)
+}
