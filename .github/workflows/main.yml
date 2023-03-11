@@ -49,9 +49,10 @@ jobs:
         run: ./gradlew preparePortableReleaseDistribution
 
       - name: Zip Portable
-        uses: montudor/action-zip@v1
-        with:
-          args: zip -qq -r portables/StuffIRead-Win-Portable.zip portable
+        shell: pwsh
+        run: |
+          MkDir portables
+          Compress-Archive -Path portable\* -DestinationPath portables\StuffIRead-Win-Portable.zip
 
       - name: Save Artifacts
         uses: actions/upload-artifact@v3

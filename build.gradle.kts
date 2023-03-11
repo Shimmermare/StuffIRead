@@ -105,6 +105,11 @@ tasks.register<Copy>("preparePortableReleaseDistribution") {
     val destination = layout.projectDirectory.dir("portable")
     delete(destination)
 
-    from(layout.buildDirectory.dir("compose/binaries/main-release/app/${rootProject.name}"))
+    from(
+        layout.buildDirectory.dir("compose/binaries/main-release/app/${rootProject.name}"),
+        layout.projectDirectory.file("LICENSE.txt"),
+        layout.projectDirectory.file("README.md"),
+        layout.projectDirectory.file("ATTRIBUTIONS.md"),
+    )
     into(destination)
 }
