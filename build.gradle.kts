@@ -47,6 +47,7 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation("org.jsoup:jsoup:${extra["jsoup.version"]}")
+                implementation("org.apache.commons:commons-lang3:${extra["apache-commons-lang3.version"]}")
             }
         }
 

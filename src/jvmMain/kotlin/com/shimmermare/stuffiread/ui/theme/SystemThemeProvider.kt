@@ -1,7 +1,7 @@
 package com.shimmermare.stuffiread.ui.theme
 
-import com.privatejgoodies.common.base.SystemUtils
 import io.github.aakira.napier.Napier
+import org.apache.commons.lang3.SystemUtils
 import java.util.concurrent.TimeUnit
 
 actual object SystemThemeProvider {
