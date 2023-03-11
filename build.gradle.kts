@@ -94,7 +94,7 @@ tasks.register<Copy>("preparePackagedReleaseDistributionForCurrentOS") {
 
     from(
         fileTree(layout.buildDirectory.dir("compose/binaries/main-release"))
-            .apply { exclude("/app/**") }
+            .apply { exclude("**/app/**") }
             .files
     ).apply {
         includeEmptyDirs = false
@@ -102,8 +102,8 @@ tasks.register<Copy>("preparePackagedReleaseDistributionForCurrentOS") {
 
     into(layout.projectDirectory.dir("binaries"))
 
-    logger.info("Copying package files:")
-    eachFile { logger.info(name) }
+    doFirst { println("Copying package files:") }
+    eachFile { println(path) }
 }
 
 tasks.register<Zip>("preparePortableReleaseDistributionForWindows") {
@@ -114,7 +114,7 @@ tasks.register<Zip>("preparePortableReleaseDistributionForWindows") {
     }
 
     from(
-        layout.buildDirectory.dir("compose/binaries/main-release/app/*/**"),
+        layout.buildDirectory.dir("compose/binaries/main-release/app/${project.name}"),
         layout.projectDirectory.file("LICENSE.txt"),
         layout.projectDirectory.file("README.md"),
         layout.projectDirectory.file("ATTRIBUTIONS.md"),
@@ -125,6 +125,6 @@ tasks.register<Zip>("preparePortableReleaseDistributionForWindows") {
     archiveFileName.set("${project.name}-${project.version}-Portable-Windows.zip")
     destinationDirectory.set(layout.projectDirectory.dir("binaries"))
 
-    logger.info("Zipping portable files:")
-    eachFile { logger.info(name) }
+    doFirst { println("Zipping portable files:") }
+    eachFile { println(path) }
 }
