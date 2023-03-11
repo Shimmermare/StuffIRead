@@ -69,6 +69,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: binaries
+          path: binaries
 
       - name: debug Echo download path
         run: echo ${{steps.get-binaries.outputs.download-path}}
