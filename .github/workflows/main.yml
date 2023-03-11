@@ -39,6 +39,12 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: ./gradlew preparePortableReleaseDistributionForWindows
 
+      - name: DEBUG list build/compose/binaries/main-release
+        run: ls -R build/compose/binaries/main-release/ || true
+
+      - name: DEBUG list project root
+        run: ls . || true
+
       - name: List built binaries
         run: ls -R binaries/ || true
 
