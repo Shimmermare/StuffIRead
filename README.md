@@ -1,3 +1,5 @@
+![Build](https://github.com/Shimmermare/StuffIRead/actions/workflows/main.yml/badge.svg)
+
 # Stuff I Read
 
 Desktop app for keeping track of stories (books, fanfics) you read.
