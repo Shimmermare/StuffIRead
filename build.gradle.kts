@@ -101,6 +101,9 @@ tasks.register<Copy>("preparePackagedReleaseDistributionForCurrentOS") {
     }
 
     into(layout.projectDirectory.dir("binaries"))
+
+    logger.info("Copying package files:")
+    eachFile { logger.info(name) }
 }
 
 tasks.register<Zip>("preparePortableReleaseDistributionForWindows") {
@@ -121,4 +124,7 @@ tasks.register<Zip>("preparePortableReleaseDistributionForWindows") {
 
     archiveFileName.set("${project.name}-${project.version}-Portable-Windows.zip")
     destinationDirectory.set(layout.projectDirectory.dir("binaries"))
+
+    logger.info("Zipping portable files:")
+    eachFile { logger.info(name) }
 }
