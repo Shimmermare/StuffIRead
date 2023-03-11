@@ -93,9 +93,14 @@ tasks.register<Copy>("preparePackagedReleaseDistributionForCurrentOS") {
     dependsOn("packageReleaseDistributionForCurrentOS")
 
     from(
-        fileTree(layout.buildDirectory.dir("compose/binaries/main-release"))
-            .apply { exclude("**/app/**") }
-            .files
+        // This fails to match binaries in GitHub actions for some reason
+        // fileTree(layout.buildDirectory.dir("compose/binaries/main-release"))
+        //    .apply { exclude("**/app/**") }
+        //    .files
+        // Specify package dirs explicitly:
+        TargetFormat.values()
+            .filter { it.outputDirName != "app" }
+            .map { layout.buildDirectory.dir("compose/binaries/main-release/${it.outputDirName}") }
     ).apply {
         includeEmptyDirs = false
     }
