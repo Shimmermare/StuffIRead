@@ -1,15 +1,17 @@
 name: Build
 on:
+  workflow_dispatch:
   pull_request:
   push:
-  workflow_dispatch:
+
+# Prevent concurrent runs to use cache better
+concurrency:
+  group: ${{ github.workflow }}-${{ github.sha }}
+  cancel-in-progress: true
 
 jobs:
   # Use cached build output for same commit hash
   build:
-    # Prevent concurrent builds to use cache better
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.sha }}
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
@@ -57,10 +59,10 @@ jobs:
       - name: Save Artifacts
         uses: actions/upload-artifact@v3
         with:
-          retention-days: 1
-          name: binaries
-          if-no-files-found: error
+          name: ${{ github.sha }}-binaries
           path: binaries
+          retention-days: 1
+          if-no-files-found: error
 
   release:
     # Run only when job started from tag
@@ -74,7 +76,7 @@ jobs:
         name: Get binaries
         uses: actions/download-artifact@v3
         with:
-          name: binaries
+          name: ${{ github.sha }}-binaries
           path: binaries
 
       - name: List binaries in release
