@@ -2,79 +2,77 @@ name: Publish Release
 on:
   workflow_dispatch:
   push:
-    tags:
-      - '*'
 
 jobs:
-  build-installers:
+  # Use cached build output for same commit hash
+  build:
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
     runs-on: ${{ matrix.os }}
     steps:
+      - id: cache-restore
+        name: Try get binaries from cache
+        uses: actions/cache/restore@v3
+        with:
+          key: ${{ github.sha }}-${{ matrix.os }}-binaries
+          path: binaries
+
       - uses: actions/checkout@v3
+        if: steps.cache-restore.outputs.cache-hit != 'true'
+
       - uses: actions/setup-java@v3
+        if: steps.cache-restore.outputs.cache-hit != 'true'
         with:
           distribution: temurin
           java-version: 18
 
       - name: Setup Gradle
+        if: steps.cache-restore.outputs.cache-hit != 'true'
         uses: gradle/gradle-build-action@v2
 
-      - name: Build
+      - name: Build Packages
+        if: steps.cache-restore.outputs.cache-hit != 'true'
         run: ./gradlew preparePackagedReleaseDistributionForCurrentOS
 
-      - name: Save Artifacts
-        uses: actions/upload-artifact@v3
+      - name: Build Portable (Windows)
+        if: matrix-os == 'windows-latest'
+        run: ./gradlew preparePortableReleaseDistributionForWindows
+
+      - id: cache-save
+        name: Cache binaries
+        if: steps.cache-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v3
         with:
-          retention-days: 1
-          name: installers
-          if-no-files-found: error
-          path: installers
-
-  build-win-portable:
-    needs: build-installers
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
-        with:
-          distribution: temurin
-          java-version: 18
-
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-
-      - name: Build
-        run: ./gradlew preparePortableReleaseDistribution
-
-      - name: Zip Portable
-        shell: pwsh
-        run: |
-          MkDir portables
-          Compress-Archive -Path portable\* -DestinationPath portables\StuffIRead-Win-Portable.zip
+          key: ${{ steps.cache-restore.outputs.cache-primary-key }}
+          path: binaries
 
       - name: Save Artifacts
         uses: actions/upload-artifact@v3
         with:
           retention-days: 1
-          name: portables
+          name: binaries
           if-no-files-found: error
-          path: portables/StuffIRead-Win-Portable.zip
+          path: binaries
 
   release:
-    needs: [ build-installers, build-win-portable ]
+    # Run only when job started from tag
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Get Installers
+      - name: Get binaries
         uses: actions/download-artifact@v3
         with:
-          name: installers
+          name: binaries
 
-      - name: Get Portables
-        uses: actions/download-artifact@v3
+      - name: List binaries in release
+        run: ls -R binaries/ || true
+
+      - name: Checkout license file
+        uses: Bhacaz/checkout-files@v2
         with:
-          name: portables
+          files: LICENSE.txt
 
       - name: Release
         uses: softprops/action-gh-release@v1
@@ -84,6 +82,5 @@ jobs:
           fail_on_unmatched_files: true
           generate_release_notes: true
           files: |
-            installers/**
-            portables/**
+            binaries/**
             LICENSE.txt

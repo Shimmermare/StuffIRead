@@ -88,28 +88,37 @@ compose.desktop {
     }
 }
 
+
 tasks.register<Copy>("preparePackagedReleaseDistributionForCurrentOS") {
     dependsOn("packageReleaseDistributionForCurrentOS")
 
-    val destination = layout.projectDirectory.dir("installers")
-    delete(destination)
+    from(
+        fileTree(layout.buildDirectory.dir("compose/binaries/main-release"))
+            .apply { exclude("/app/**") }
+            .files
+    ).apply {
+        includeEmptyDirs = false
+    }
 
-    from(layout.buildDirectory.dir("compose/binaries/main-release"))
-    exclude("/app/**")
-    into(destination)
+    into(layout.projectDirectory.dir("binaries"))
 }
 
-tasks.register<Copy>("preparePortableReleaseDistribution") {
+tasks.register<Zip>("preparePortableReleaseDistributionForWindows") {
     dependsOn("createReleaseDistributable")
 
-    val destination = layout.projectDirectory.dir("portable")
-    delete(destination)
+    if (!TargetFormat.Exe.isCompatibleWithCurrentOS) {
+        throw IllegalStateException("This task can't be executed on non-Windows OS")
+    }
 
     from(
-        layout.buildDirectory.dir("compose/binaries/main-release/app/${rootProject.name}"),
+        layout.buildDirectory.dir("compose/binaries/main-release/app/*/**"),
         layout.projectDirectory.file("LICENSE.txt"),
         layout.projectDirectory.file("README.md"),
         layout.projectDirectory.file("ATTRIBUTIONS.md"),
-    )
-    into(destination)
+    ).apply {
+        includeEmptyDirs = false
+    }
+
+    archiveFileName.set("${project.name}-${project.version}-Portable-Windows.zip")
+    destinationDirectory.set(layout.projectDirectory.dir("binaries"))
 }
