@@ -84,6 +84,8 @@ class TagTree private constructor(
 
     fun getTagCountInCategory(categoryId: TagCategoryId): UInt = tagsByCategoryId[categoryId]?.size?.toUInt() ?: 0u
 
+    fun tagExistsById(tagId: TagId): Boolean = tagsById.containsKey(tagId)
+
     fun doAllTagsWithIdsExist(tagIds: Iterable<TagId>): Boolean = tagIds.all { tagsById.containsKey(it) }
 
     fun getTag(tagId: TagId): Tag? = tagsById[tagId]

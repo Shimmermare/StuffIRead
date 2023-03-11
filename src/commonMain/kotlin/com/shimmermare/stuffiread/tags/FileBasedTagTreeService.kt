@@ -12,7 +12,6 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Serializer
 import kotlinx.serialization.UseSerializers
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import java.nio.file.Path
@@ -39,7 +38,7 @@ class FileBasedTagTreeService(
                     }
 
                     val storedTree = tagsFilePath.inputStream(StandardOpenOption.READ).use {
-                        Json.decodeFromStream(StoredTagTreeSerializer, it)
+                        AppJson.decodeFromStream(StoredTagTreeSerializer, it)
                     }
 
                     TagTree(storedTree.categories, storedTree.tags)

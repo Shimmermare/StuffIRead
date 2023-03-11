@@ -21,6 +21,8 @@ interface TagService {
      */
     fun deleteCategoryById(categoryId: TagCategoryId)
 
+    fun tagExistsById(tagId: TagId): Boolean
+
     fun doAllTagsWithIdsExist(tagIds: Iterable<TagId>): Boolean
 
     fun getTagById(tagId: TagId): Tag?

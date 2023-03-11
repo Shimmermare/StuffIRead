@@ -53,6 +53,9 @@ class TagServiceImpl(
         saveTreeAsync()
     }
 
+    override fun tagExistsById(tagId: TagId): Boolean {
+        return tree.tagExistsById(tagId)
+    }
     override fun doAllTagsWithIdsExist(tagIds: Iterable<TagId>): Boolean {
         return tree.doAllTagsWithIdsExist(tagIds)
     }

@@ -43,6 +43,11 @@ object StoryArchiveHolder {
     /**
      * @throws IllegalStateException if no archive is open
      */
+    val tagMappingService get() = openStoryArchive.tagMappingService
+
+    /**
+     * @throws IllegalStateException if no archive is open
+     */
     val storySearchService get() = openStoryArchive.storySearchService
 
     fun openStoryArchive(archiveDirectory: Path, createIfNotExists: Boolean) {

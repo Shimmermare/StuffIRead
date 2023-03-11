@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.UseSerializers
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import java.nio.file.Path
@@ -107,7 +106,7 @@ class FileBasedStoryService(
         val storyFile = storyFilePath(storyId)
         if (storyFile.notExists()) return null
 
-        val story = storyFile.inputStream().use { Json.decodeFromStream<Story>(it) }
+        val story = storyFile.inputStream().use { AppJson.decodeFromStream<Story>(it) }
         require(story.id == storyId) {
             "Story ID in file (${story.id}) doesn't match location ($storyId)"
         }
@@ -122,7 +121,7 @@ class FileBasedStoryService(
         } catch (e: NumberFormatException) {
             error("Story folder name is not valid ID: '${storyFile.parent.fileName}'")
         }
-        val story = storyFile.inputStream().use { Json.decodeFromStream<Story>(it) }
+        val story = storyFile.inputStream().use { AppJson.decodeFromStream<Story>(it) }
         require(story.id == storyId) {
             "Story ID in file (${story.id}) doesn't match location ($storyId)"
         }

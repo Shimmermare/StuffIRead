@@ -1,5 +1,8 @@
 package com.shimmermare.stuffiread
 
+import com.shimmermare.stuffiread.importer.TagMappingRepositoryImpl
+import com.shimmermare.stuffiread.importer.TagMappingService
+import com.shimmermare.stuffiread.importer.TagMappingServiceImpl
 import com.shimmermare.stuffiread.stories.CachedStoryService
 import com.shimmermare.stuffiread.stories.FileBasedStoryService
 import com.shimmermare.stuffiread.stories.StorySearchService
@@ -27,6 +30,7 @@ class StoryArchive(
     val storyFilesService: StoryFilesService
 
     val tagService: TagService
+    val tagMappingService: TagMappingService
 
     val storySearchService: StorySearchService
 
@@ -47,6 +51,7 @@ class StoryArchive(
         storyFilesService = StoryFilesServiceImpl(directory)
 
         tagService = TagServiceImpl(FileBasedTagTreeService(directory))
+        tagMappingService = TagMappingServiceImpl(TagMappingRepositoryImpl(directory), tagService)
 
         storySearchService = StorySearchServiceImpl(storyService, storyFilesService, tagService)
     }

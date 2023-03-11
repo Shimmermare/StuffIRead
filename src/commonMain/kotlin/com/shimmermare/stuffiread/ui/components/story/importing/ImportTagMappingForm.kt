@@ -25,11 +25,12 @@ import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.importer.ImportedStory
 import com.shimmermare.stuffiread.stories.Story
 import com.shimmermare.stuffiread.tags.TagId
-import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
+import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagMappingService
 import com.shimmermare.stuffiread.ui.components.input.ExtendedOutlinedTextField
 import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollColumn
 import com.shimmermare.stuffiread.ui.components.story.StoryFormData
 import com.shimmermare.stuffiread.ui.components.tag.TagPicker
+import io.github.aakira.napier.Napier
 
 /**
  * Map imported data to valid app story.
@@ -60,12 +61,14 @@ fun ImportTagMappingForm(
     // Try auto-match by name
     var mappedTags: Map<String, TagId> by remember {
         if (importedStory.tags.isEmpty()) return@remember mutableStateOf(emptyMap())
-        val tagsToMapLowered = importedStory.tags.associateBy { it.lowercase() }
-        mutableStateOf(
-            tagService.getTags()
-                .filter { tagsToMapLowered.contains(it.name.value.lowercase()) }
-                .associate { tagsToMapLowered[it.name.value.lowercase()]!! to it.id }
-        )
+        val mapped = try {
+            tagMappingService.mapTags(importedStory.tags)
+        } catch (e: Exception) {
+            Napier.e("Failed to map tags: ${importedStory.tags}", e)
+            // Not critical
+            emptyMap()
+        }
+        mutableStateOf(mapped)
     }
 
     LaunchedEffect(importedStory) {
@@ -106,14 +109,36 @@ fun ImportTagMappingForm(
                     }
                 }
             }
-            Button(
-                onClick = {
-                    formData = formData.copy(story = formData.story.copy(tags = mappedTags.values.toSet()))
-                    onMapped(formData)
-                }
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(15.dp)
             ) {
-                Text("Continue")
+                Button(
+                    onClick = {
+                        mappedTags = emptyMap()
+                        Napier.i { "Cleared existing tag mappings" }
+                    }
+                ) {
+                    Text("Clear")
+                }
+                Button(
+                    onClick = {
+                        formData = formData.copy(story = formData.story.copy(tags = mappedTags.values.toSet()))
+
+                        try {
+                            tagMappingService.updateMappings(mappedTags)
+                        } catch (e: Exception) {
+                            // Not critical, continue
+                            Napier.e("Failed to update mappings", e)
+                        }
+
+                        Napier.i { "Mapped ${mappedTags.size} tags: $mappedTags" }
+                        onMapped(formData)
+                    }
+                ) {
+                    Text("Continue")
+                }
             }
+
         }
     }
 }
