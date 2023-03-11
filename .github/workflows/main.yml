@@ -8,7 +8,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ ubuntu-latest ] # TODO: Temp disabled macos-latest, windows-latest
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
     runs-on: ${{ matrix.os }}
     steps:
       - id: cache-restore
@@ -39,12 +39,6 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: ./gradlew preparePortableReleaseDistributionForWindows
 
-      - name: DEBUG list build/compose/binaries/main-release
-        run: ls -R build/compose/binaries/main-release/ || true
-
-      - name: DEBUG list project root
-        run: ls . || true
-
       - name: List built binaries
         run: ls -R binaries/ || true
 
@@ -70,10 +64,14 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Get binaries
+      - id: get-binaries
+        name: Get binaries
         uses: actions/download-artifact@v3
         with:
           name: binaries
+
+      - name: debug Echo download path
+        run: echo ${{steps.get-binaries.outputs.download-path}}
 
       - name: List binaries in release
         run: ls -R binaries/ || true
