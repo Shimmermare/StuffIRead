@@ -62,7 +62,7 @@ compose.desktop {
     application {
         mainClass = "com.shimmermare.stuffiread.MainKt"
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Exe, TargetFormat.Deb)
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = name
             packageVersion = version.toString()
             copyright = "Shimmermare 2023"
