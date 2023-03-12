@@ -21,7 +21,7 @@ object FileUtils {
                 emptyMap<String, Any>(),
                 FileUtils::class.java.classLoader
             ).use { fs ->
-                copyFolderRecursive(fs.getPath("/"), to)
+                copyFolderRecursive(fs.getPath(from), to)
             }
         }
     }
@@ -29,7 +29,7 @@ object FileUtils {
     private fun copyFolderRecursive(from: Path, to: Path) {
         Files.walk(from).forEach { path ->
             val relativePath = path.relativeTo(from)
-            val target = to.resolve(relativePath)
+            val target = to.resolve(relativePath.toString())
             Files.copy(path, target, StandardCopyOption.REPLACE_EXISTING)
         }
     }
