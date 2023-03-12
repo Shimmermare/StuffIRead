@@ -1,0 +1,16 @@
+# Check if app passes the tests and can be built successfully
+name: Check
+
+on:
+  push:
+    tags-ignore: *
+  pull_request:
+  workflow_dispatch:
+
+# Prevent concurrent runs to use cache better
+concurrency:
+  group: ${{ github.workflow }}-${{ github.sha }}
+
+jobs:
+  check:
+    uses: ./.github/workflows/build-job.yml

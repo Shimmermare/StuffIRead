@@ -90,7 +90,7 @@ compose.desktop {
 
 
 tasks.register<Copy>("preparePackagedReleaseDistributionForCurrentOS") {
-    dependsOn("packageReleaseDistributionForCurrentOS")
+    dependsOn("check", "packageReleaseDistributionForCurrentOS")
 
     from(
         // This fails to match binaries in GitHub actions for some reason
@@ -112,7 +112,7 @@ tasks.register<Copy>("preparePackagedReleaseDistributionForCurrentOS") {
 }
 
 tasks.register<Zip>("preparePortableReleaseDistributionForWindows") {
-    dependsOn("createReleaseDistributable")
+    dependsOn("check", "createReleaseDistributable")
 
     if (!TargetFormat.Exe.isCompatibleWithCurrentOS) {
         throw IllegalStateException("This task can't be executed on non-Windows OS")

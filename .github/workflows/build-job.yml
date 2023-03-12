@@ -1,13 +1,13 @@
+# Build app to all targets and store binaries as artifact named ${{ github.sha }}-binaries
 name: Build
+
 on:
-  workflow_dispatch:
-  pull_request:
-  push:
+  workflow_call:
+    secrets: inherit
 
 # Prevent concurrent runs to use cache better
 concurrency:
   group: ${{ github.workflow }}-${{ github.sha }}
-  cancel-in-progress: true
 
 jobs:
   # Use cached build output for same commit hash
@@ -61,39 +61,5 @@ jobs:
         with:
           name: ${{ github.sha }}-binaries
           path: binaries
-          retention-days: 1
+          retention-days: 7
           if-no-files-found: error
-
-  release:
-    # Run only when job started from tag
-    if: startsWith(github.ref, 'refs/tags/')
-    needs: build
-    permissions:
-      contents: write
-    runs-on: ubuntu-latest
-    steps:
-      - id: get-binaries
-        name: Get binaries
-        uses: actions/download-artifact@v3
-        with:
-          name: ${{ github.sha }}-binaries
-          path: binaries
-
-      - name: List binaries in release
-        run: ls -R binaries/ || true
-
-      - name: Checkout license file
-        uses: Bhacaz/checkout-files@v2
-        with:
-          files: LICENSE.txt
-
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        with:
-          draft: endsWith(github.ref_name, 'DRAFT')
-          prerelease: endsWith(github.ref_name, 'PRERELEASE')
-          fail_on_unmatched_files: true
-          generate_release_notes: true
-          files: |
-            binaries/**
-            LICENSE.txt
