@@ -6,7 +6,7 @@ on:
 
 # Prevent concurrent runs to use cache better
 concurrency:
-  group: ${{ github.workflow }}-${{ github.sha }}
+  group: build-${{ github.sha }}
 
 jobs:
   # Use cached build output for same commit hash
