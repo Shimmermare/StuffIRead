@@ -92,6 +92,8 @@ compose.desktop {
 tasks.register<Copy>("preparePackagedReleaseDistributionForCurrentOS") {
     dependsOn("check", "packageReleaseDistributionForCurrentOS")
 
+    doFirst { println("Copying package files:") }
+
     from(
         // This fails to match binaries in GitHub actions for some reason
         // fileTree(layout.buildDirectory.dir("compose/binaries/main-release"))
@@ -107,15 +109,17 @@ tasks.register<Copy>("preparePackagedReleaseDistributionForCurrentOS") {
 
     into(layout.projectDirectory.dir("binaries"))
 
-    doFirst { println("Copying package files:") }
     eachFile { println(path) }
 }
 
 tasks.register<Zip>("preparePortableReleaseDistributionForWindows") {
     dependsOn("check", "createReleaseDistributable")
 
-    if (!TargetFormat.Exe.isCompatibleWithCurrentOS) {
-        throw IllegalStateException("This task can't be executed on non-Windows OS")
+    doFirst {
+        if (!TargetFormat.Exe.isCompatibleWithCurrentOS) {
+            throw IllegalStateException("This task can't be executed on non-Windows OS")
+        }
+        println("Zipping portable files:")
     }
 
     from(
@@ -130,6 +134,5 @@ tasks.register<Zip>("preparePortableReleaseDistributionForWindows") {
     archiveFileName.set("${project.name}-${project.version}-Portable-Windows.zip")
     destinationDirectory.set(layout.projectDirectory.dir("binaries"))
 
-    doFirst { println("Zipping portable files:") }
     eachFile { println(path) }
 }
