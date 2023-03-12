@@ -1,8 +1,14 @@
 # Build app to all targets and store binaries as artifact named ${{ github.sha }}-binaries
-name: Build
+name: Build Job
 
 on:
   workflow_call:
+    inputs:
+      upload-artifacts:
+        default: false
+        required: false
+        type: boolean
+
 
 # Prevent concurrent runs to use cache better
 concurrency:
@@ -56,6 +62,7 @@ jobs:
           path: binaries
 
       - name: Save Artifacts
+        if: upload-artifacts == true
         uses: actions/upload-artifact@v3
         with:
           name: ${{ github.sha }}-binaries

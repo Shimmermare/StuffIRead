@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     uses: ./.github/workflows/build-job.yml
+    with:
+      upload-artifacts: true
   release:
     needs: build
     permissions:

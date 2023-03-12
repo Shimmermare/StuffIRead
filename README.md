@@ -1,4 +1,4 @@
-![Build](https://github.com/Shimmermare/StuffIRead/actions/workflows/main.yml/badge.svg)
+![Release](https://github.com/Shimmermare/StuffIRead/actions/workflows/release.yml/badge.svg)
 
 # Stuff I Read
 
