@@ -62,7 +62,7 @@ jobs:
           path: binaries
 
       - name: Save Artifacts
-        if: upload-artifacts == true
+        if: inputs.upload-artifacts == true
         uses: actions/upload-artifact@v3
         with:
           name: ${{ github.sha }}-binaries
