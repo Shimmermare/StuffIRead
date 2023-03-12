@@ -13,6 +13,7 @@ value class TagCategoryName(val value: String) : Comparable<TagCategoryName> {
     init {
         require(value.isNotBlank()) { "Name can't be blank" }
         require(value.length <= MAX_LENGTH) { "Name length exceeded $MAX_LENGTH (${value.length})" }
+        require(!value.startsWith(' ') && !value.endsWith(' ')) { "Name can't have leading/trailing whitespaces" }
     }
 
     override fun compareTo(other: TagCategoryName): Int = value.compareTo(other.value)

@@ -15,7 +15,7 @@ class TagTree private constructor(
     val categories: Collection<TagCategory> get() = categoriesById.values
     val tags: Collection<Tag> get() = tagsById.values
 
-    private val categoriesByName: Map<TagCategoryName, TagCategory> by lazy { categories.associateBy { it.name } }
+    private val categoriesByNameLowercase: Map<String, TagCategory> by lazy { categories.associateBy { it.name.value.lowercase() } }
 
     private val tagsWithCategoryByIdCache: MutableMap<TagId, TagWithCategory> = mutableMapOf()
 
@@ -27,7 +27,7 @@ class TagTree private constructor(
     private val implyingTagsByTagId: Map<TagId, List<TagWithCategory>> by lazy { buildImplyingMap() }
     private val indirectlyImplyingTagsByTagId: Map<TagId, List<TagWithCategory>> by lazy { buildIndirectlyImplyingMap() }
 
-    private val tagsByName: Map<TagName, Tag> by lazy { tags.associateBy { it.name } }
+    private val tagsByNameLowercase: Map<String, Tag> by lazy { tags.associateBy { it.name.value.lowercase() } }
 
     private val tagsByCategoryId: Map<TagCategoryId, List<TagWithCategory>> by lazy {
         tags.groupBy({ it.categoryId }) { getTagWithCategory(it.id)!! }
@@ -64,7 +64,7 @@ class TagTree private constructor(
 
     fun getCategory(categoryId: TagCategoryId): TagCategory? = categoriesById[categoryId]
 
-    fun getCategoryByName(name: TagCategoryName): TagCategory? = categoriesByName[name]
+    fun getCategoryByName(name: TagCategoryName): TagCategory? = categoriesByNameLowercase[name.value.lowercase()]
 
     fun getTagsInCategory(categoryId: TagCategoryId): List<TagWithCategory> =
         tagsByCategoryId[categoryId] ?: emptyList()
@@ -122,7 +122,7 @@ class TagTree private constructor(
     }
 
     fun getTagByName(name: TagName): Tag? {
-        return tagsByName[name]
+        return tagsByNameLowercase[name.value.lowercase()]
     }
 
     fun getTagsWithCategory(): List<TagWithCategory> {
@@ -137,6 +137,7 @@ class TagTree private constructor(
         require(categoriesById.containsKey(category.id)) {
             "Category ${category.id} doesn't exist"
         }
+        requireUniqueCategoryName(category.name)
         val updated = category.copy(updated = Clock.System.now())
         return CopyTreeResult(
             TagTree(
@@ -151,6 +152,7 @@ class TagTree private constructor(
         require(category.id == TagCategoryId.None) {
             "Category to create already has ID ${category.id}"
         }
+        requireUniqueCategoryName(category.name)
         val createdTs = Clock.System.now()
         val created = category.copy(
             id = nextFreeCategoryId(),
@@ -164,6 +166,13 @@ class TagTree private constructor(
             ),
             created
         )
+    }
+
+    private fun requireUniqueCategoryName(name: TagCategoryName) {
+        val lowered = name.value.lowercase()
+        require(!categoriesByNameLowercase.containsKey(lowered)) {
+            "Name '$name' is already taken by ${categoriesByNameLowercase[lowered]!!.id}"
+        }
     }
 
     fun deleteCategory(categoryId: TagCategoryId): TagTree {
@@ -184,6 +193,7 @@ class TagTree private constructor(
         require(tagsById.containsKey(tag.id)) {
             "Tag ${tag.id} doesn't exist"
         }
+        requireUniqueTagName(tag.name)
         val updated = tag.copy(updated = Clock.System.now())
         return CopyTreeResult(
             TagTree(
@@ -199,6 +209,7 @@ class TagTree private constructor(
             require(tagsById.containsKey(tag.id)) {
                 "Tag ${tag.id} doesn't exist"
             }
+            requireUniqueTagName(tag.name)
             tag.id to tag.copy(updated = Clock.System.now())
         }
         return CopyTreeResult(
@@ -214,6 +225,7 @@ class TagTree private constructor(
         require(tag.id == TagId.None) {
             "Tag to create already has ID ${tag.id}"
         }
+        requireUniqueTagName(tag.name)
         val createdTs = Clock.System.now()
         val created = tag.copy(
             id = nextFreeTagId(),
@@ -227,6 +239,13 @@ class TagTree private constructor(
             ),
             created
         )
+    }
+
+    private fun requireUniqueTagName(name: TagName) {
+        val lowered = name.value.lowercase()
+        require(!tagsByNameLowercase.containsKey(lowered)) {
+            "Name '$name' is already taken by ${tagsByNameLowercase[lowered]!!.id}"
+        }
     }
 
     fun deleteTag(tagId: TagId): TagTree {

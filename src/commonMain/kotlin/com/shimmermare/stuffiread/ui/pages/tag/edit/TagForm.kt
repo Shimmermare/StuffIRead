@@ -105,28 +105,23 @@ fun TagForm(
 }
 
 private fun validateName(
-    tagService: TagService, mode: EditTagPageMode, currentId: TagId, name: String
+    tagService: TagService,
+    mode: EditTagPageMode,
+    currentId: TagId,
+    name: String
 ): ValidationResult {
-    val error = when {
-        name.isBlank() -> {
-            "Name can't be blank"
-        }
-
-        name.length > TagName.MAX_LENGTH -> {
-            "Name length exceeded ${TagName.MAX_LENGTH} (${name.length})"
-        }
-
-        mode == CREATE && tagService.getTagByName(TagName(name)) != null -> {
-            "Name is already in use"
-        }
-
-        mode == EDIT && tagService.getTagByName(TagName(name)).let { it != null && it.id != currentId } -> {
-            "Name is already in use"
-        }
-
-        else -> null
+    val validName = try {
+        TagName(name)
+    } catch (e: IllegalArgumentException) {
+        return ValidationResult(false, e.message)
     }
-    return ValidationResult(error == null, error)
+
+    val existing = tagService.getTagByName(validName)
+    if (mode == CREATE || (mode == EDIT && existing?.takeIf { it.id != currentId } != null)) {
+        return ValidationResult(false, "Name is already in use")
+    }
+
+    return ValidationResult.Valid
 }
 
 private fun validateDescription(description: String): ValidationResult {

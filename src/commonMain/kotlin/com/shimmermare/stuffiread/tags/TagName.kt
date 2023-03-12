@@ -14,6 +14,7 @@ value class TagName(val value: String) : Comparable<TagName> {
         require(value.isNotBlank()) { "Name can't be blank" }
         require(!value.contains('\n')) { "Multi-line name is not allowed" }
         require(value.length <= MAX_LENGTH) { "Name length exceeded $MAX_LENGTH (${value.length})" }
+        require(!value.startsWith(' ') && !value.endsWith(' ')) { "Name can't have leading/trailing whitespaces" }
     }
 
     override fun compareTo(other: TagName): Int = value.compareTo(other.value)

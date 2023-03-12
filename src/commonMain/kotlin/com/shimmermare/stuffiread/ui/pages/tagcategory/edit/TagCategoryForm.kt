@@ -102,27 +102,18 @@ private fun validateName(
     currentId: TagCategoryId,
     name: String
 ): ValidationResult {
-    val error = when {
-        name.isBlank() -> {
-            "Name can't be blank"
-        }
-
-        name.length > TagCategoryName.MAX_LENGTH -> {
-            "Name length exceeded ${TagCategoryName.MAX_LENGTH} (${name.length})"
-        }
-
-        mode == CREATE && tagService.getCategoryByName(TagCategoryName(name)) != null -> {
-            "Name is already in use"
-        }
-
-        mode == EDIT && tagService.getCategoryByName(TagCategoryName(name))
-            .let { it != null && it.id != currentId } -> {
-            "Name is already in use"
-        }
-
-        else -> null
+    val validName = try {
+        TagCategoryName(name)
+    } catch (e: IllegalArgumentException) {
+        return ValidationResult(false, e.message)
     }
-    return ValidationResult(error == null, error)
+
+    val existing = tagService.getCategoryByName(validName)
+    if (mode == CREATE || (mode == EDIT && existing?.takeIf { it.id != currentId } != null)) {
+        return ValidationResult(false, "Name is already in use")
+    }
+
+    return ValidationResult.Valid
 }
 
 private fun validateDescription(description: String): ValidationResult {

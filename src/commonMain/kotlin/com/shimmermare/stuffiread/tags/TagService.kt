@@ -6,6 +6,9 @@ interface TagService {
     fun getCategoryByIdOrThrow(categoryId: TagCategoryId) =
         getCategoryById(categoryId) ?: error("Category $categoryId not found")
 
+    /**
+     * @param name case-insensitive
+     */
     fun getCategoryByName(name: TagCategoryName): TagCategory?
 
     fun getCategories(): List<TagCategory>
@@ -41,6 +44,9 @@ interface TagService {
 
     fun getTagsWithCategoryByIds(tagIds: Iterable<TagId>): List<TagWithCategory>
 
+    /**
+     * @param name case-insensitive
+     */
     fun getTagByName(name: TagName): Tag?
 
     fun getTagsInCategory(categoryId: TagCategoryId): List<TagWithCategory>
