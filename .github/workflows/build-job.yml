@@ -3,7 +3,6 @@ name: Build
 
 on:
   workflow_call:
-    secrets: inherit
 
 # Prevent concurrent runs to use cache better
 concurrency:
