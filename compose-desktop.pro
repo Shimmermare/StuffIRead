@@ -18,6 +18,9 @@
 # Otherwise logging will fail - accessing stacktrace with hardcoded index at io.github.aakira.napier.DebugAntilog.kt:81
 -keep class io.github.aakira.napier.Napier* { *; }
 
+# Otherwise Connection.Method enum will be stripped and requests will fail
+-keep class org.jsoup.Connection* { *; }
+
 # Kotlin serialization looks up the generated serializer classes through a function on companion
 # objects. The companions are looked up reflectively so we need to explicitly keep these functions.
 -keepclasseswithmembers class **.*$Companion {
