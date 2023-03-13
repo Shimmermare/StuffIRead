@@ -24,17 +24,28 @@ class StorySearchServiceImpl(
         stories = stories.filterTextContains(filter.nameContains) { it.name.value }
         stories = stories.filterTextContains(filter.authorContains) { it.author.value }
         stories = stories.filterTextContains(filter.descriptionContains) { it.description.value }
+        stories = stories.filterTextContains(filter.urlContains) { it.url.value }
         stories = stories.filterRange(filter.publishedAfter, filter.publishedBefore) { it.published }
         stories = stories.filterRange(filter.changedAfter, filter.changedBefore) { it.changed }
 
         if (filter.tagsPresent != null) {
-            stories = stories.filter {
-                if (it.tags.isEmpty()) return@filter false
-                if (it.tags.containsAll(filter.tagsPresent)) return@filter true
+            stories = stories.filter { story ->
+                if (story.tags.isEmpty()) return@filter false
+                if (story.tags.containsAll(filter.tagsPresent)) return@filter true
 
                 // Is this too costly?
-                val storyTagsWithImplicit = tagService.getAllTagIdsByExplicitTagIds(it.tags)
+                val storyTagsWithImplicit = tagService.getAllTagIdsByExplicitTagIds(story.tags)
                 return@filter storyTagsWithImplicit.containsAll(filter.tagsPresent)
+            }
+        }
+        if (filter.tagsAbsent != null) {
+            stories = stories.filter { story ->
+                if (story.tags.isEmpty()) return@filter true
+                if (filter.tagsAbsent.any { story.tags.contains(it) }) return@filter false
+
+                // Is this too costly?
+                val storyTagsWithImplicit = tagService.getAllTagIdsByExplicitTagIds(story.tags)
+                return@filter filter.tagsAbsent.none { storyTagsWithImplicit.contains(it) }
             }
         }
 

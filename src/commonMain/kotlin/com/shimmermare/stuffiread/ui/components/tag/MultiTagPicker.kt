@@ -28,6 +28,7 @@ import com.shimmermare.stuffiread.tags.Tag
 import com.shimmermare.stuffiread.tags.TagId
 import com.shimmermare.stuffiread.tags.TagWithCategory
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder
+import com.shimmermare.stuffiread.ui.components.input.SizedIconButton
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
 import com.shimmermare.stuffiread.ui.components.layout.FullscreenPopup
 import com.shimmermare.stuffiread.ui.components.layout.PointerInsideTrackerBox
@@ -42,10 +43,9 @@ fun MultiTagPicker(
     title: String,
     pickedTagIds: Set<TagId>,
     filter: (Tag) -> Boolean = { true },
-    defaultOpenPopup: Boolean = false,
     onPick: (Set<TagId>) -> Unit,
 ) {
-    var openPopup: Boolean by remember { mutableStateOf(defaultOpenPopup) }
+    var openPopup: Boolean by remember { mutableStateOf(false) }
 
     PickedTagsField(
         pickedTagIds = pickedTagIds,
@@ -81,8 +81,8 @@ private fun PickedTagsField(
         pickedTags.forEach { tag ->
             PickedTag(tag) { onUnpickRequest(tag.tag.id) }
         }
-        Box(modifier = Modifier.clickable(onClick = onOpenPopupRequest)) {
-            Icon(Icons.Filled.Add, null, modifier = Modifier.size(30.dp))
+        SizedIconButton(onClick = onOpenPopupRequest, size = 36.dp) {
+            Icon(Icons.Filled.Add, null)
         }
     }
 }

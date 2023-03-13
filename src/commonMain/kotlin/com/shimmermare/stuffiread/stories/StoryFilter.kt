@@ -23,6 +23,11 @@ data class StoryFilter(
      */
     val descriptionContains: String? = null,
     /**
+     * Case-insensitive.
+     * Will exclude stories without [Story.url].
+     */
+    val urlContains: String? = null,
+    /**
      * Inclusive.
      * Will exclude stories without [Story.published].
      */
@@ -46,6 +51,10 @@ data class StoryFilter(
      * Includes both explicit and implied tags.
      */
     val tagsPresent: Set<TagId>? = null,
+    /**
+     * Includes both explicit and implied tags.
+     */
+    val tagsAbsent: Set<TagId>? = null,
     val isPrequelOf: Set<StoryId>? = null,
     /**
      * Inclusive.

@@ -38,7 +38,7 @@ fun <T> SearchList(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Row(
-            modifier = Modifier.widthIn(min = 200.dp, max = 800.dp)
+            modifier = Modifier.widthIn(min = 200.dp, max = 600.dp)
         ) {
             SearchBar(
                 searchText = searchByNameText,

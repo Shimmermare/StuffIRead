@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -44,9 +45,9 @@ import com.shimmermare.stuffiread.stories.StoryId
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storySearchService
 import com.shimmermare.stuffiread.ui.components.error.ErrorCard
 import com.shimmermare.stuffiread.ui.components.error.ErrorInfo
+import com.shimmermare.stuffiread.ui.components.form.FormField
 import com.shimmermare.stuffiread.ui.components.form.InputForm
 import com.shimmermare.stuffiread.ui.components.form.InputFormState
-import com.shimmermare.stuffiread.ui.components.form.OptionalFormField
 import com.shimmermare.stuffiread.ui.components.form.OptionalInstantRangeFormField
 import com.shimmermare.stuffiread.ui.components.form.OptionalRangeFormField
 import com.shimmermare.stuffiread.ui.components.form.RangedOptionalIntFormField
@@ -98,7 +99,7 @@ private fun StoryFilterControls(currentFilter: StoryFilter, onFilterChange: (Sto
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Row(
-                modifier = Modifier.widthIn(min = 200.dp, max = 800.dp).weight(1F, false)
+                modifier = Modifier.widthIn(min = 200.dp, max = 600.dp).weight(1F, false)
             ) {
                 SearchBar(
                     searchText = state.data.nameContains ?: "",
@@ -153,175 +154,222 @@ private fun AdvancedStoryFilterControls(state: InputFormState<StoryFilter>) {
     Box(
         modifier = Modifier.heightIn(max = 300.dp)
     ) {
-        VerticalScrollColumn {
-            Row {
-                InputForm(
-                    state = state,
-                    modifier = Modifier.width(800.dp),
-                ) { formState ->
-                    AdvancedStoryFilterFields(formState)
-                }
-                Spacer(modifier = Modifier.weight(1F))
+        InputForm(
+            state = state,
+            modifier = Modifier.fillMaxWidth(),
+        ) { formState ->
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(600.dp),
+                horizontalArrangement = Arrangement.spacedBy(40.dp),
+                verticalArrangement = Arrangement.spacedBy(40.dp)
+            ) {
+                this.advancedStoryFilterFields(formState)
             }
         }
     }
 }
 
-@Composable
-private fun AdvancedStoryFilterFields(state: InputFormState<StoryFilter>) {
-    RangedOptionalIntFormField(
-        id = "id",
-        state = state,
-        name = "ID",
-        defaultValue = 1,
-        getter = { it.idIn?.firstOrNull()?.value?.toInt() },
-        setter = { data, value -> data.copy(idIn = value?.let { setOf(StoryId(it.toUInt())) }) },
-        range = 1..Int.MAX_VALUE,
-    )
-    TextFormField(
-        id = "authorContains",
-        state = state,
-        name = "Author",
-        getter = { it.authorContains ?: "" },
-        setter = { data, value -> data.copy(authorContains = value.ifBlank { null }) }
-    )
-    TextFormField(
-        id = "descriptionContains",
-        state = state,
-        name = "Description contains",
-        getter = { it.descriptionContains ?: "" },
-        setter = { data, value -> data.copy(descriptionContains = value.ifBlank { null }) },
-        singleLine = false
-    )
-    OptionalInstantRangeFormField(
-        id = "publishedRange",
-        state = state,
-        name = "Published date range (inclusive)",
-        defaultValue = { TimeUtils.instantAtTodayMidnight() },
-        fromGetter = { it.publishedAfter },
-        toGetter = { it.publishedBefore },
-        setter = { data, from, to -> data.copy(publishedAfter = from, publishedBefore = to) },
-    )
-    OptionalInstantRangeFormField(
-        id = "changedRange",
-        state = state,
-        name = "Changed date range (inclusive)",
-        defaultValue = { TimeUtils.instantAtTodayMidnight() },
-        fromGetter = { it.changedAfter },
-        toGetter = { it.changedBefore },
-        setter = { data, from, to -> data.copy(changedAfter = from, changedBefore = to) },
-    )
-    OptionalFormField(
-        id = "tags",
-        state = state,
-        name = "Tags",
-        description = "Including implied tags",
-        defaultValue = { emptySet() },
-        getter = { it.tagsPresent },
-        setter = { form, value -> form.copy(tagsPresent = value) },
-    ) { value, _, onValueChange ->
-        MultiTagPicker(
-            title = "Pick tags to search for",
-            pickedTagIds = value,
-            defaultOpenPopup = true,
-            onPick = onValueChange
+private fun LazyGridScope.advancedStoryFilterFields(state: InputFormState<StoryFilter>) {
+    advancedControlItem(Arrangement.spacedBy(20.dp)) {
+        TextFormField(
+            id = "authorContains",
+            state = state,
+            name = "Author",
+            getter = { it.authorContains ?: "" },
+            setter = { data, value -> data.copy(authorContains = value.ifBlank { null }) }
+        )
+        TextFormField(
+            id = "descriptionContains",
+            state = state,
+            name = "Description contains",
+            getter = { it.descriptionContains ?: "" },
+            setter = { data, value -> data.copy(descriptionContains = value.ifBlank { null }) },
+            singleLine = false
+        )
+        TextFormField(
+            id = "contentContains",
+            state = state,
+            name = "Content contains",
+            getter = { it.contentContains ?: "" },
+            setter = { data, value -> data.copy(contentContains = value.ifBlank { null }) },
+            singleLine = false
         )
     }
-    OptionalRangeFormField(
-        id = "wordCountRange",
-        state = state,
-        name = "Word count range (inclusive)",
-        defaultValue = { 0u },
-        fromGetter = { it.wordCountGreaterOrEqual },
-        toGetter = { it.wordCountLessOrEqual },
-        setter = { data, from, to -> data.copy(wordCountGreaterOrEqual = from, wordCountLessOrEqual = to) }
-    ) { value, valid, onValueChange ->
-        OutlinedUIntField(
-            value = value,
-            isError = !valid,
-            modifier = Modifier.widthIn(max = 120.dp).height(36.dp),
-            onValueChange = onValueChange
+    advancedControlItem(Arrangement.spacedBy(10.dp)) {
+        TextFormField(
+            id = "urlContains",
+            state = state,
+            name = "URL",
+            getter = { it.urlContains ?: "" },
+            setter = { data, value -> data.copy(urlContains = value.ifBlank { null }) },
+        )
+        OptionalInstantRangeFormField(
+            id = "publishedRange",
+            state = state,
+            name = "Published date range (inclusive)",
+            defaultValue = { TimeUtils.instantAtTodayMidnight() },
+            fromGetter = { it.publishedAfter },
+            toGetter = { it.publishedBefore },
+            setter = { data, from, to -> data.copy(publishedAfter = from, publishedBefore = to) },
+        )
+        OptionalInstantRangeFormField(
+            id = "changedRange",
+            state = state,
+            name = "Changed date range (inclusive)",
+            defaultValue = { TimeUtils.instantAtTodayMidnight() },
+            fromGetter = { it.changedAfter },
+            toGetter = { it.changedBefore },
+            setter = { data, from, to -> data.copy(changedAfter = from, changedBefore = to) },
         )
     }
-    TextFormField(
-        id = "contentContains",
-        state = state,
-        name = "Content contains",
-        getter = { it.contentContains ?: "" },
-        setter = { data, value -> data.copy(contentContains = value.ifBlank { null }) },
-        singleLine = false
-    )
-    OptionalRangeFormField(
-        id = "scoreRange",
-        state = state,
-        name = "Score range (inclusive)",
-        defaultValue = { Score(0F) },
-        fromGetter = { it.scoreGreaterOrEqual },
-        toGetter = { it.scoreLessOrEqual },
-        setter = { data, from, to -> data.copy(scoreGreaterOrEqual = from, scoreLessOrEqual = to) }
-    ) { value, _, onValueChange ->
-        StoryScoreInput(value, onValueChange)
+    advancedControlItem(Arrangement.spacedBy(15.dp)) {
+        FormField(
+            id = "tagsPresent",
+            state = state,
+            name = "With tags",
+            getter = { it.tagsPresent ?: emptySet() },
+            setter = { form, value -> form.copy(tagsPresent = value.ifEmpty { null }) },
+        ) { value, _, onValueChange ->
+            MultiTagPicker(
+                title = "Pick tags that should be present (including implied)",
+                pickedTagIds = value,
+                onPick = onValueChange
+            )
+        }
+        FormField(
+            id = "tagsAbsent",
+            state = state,
+            name = "Without tags",
+            getter = { it.tagsAbsent ?: emptySet() },
+            setter = { form, value -> form.copy(tagsAbsent = value.ifEmpty { null }) },
+        ) { value, _, onValueChange ->
+            MultiTagPicker(
+                title = "Pick tags that should be absent (including implied)",
+                pickedTagIds = value,
+                onPick = onValueChange
+            )
+        }
+        OptionalRangeFormField(
+            id = "wordCountRange",
+            state = state,
+            name = "Word count range (inclusive)",
+            defaultValue = { 0u },
+            fromGetter = { it.wordCountGreaterOrEqual },
+            toGetter = { it.wordCountLessOrEqual },
+            setter = { data, from, to -> data.copy(wordCountGreaterOrEqual = from, wordCountLessOrEqual = to) }
+        ) { value, valid, onValueChange ->
+            OutlinedUIntField(
+                value = value,
+                isError = !valid,
+                modifier = Modifier.widthIn(max = 120.dp).height(36.dp),
+                onValueChange = onValueChange
+            )
+        }
     }
-    TextFormField(
-        id = "reviewContains",
-        state = state,
-        name = "Review contains",
-        getter = { it.reviewContains ?: "" },
-        setter = { data, value -> data.copy(reviewContains = value.ifBlank { null }) },
-        singleLine = false
-    )
-    OptionalInstantRangeFormField(
-        id = "firstReadRange",
-        state = state,
-        name = "First read date range (inclusive)",
-        defaultValue = { TimeUtils.instantAtTodayMidnight() },
-        fromGetter = { it.firstReadAfter },
-        toGetter = { it.firstReadBefore },
-        setter = { data, from, to -> data.copy(firstReadAfter = from, firstReadBefore = to) },
-    )
-    OptionalInstantRangeFormField(
-        id = "lastReadRange",
-        state = state,
-        name = "First read date range (inclusive)",
-        defaultValue = { TimeUtils.instantAtTodayMidnight() },
-        fromGetter = { it.lastReadAfter },
-        toGetter = { it.lastReadBefore },
-        setter = { data, from, to -> data.copy(lastReadAfter = from, lastReadBefore = to) },
-    )
-    OptionalRangeFormField(
-        id = "timesReadRange",
-        state = state,
-        name = "Times read range (inclusive)",
-        defaultValue = { 0u },
-        fromGetter = { it.timesReadGreaterOrEqual },
-        toGetter = { it.timesReadLessOrEqual },
-        setter = { data, from, to -> data.copy(timesReadGreaterOrEqual = from, timesReadLessOrEqual = to) }
-    ) { value, valid, onValueChange ->
-        OutlinedUIntField(
-            value = value,
-            isError = !valid,
-            modifier = Modifier.widthIn(max = 80.dp).height(36.dp),
-            onValueChange = onValueChange
+    advancedControlItem(Arrangement.spacedBy(20.dp)) {
+        OptionalRangeFormField(
+            id = "scoreRange",
+            state = state,
+            name = "Score range (inclusive)",
+            defaultValue = { Score(0F) },
+            fromGetter = { it.scoreGreaterOrEqual },
+            toGetter = { it.scoreLessOrEqual },
+            setter = { data, from, to -> data.copy(scoreGreaterOrEqual = from, scoreLessOrEqual = to) }
+        ) { value, _, onValueChange ->
+            StoryScoreInput(value, onValueChange)
+        }
+        TextFormField(
+            id = "reviewContains",
+            state = state,
+            name = "Review contains",
+            getter = { it.reviewContains ?: "" },
+            setter = { data, value -> data.copy(reviewContains = value.ifBlank { null }) },
+            singleLine = false
         )
     }
-    OptionalInstantRangeFormField(
-        id = "createdRange",
-        state = state,
-        name = "Created date range (inclusive)",
-        defaultValue = { TimeUtils.instantAtTodayMidnight() },
-        fromGetter = { it.createdAfter },
-        toGetter = { it.createdBefore },
-        setter = { data, from, to -> data.copy(createdAfter = from, createdBefore = to) },
-    )
-    OptionalInstantRangeFormField(
-        id = "updatedRange",
-        state = state,
-        name = "Created date range (inclusive)",
-        defaultValue = { TimeUtils.instantAtTodayMidnight() },
-        fromGetter = { it.updatedAfter },
-        toGetter = { it.updatedBefore },
-        setter = { data, from, to -> data.copy(updatedAfter = from, updatedBefore = to) },
-    )
+    advancedControlItem(Arrangement.spacedBy(10.dp)) {
+        OptionalInstantRangeFormField(
+            id = "firstReadRange",
+            state = state,
+            name = "First read date range (inclusive)",
+            defaultValue = { TimeUtils.instantAtTodayMidnight() },
+            fromGetter = { it.firstReadAfter },
+            toGetter = { it.firstReadBefore },
+            setter = { data, from, to -> data.copy(firstReadAfter = from, firstReadBefore = to) },
+        )
+        OptionalInstantRangeFormField(
+            id = "lastReadRange",
+            state = state,
+            name = "First read date range (inclusive)",
+            defaultValue = { TimeUtils.instantAtTodayMidnight() },
+            fromGetter = { it.lastReadAfter },
+            toGetter = { it.lastReadBefore },
+            setter = { data, from, to -> data.copy(lastReadAfter = from, lastReadBefore = to) },
+        )
+        OptionalRangeFormField(
+            id = "timesReadRange",
+            state = state,
+            name = "Times read range (inclusive)",
+            defaultValue = { 0u },
+            fromGetter = { it.timesReadGreaterOrEqual },
+            toGetter = { it.timesReadLessOrEqual },
+            setter = { data, from, to -> data.copy(timesReadGreaterOrEqual = from, timesReadLessOrEqual = to) }
+        ) { value, valid, onValueChange ->
+            OutlinedUIntField(
+                value = value,
+                isError = !valid,
+                modifier = Modifier.widthIn(max = 80.dp).height(36.dp),
+                onValueChange = onValueChange
+            )
+        }
+    }
+    advancedControlItem(Arrangement.spacedBy(10.dp)) {
+        OptionalInstantRangeFormField(
+            id = "createdRange",
+            state = state,
+            name = "Created date range (inclusive)",
+            defaultValue = { TimeUtils.instantAtTodayMidnight() },
+            fromGetter = { it.createdAfter },
+            toGetter = { it.createdBefore },
+            setter = { data, from, to -> data.copy(createdAfter = from, createdBefore = to) },
+        )
+        OptionalInstantRangeFormField(
+            id = "updatedRange",
+            state = state,
+            name = "Created date range (inclusive)",
+            defaultValue = { TimeUtils.instantAtTodayMidnight() },
+            fromGetter = { it.updatedAfter },
+            toGetter = { it.updatedBefore },
+            setter = { data, from, to -> data.copy(updatedAfter = from, updatedBefore = to) },
+        )
+        RangedOptionalIntFormField(
+            id = "id",
+            state = state,
+            name = "ID",
+            defaultValue = 1,
+            getter = { it.idIn?.firstOrNull()?.value?.toInt() },
+            setter = { data, value -> data.copy(idIn = value?.let { setOf(StoryId(it.toUInt())) }) },
+            range = 1..Int.MAX_VALUE,
+        )
+    }
+}
+
+private fun LazyGridScope.advancedControlItem(
+    verticalArrangement: Arrangement.Vertical,
+    content: @Composable () -> Unit
+) {
+    item {
+        Box(
+            contentAlignment = Alignment.TopStart
+        ) {
+            Column(
+                verticalArrangement = verticalArrangement,
+                modifier = Modifier.widthIn(max = 800.dp)
+            ) {
+                content()
+            }
+        }
+    }
 }
 
 @Composable
