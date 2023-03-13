@@ -117,7 +117,12 @@ private fun validateName(
     }
 
     val existing = tagService.getTagByName(validName)
-    if (mode == CREATE || (mode == EDIT && existing?.takeIf { it.id != currentId } != null)) {
+
+    val nameTaken = when (mode) {
+        CREATE -> existing != null
+        EDIT -> existing?.takeIf { it.id != currentId } != null
+    }
+    if (nameTaken) {
         return ValidationResult(false, "Name is already in use")
     }
 
