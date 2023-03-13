@@ -9,5 +9,5 @@ interface AppSettingsService {
      * Reset settings to default [AppSettings] values.
      * @return default settings.
      */
-    fun resetSettings(): AppSettings
+    fun resetSettings(onlyUserSettings: Boolean = true): AppSettings
 }

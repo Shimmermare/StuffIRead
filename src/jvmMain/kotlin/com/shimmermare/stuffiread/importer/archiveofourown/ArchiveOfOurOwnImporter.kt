@@ -160,7 +160,7 @@ actual object ArchiveOfOurOwnImporter : StoryImporter<ArchiveOfOurOwnImportSetti
         return fileTypes.map { fileType ->
             val downloadUrl = "${downloadEndpoint}/file.${fileType.name.lowercase()}"
 
-            val response = AppHttpClient.get(downloadUrl).call.response
+            val response = AppHttpClient.get(downloadUrl)
             if (response.status != HttpStatusCode.OK) {
                 error("Download of filetype $fileType for work ID $workId has failed: ${response.status}")
             }

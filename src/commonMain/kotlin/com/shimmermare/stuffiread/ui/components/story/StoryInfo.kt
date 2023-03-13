@@ -26,7 +26,7 @@ import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storyFilesService
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storySearchService
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storyService
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
-import com.shimmermare.stuffiread.ui.components.date.Date
+import com.shimmermare.stuffiread.ui.components.date.DateWithLabel
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
 import com.shimmermare.stuffiread.ui.components.layout.LoadingContainer
 import com.shimmermare.stuffiread.ui.components.tag.TagNameRoutable
@@ -96,12 +96,12 @@ private fun LeftBlock(story: Story) {
 
                     Column {
                         if (story.published != null) {
-                            Date(story.published, label = "Published:", style = MaterialTheme.typography.subtitle1)
+                            DateWithLabel("Published:", story.published)
                         } else {
-                            Text("Unknown publishing date", style = MaterialTheme.typography.subtitle1)
+                            Text("Unknown publishing date")
                         }
                         if (story.changed != null && story.published != story.changed) {
-                            Date(story.changed, label = "Last changed:", style = MaterialTheme.typography.subtitle1)
+                            DateWithLabel("Last changed:", story.changed)
                         }
                     }
                 }
@@ -206,17 +206,17 @@ private fun RightBlock(story: Story) {
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             Column {
-                Date(story.created, label = "First added to archive:", style = MaterialTheme.typography.subtitle1)
-                Date(story.updated, label = "Last update in archive:", style = MaterialTheme.typography.subtitle1)
+                DateWithLabel("First added to archive:", story.created)
+                DateWithLabel("Last update in archive:", story.updated)
             }
 
             Column {
                 Text("Times read: " + story.timesRead, style = MaterialTheme.typography.subtitle1)
                 if (story.firstRead != null) {
-                    Date(story.firstRead, label = "First read:", style = MaterialTheme.typography.subtitle1)
+                    DateWithLabel("First read:", story.firstRead)
                 }
                 if (story.lastRead != null) {
-                    Date(story.lastRead, label = "Last read:", style = MaterialTheme.typography.subtitle1)
+                    DateWithLabel("Last read:", story.lastRead)
                 }
             }
 

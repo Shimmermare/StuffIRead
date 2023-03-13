@@ -25,7 +25,7 @@ import com.shimmermare.stuffiread.stories.Story
 import com.shimmermare.stuffiread.tags.TagWithCategory
 import com.shimmermare.stuffiread.ui.Router
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
-import com.shimmermare.stuffiread.ui.components.date.Date
+import com.shimmermare.stuffiread.ui.components.date.DateWithLabel
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
 import com.shimmermare.stuffiread.ui.components.tag.TagNameRoutable
 import com.shimmermare.stuffiread.ui.pages.story.info.StoryInfoPage
@@ -94,10 +94,10 @@ private fun VisibleStoryCard(
                     modifier = Modifier.align(Alignment.BottomStart),
                 ) {
                     if (story.published != null) {
-                        Date(story.published, label = "Published:")
+                        DateWithLabel("Published:", story.published)
                     }
                     if (story.changed != null) {
-                        Date(story.changed, label = "Last changed:")
+                        DateWithLabel("Last changed:", story.changed)
                     }
                     if (story.score != null) {
                         StoryScore(story.score)

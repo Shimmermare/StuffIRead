@@ -16,12 +16,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.ui.components.layout.FullscreenPopup
 import com.shimmermare.stuffiread.ui.components.text.TextURI
+import com.shimmermare.stuffiread.util.AppVersionUtils
 
 private const val GITHUB_URL = "https://github.com/Shimmermare/StuffIRead"
 
 @Composable
 fun AboutApp(onDismissRequest: () -> Unit) {
-    val version: String = remember { System.getProperty("jpackage.app-version") ?: "unknown" }
+    val version: String = remember { AppVersionUtils.CURRENT_VERSION ?: "unknown" }
     FullscreenPopup {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,

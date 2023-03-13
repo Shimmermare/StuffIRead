@@ -11,7 +11,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.shimmermare.stuffiread.settings.AppSettings
 import com.shimmermare.stuffiread.settings.ScoreDisplayType
 import com.shimmermare.stuffiread.settings.ThemeBehavior
 import com.shimmermare.stuffiread.stories.Score
@@ -41,7 +40,7 @@ class SettingsPage : Page {
                         onClick = {
                             AppSettingsHolder.reset()
                         },
-                        enabled = state.data != AppSettings()
+                        enabled = state.data != state.data.copyAndResetUserSettings()
                     ) {
                         Text("Reset to default")
                     }
