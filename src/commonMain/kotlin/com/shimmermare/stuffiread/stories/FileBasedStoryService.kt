@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.datetime.Clock
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.decodeFromStream
@@ -76,7 +77,8 @@ class FileBasedStoryService(
         return withContext(Dispatchers.IO) {
             if (storiesDirectory.notExists()) storiesDirectory.createDirectories()
 
-            val created = story.copy(id = nextFreeId())
+            val createdTs = Clock.System.now()
+            val created = story.copy(id = nextFreeId(), created = createdTs, updated = createdTs)
             writeStory(created)
             return@withContext created
         }
@@ -87,8 +89,10 @@ class FileBasedStoryService(
             require(storyFilePath(story.id).exists()) {
                 "Can't update non-existing story ${story.id}"
             }
-            writeStory(story)
-            return@withContext story
+            val updatedTs = Clock.System.now()
+            val updated = story.copy(id = nextFreeId(), updated = updatedTs)
+            writeStory(updated)
+            return@withContext updated
         }
     }
 
