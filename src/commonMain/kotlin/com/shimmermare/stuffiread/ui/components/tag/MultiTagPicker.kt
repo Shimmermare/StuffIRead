@@ -145,12 +145,12 @@ private fun MultiPickerPopup(
                 modifier = Modifier
                     .padding(10.dp)
                     .width(600.dp)
-                    .heightIn(max = 600.dp),
+                    .heightIn(max = 800.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Text(title, style = MaterialTheme.typography.h6)
                 Text(text = "Picked ${pickedTags.size} tags:")
-                ChipVerticalGrid {
+                ChipVerticalGrid(modifier = Modifier.heightIn(max = 400.dp)) {
                     pickedTags.forEach { tag ->
                         TagName(
                             tag = tag,
