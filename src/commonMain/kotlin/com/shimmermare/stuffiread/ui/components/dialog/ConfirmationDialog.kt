@@ -6,8 +6,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Button
+import androidx.compose.material.LocalTextStyle
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -17,8 +20,10 @@ import com.shimmermare.stuffiread.ui.components.layout.FullscreenPopup
 inline fun ConfirmationDialog(
     crossinline title: @Composable () -> Unit,
     modifier: Modifier = Modifier.padding(20.dp).width(500.dp),
-    confirmationEnabled: Boolean = true,
+    dismissButtonText: String = "Cancel",
     noinline onDismissRequest: () -> Unit,
+    confirmButtonText: String = "Confirm",
+    confirmButtonEnabled: Boolean = true,
     noinline onConfirmRequest: () -> Unit,
     crossinline content: @Composable () -> Unit,
 ) {
@@ -28,17 +33,20 @@ inline fun ConfirmationDialog(
             verticalArrangement = Arrangement.spacedBy(10.dp),
             modifier = modifier
         ) {
-            title()
+            CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.h6) {
+                title()
+            }
+
             content()
 
             Row(
                 horizontalArrangement = Arrangement.spacedBy(15.dp)
             ) {
                 Button(onClick = onDismissRequest) {
-                    Text("Cancel")
+                    Text(dismissButtonText)
                 }
-                Button(enabled = confirmationEnabled, onClick = onConfirmRequest) {
-                    Text("Confirm")
+                Button(enabled = confirmButtonEnabled, onClick = onConfirmRequest) {
+                    Text(confirmButtonText)
                 }
             }
         }

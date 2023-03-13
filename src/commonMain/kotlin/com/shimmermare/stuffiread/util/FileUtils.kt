@@ -4,6 +4,8 @@ import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
+import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.notExists
 import kotlin.io.path.relativeTo
 
 
@@ -32,5 +34,9 @@ object FileUtils {
             val target = to.resolve(relativePath.toString())
             Files.copy(path, target, StandardCopyOption.REPLACE_EXISTING)
         }
+    }
+
+    fun Path.directoryNotExistsOrEmpty(): Boolean {
+        return notExists() || listDirectoryEntries().isEmpty()
     }
 }

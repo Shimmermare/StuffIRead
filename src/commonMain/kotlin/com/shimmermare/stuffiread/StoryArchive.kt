@@ -15,16 +15,16 @@ import com.shimmermare.stuffiread.stories.file.StoryFilesServiceImpl
 import com.shimmermare.stuffiread.tags.FileBasedTagTreeService
 import com.shimmermare.stuffiread.tags.TagService
 import com.shimmermare.stuffiread.tags.TagServiceImpl
-import com.shimmermare.stuffiread.util.FileUtils
 import io.github.aakira.napier.Napier
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.notExists
 
-class StoryArchive(
-    val directory: Path,
-    createIfNotExist: Boolean
-) {
+/**
+ * @param directory - archive directory. Will be created if not exists.
+ */
+class StoryArchive(val directory: Path) {
+
     val storyService: StoryService
     val storyCoverService: StoryCoverService
     val storyFilesService: StoryFilesService
@@ -37,14 +37,7 @@ class StoryArchive(
     init {
         Napier.i { "Opening $directory as story archive" }
 
-        if (directory.notExists()) {
-            if (createIfNotExist) {
-                directory.createDirectories()
-                usePreset("default")
-            } else {
-                throw IllegalArgumentException("Directory $directory doesn't exist")
-            }
-        }
+        if (directory.notExists()) directory.createDirectories()
 
         storyService = CachedStoryService(FileBasedStoryService(directory))
         storyCoverService = StoryCoverServiceImpl(directory)
@@ -54,10 +47,5 @@ class StoryArchive(
         tagMappingService = TagMappingServiceImpl(TagMappingRepositoryImpl(directory), tagService)
 
         storySearchService = StorySearchServiceImpl(storyService, storyFilesService, tagService)
-    }
-
-    private fun usePreset(presetName: String) {
-        Napier.i { "Applying preset $presetName to story archive" }
-        FileUtils.copyFolderRecursiveFromClasspath("presets/$presetName", directory)
     }
 }

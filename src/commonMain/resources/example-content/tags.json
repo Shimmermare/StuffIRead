@@ -6,8 +6,7 @@
             "description": "Series this story is based upon.",
             "sortOrder": 0,
             "color": -2805561,
-            "created": "2023-01-01T00:00:00Z",
-            "updated": "2023-01-01T00:00:00Z"
+            "created": "2023-01-01T00:00:00Z"
         },
         {
             "id": 2,
@@ -15,8 +14,7 @@
             "description": "Story genre.",
             "sortOrder": 10,
             "color": -13146474,
-            "created": "2023-01-01T00:00:00Z",
-            "updated": "2023-01-01T00:00:00Z"
+            "created": "2023-01-01T00:00:00Z"
         },
         {
             "id": 3,
@@ -24,8 +22,7 @@
             "description": "Character that plays a major role in the story.",
             "sortOrder": 20,
             "color": -15105455,
-            "created": "2023-01-01T00:00:00Z",
-            "updated": "2023-01-01T00:00:00Z"
+            "created": "2023-01-01T00:00:00Z"
         }
     ],
     "tags": [
@@ -34,16 +31,14 @@
             "categoryId": 1,
             "name": "Example Series",
             "description": "Example tag description",
-            "created": "2023-01-01T00:00:00Z",
-            "updated": "2023-01-01T00:00:00Z"
+            "created": "2023-01-01T00:00:00Z"
         },
         {
             "id": 2,
             "categoryId": 2,
             "name": "Example Genre",
             "description": "Example tag description",
-            "created": "2023-01-01T00:00:00Z",
-            "updated": "2023-01-01T00:00:00Z"
+            "created": "2023-01-01T00:00:00Z"
         },
         {
             "id": 3,
@@ -53,16 +48,14 @@
             "impliedTagIds": [
                 4
             ],
-            "created": "2023-01-01T00:00:00Z",
-            "updated": "2023-01-01T00:00:00Z"
+            "created": "2023-01-01T00:00:00Z"
         },
         {
             "id": 4,
             "categoryId": 3,
             "name": "Example Implied Tag",
             "description": "Example tag description",
-            "created": "2023-01-01T00:00:00Z",
-            "updated": "2023-01-01T00:00:00Z"
+            "created": "2023-01-01T00:00:00Z"
         }
     ]
 }

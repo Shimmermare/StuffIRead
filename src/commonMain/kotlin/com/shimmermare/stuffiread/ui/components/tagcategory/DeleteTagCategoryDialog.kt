@@ -39,7 +39,7 @@ fun DeleteTagCategoryDialog(
                 TagCategoryName(category)
             }
         },
-        confirmationEnabled = tagsInCategoryCount == 0u || replacementCategoryId != TagCategoryId.None,
+        confirmButtonEnabled = tagsInCategoryCount == 0u || replacementCategoryId != TagCategoryId.None,
         onDismissRequest = onDismissRequest,
         onConfirmRequest = {
             if (tagsInCategoryCount > 0u) {

@@ -1,8 +1,13 @@
 package com.shimmermare.stuffiread.ui.pages.openarchive
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.Button
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -10,15 +15,19 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.shimmermare.stuffiread.ui.AppSettingsHolder
-import com.shimmermare.stuffiread.ui.components.dialog.ErrorDialog
-import com.shimmermare.stuffiread.ui.components.error.ErrorInfo
+import com.shimmermare.stuffiread.ui.components.dialog.ConfirmationDialog
 import com.shimmermare.stuffiread.ui.components.layout.PointerInsideTrackerBox
 import com.shimmermare.stuffiread.ui.util.DirectoriesOnlyFileFilter
 import com.shimmermare.stuffiread.ui.util.FileDialog
@@ -31,7 +40,7 @@ import kotlin.io.path.notExists
 
 
 @Composable
-fun ArchiveDirectorySelector(onSelected: ((archiveDirectory: Path, createIfNotExists: Boolean) -> Unit)) {
+fun ArchiveDirectorySelector(onSelected: (Path) -> Unit) {
     val recentlyOpened by rememberUpdatedState(AppSettingsHolder.settings.recentlyOpenedArchives)
 
     Column(
@@ -62,7 +71,7 @@ fun ArchiveDirectorySelector(onSelected: ((archiveDirectory: Path, createIfNotEx
                 verticalArrangement = Arrangement.spacedBy((-10).dp)
             ) {
                 recentlyOpened.forEach { archiveDirectory ->
-                    RecentlyOpenedItem(archiveDirectory) { onSelected(archiveDirectory, false) }
+                    RecentlyOpenedItem(archiveDirectory) { onSelected(archiveDirectory) }
                 }
             }
         }
@@ -71,15 +80,15 @@ fun ArchiveDirectorySelector(onSelected: ((archiveDirectory: Path, createIfNotEx
 
 @Composable
 private fun ArchiveDirSelectorButtons(
-    onSelected: (file: Path, createIfNotExists: Boolean) -> Unit
+    onSelected: (file: Path) -> Unit
 ) {
-    SelectArchiveDirButton { onSelected.invoke(it, false) }
-    CreateArchiveDirButton { onSelected.invoke(it, true) }
+    OpenArchiveDirButton { onSelected.invoke(it) }
+    CreateArchiveDirButton { onSelected.invoke(it) }
 }
 
 @Composable
-private fun SelectArchiveDirButton(onSelected: (Path) -> Unit) {
-    var showNotExistForDir: Path? by remember { mutableStateOf(null) }
+private fun OpenArchiveDirButton(onClick: (Path) -> Unit) {
+    var askCreateFor: Path? by remember { mutableStateOf(null) }
 
     Button(
         onClick = {
@@ -90,9 +99,9 @@ private fun SelectArchiveDirButton(onSelected: (Path) -> Unit) {
             )
             if (dir != null) {
                 if (dir.notExists()) {
-                    showNotExistForDir = dir
+                    askCreateFor = dir
                 } else {
-                    onSelected.invoke(dir)
+                    onClick.invoke(dir)
                 }
             }
         }
@@ -100,24 +109,26 @@ private fun SelectArchiveDirButton(onSelected: (Path) -> Unit) {
         Text("Open")
     }
 
-    if (showNotExistForDir != null) {
-        val error = remember(showNotExistForDir) {
-            ErrorInfo(
-                title = "Failed to select story archive directory",
-                description = "Directory '$showNotExistForDir' doesn't exist.",
-            )
+    if (askCreateFor != null) {
+        ConfirmationDialog(
+            title = { Text("Directory doesn't exist") },
+            onDismissRequest = {
+                askCreateFor = null
+            },
+            confirmButtonText = "Create",
+            onConfirmRequest = {
+                onClick(askCreateFor!!)
+                askCreateFor = null
+            }
+        ) {
+            Text("Directory '$askCreateFor' doesn't exist. Create new story archive?")
         }
-        ErrorDialog(
-            error = error,
-            onDismissRequest = { showNotExistForDir = null }
-        )
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
-private fun CreateArchiveDirButton(onSelected: (Path) -> Unit) {
-    var showAlreadyExistForDir: Path? by remember { mutableStateOf(null) }
+private fun CreateArchiveDirButton(onClick: (Path) -> Unit) {
+    var askOpenFor: Path? by remember { mutableStateOf(null) }
 
     Button(
         onClick = {
@@ -128,9 +139,9 @@ private fun CreateArchiveDirButton(onSelected: (Path) -> Unit) {
             )
             if (dir != null) {
                 if (dir.exists()) {
-                    showAlreadyExistForDir = dir
+                    askOpenFor = dir
                 } else {
-                    onSelected.invoke(dir)
+                    onClick(dir)
                 }
             }
         }
@@ -138,17 +149,20 @@ private fun CreateArchiveDirButton(onSelected: (Path) -> Unit) {
         Text("Create")
     }
 
-    if (showAlreadyExistForDir != null) {
-        val error = remember(showAlreadyExistForDir) {
-            ErrorInfo(
-                title = "Failed to create story archive directory",
-                description = "Directory '$showAlreadyExistForDir' already exists.",
-            )
+    if (askOpenFor != null) {
+        ConfirmationDialog(
+            title = { Text("Directory already exists") },
+            onDismissRequest = {
+                askOpenFor = null
+            },
+            confirmButtonText = "Open",
+            onConfirmRequest = {
+                onClick(askOpenFor!!)
+                askOpenFor = null
+            }
+        ) {
+            Text("Directory '$askOpenFor' already exists. Open as story archive?")
         }
-        ErrorDialog(
-            error = error,
-            onDismissRequest = { showAlreadyExistForDir = null }
-        )
     }
 }
 

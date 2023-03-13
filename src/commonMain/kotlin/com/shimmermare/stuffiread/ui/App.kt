@@ -8,11 +8,14 @@ import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.shimmermare.stuffiread.ui.AppSettingsHolder.settings
-import com.shimmermare.stuffiread.ui.pages.error.ErrorPage
 import com.shimmermare.stuffiread.ui.pages.openarchive.OpenArchivePage
+import com.shimmermare.stuffiread.ui.pages.stories.StoriesPage
 import com.shimmermare.stuffiread.ui.routing.Router
 import com.shimmermare.stuffiread.ui.theme.DarkColors
 import com.shimmermare.stuffiread.ui.theme.DarkExtendedColors
@@ -22,30 +25,19 @@ import com.shimmermare.stuffiread.ui.theme.LocalExtendedColors
 import com.shimmermare.stuffiread.ui.theme.LocalTheme
 import com.shimmermare.stuffiread.ui.theme.LocalThemeProvider
 import com.shimmermare.stuffiread.ui.theme.Theme
-import io.github.aakira.napier.Napier
 
 val Router: Router = Router()
 
 @Composable
 @Preview
 fun App() {
-    LaunchedEffect(Unit) {
-        val lastOpenArchive = settings.recentlyOpenedArchives.firstOrNull()
-        if (settings.openLastArchiveOnStartup && lastOpenArchive != null) {
-            try {
-                StoryArchiveHolder.openStoryArchive(lastOpenArchive, false)
-            } catch (e: Exception) {
-                Napier.e(e) { "Failed to open previous story archive: $lastOpenArchive" }
-                Router.goTo(
-                    ErrorPage(
-                        title = "Failed to open story archive that was last opened previously",
-                        description = "Story archive: $lastOpenArchive",
-                        exception = e,
-                    )
-                )
-            }
+    var wasOnOpenArchivePageBefore: Boolean by remember { mutableStateOf(false) }
+    LaunchedEffect(StoryArchiveHolder.storyArchive) {
+        if (StoryArchiveHolder.isOpen) {
+            Router.goTo(StoriesPage())
         } else {
-            Router.goTo(OpenArchivePage())
+            Router.goTo(OpenArchivePage(onAppStart = !wasOnOpenArchivePageBefore))
+            wasOnOpenArchivePageBefore = true
         }
     }
 

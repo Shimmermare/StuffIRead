@@ -5,8 +5,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.shimmermare.stuffiread.StoryArchive
 import com.shimmermare.stuffiread.settings.AppSettings
-import com.shimmermare.stuffiread.ui.pages.openarchive.OpenArchivePage
-import com.shimmermare.stuffiread.ui.pages.stories.StoriesPage
 import java.nio.file.Path
 
 object StoryArchiveHolder {
@@ -50,15 +48,13 @@ object StoryArchiveHolder {
      */
     val storySearchService get() = openStoryArchive.storySearchService
 
-    fun openStoryArchive(archiveDirectory: Path, createIfNotExists: Boolean) {
-        storyArchive = StoryArchive(archiveDirectory, createIfNotExists)
+    fun openStoryArchive(archiveDirectory: Path) {
+        storyArchive = StoryArchive(archiveDirectory)
         addRecentlyOpenedArchive(archiveDirectory)
-        Router.goTo(StoriesPage())
     }
 
     fun closeStoryArchive() {
         storyArchive = null
-        Router.goTo(OpenArchivePage())
     }
 
     private fun addRecentlyOpenedArchive(archiveDirectory: Path) {
