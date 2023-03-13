@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -37,7 +38,7 @@ fun <T> SearchList(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(0.33F)
+            modifier = Modifier.widthIn(min = 200.dp, max = 800.dp)
         ) {
             SearchBar(
                 searchText = searchByNameText,

@@ -3,6 +3,7 @@ package com.shimmermare.stuffiread.ui.components.story
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -92,11 +94,11 @@ private fun StoryFilterControls(currentFilter: StoryFilter, onFilterChange: (Sto
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Row(
-                modifier = Modifier.width(600.dp)
+                modifier = Modifier.widthIn(min = 200.dp, max = 800.dp).weight(1F, false)
             ) {
                 SearchBar(
                     searchText = state.data.nameContains ?: "",
@@ -114,24 +116,30 @@ private fun StoryFilterControls(currentFilter: StoryFilter, onFilterChange: (Sto
                 )
             }
 
-            Spacer(modifier = Modifier.weight(1F))
+            Spacer(modifier = Modifier.width(10.dp))
 
-            Button(
-                onClick = { showAdvanced = !showAdvanced }
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.requiredWidth(IntrinsicSize.Max),
             ) {
-                Text(if (showAdvanced) "Hide advanced" else "Show advanced")
-            }
-            Button(
-                onClick = { onFilterChange(StoryFilter.DEFAULT) },
-                enabled = state.data != StoryFilter.DEFAULT,
-            ) {
-                Text("Reset")
-            }
-            Button(
-                onClick = { if (state.isValid && currentFilter != state.data) onFilterChange(state.data) },
-                enabled = state.isValid && currentFilter != state.data
-            ) {
-                Text("Search")
+                Button(
+                    onClick = { showAdvanced = !showAdvanced },
+                ) {
+                    Text(if (showAdvanced) "Hide advanced" else "Show advanced")
+                }
+                Button(
+                    onClick = { onFilterChange(StoryFilter.DEFAULT) },
+                    enabled = state.data != StoryFilter.DEFAULT,
+                ) {
+                    Text("Reset")
+                }
+                Button(
+                    onClick = { if (state.isValid && currentFilter != state.data) onFilterChange(state.data) },
+                    enabled = state.isValid && currentFilter != state.data
+                ) {
+                    Text("Search")
+                }
             }
         }
         if (showAdvanced) {

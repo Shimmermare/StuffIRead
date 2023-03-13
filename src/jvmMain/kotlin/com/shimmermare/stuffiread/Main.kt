@@ -31,7 +31,8 @@ fun main() {
             onCloseRequest = onCloseRequest,
             icon = BitmapPainter(useResource("icons/icon.png", ::loadImageBitmap)),
         ) {
-            window.minimumSize = Dimension(1280, 800)
+            window.minimumSize = Dimension(800, 600)
+            window.preferredSize = Dimension(1280, 800)
             App()
         }
     }
