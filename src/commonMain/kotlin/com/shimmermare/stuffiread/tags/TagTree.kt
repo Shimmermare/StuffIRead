@@ -137,7 +137,7 @@ class TagTree private constructor(
         require(categoriesById.containsKey(category.id)) {
             "Category ${category.id} doesn't exist"
         }
-        requireUniqueCategoryName(category.name)
+        requireUniqueCategoryName(category.name, allowedId = category.id)
         val updated = category.copy(updated = Clock.System.now())
         return CopyTreeResult(
             TagTree(
@@ -152,7 +152,7 @@ class TagTree private constructor(
         require(category.id == TagCategoryId.None) {
             "Category to create already has ID ${category.id}"
         }
-        requireUniqueCategoryName(category.name)
+        requireUniqueCategoryName(category.name, allowedId = null)
         val createdTs = Clock.System.now()
         val created = category.copy(
             id = nextFreeCategoryId(),
@@ -168,10 +168,10 @@ class TagTree private constructor(
         )
     }
 
-    private fun requireUniqueCategoryName(name: TagCategoryName) {
-        val lowered = name.value.lowercase()
-        require(!categoriesByNameLowercase.containsKey(lowered)) {
-            "Name '$name' is already taken by ${categoriesByNameLowercase[lowered]!!.id}"
+    private fun requireUniqueCategoryName(name: TagCategoryName, allowedId: TagCategoryId?) {
+        val usedBy = categoriesByNameLowercase[name.value.lowercase()]
+        require(usedBy == null || usedBy.id == allowedId) {
+            "Name '$name' is already taken by ${usedBy!!.id}"
         }
     }
 
@@ -193,7 +193,7 @@ class TagTree private constructor(
         require(tagsById.containsKey(tag.id)) {
             "Tag ${tag.id} doesn't exist"
         }
-        requireUniqueTagName(tag.name)
+        requireUniqueTagName(tag.name, allowedId = tag.id)
         val updated = tag.copy(updated = Clock.System.now())
         return CopyTreeResult(
             TagTree(
@@ -209,7 +209,7 @@ class TagTree private constructor(
             require(tagsById.containsKey(tag.id)) {
                 "Tag ${tag.id} doesn't exist"
             }
-            requireUniqueTagName(tag.name)
+            requireUniqueTagName(tag.name, allowedId = tag.id)
             tag.id to tag.copy(updated = Clock.System.now())
         }
         return CopyTreeResult(
@@ -225,7 +225,7 @@ class TagTree private constructor(
         require(tag.id == TagId.None) {
             "Tag to create already has ID ${tag.id}"
         }
-        requireUniqueTagName(tag.name)
+        requireUniqueTagName(tag.name, allowedId = null)
         val createdTs = Clock.System.now()
         val created = tag.copy(
             id = nextFreeTagId(),
@@ -241,10 +241,10 @@ class TagTree private constructor(
         )
     }
 
-    private fun requireUniqueTagName(name: TagName) {
-        val lowered = name.value.lowercase()
-        require(!tagsByNameLowercase.containsKey(lowered)) {
-            "Name '$name' is already taken by ${tagsByNameLowercase[lowered]!!.id}"
+    private fun requireUniqueTagName(name: TagName, allowedId: TagId?) {
+        val usedBy = tagsByNameLowercase[name.value.lowercase()]
+        require(usedBy == null || usedBy.id == allowedId) {
+            "Name '$name' is already taken by ${usedBy!!.id}"
         }
     }
 
