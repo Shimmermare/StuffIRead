@@ -1,9 +1,14 @@
 package com.shimmermare.stuffiread.ui.pages.tag.edit
 
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.tags.Tag
 import com.shimmermare.stuffiread.tags.TagCategoryId
 import com.shimmermare.stuffiread.tags.TagId
@@ -11,6 +16,7 @@ import com.shimmermare.stuffiread.tags.TagName
 import com.shimmermare.stuffiread.ui.Router
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
 import com.shimmermare.stuffiread.ui.components.animation.AnimatedFadeIn
+import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollColumn
 import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPageMode.CREATE
 import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPageMode.EDIT
 import com.shimmermare.stuffiread.ui.pages.tag.info.TagInfoPage
@@ -39,23 +45,28 @@ class EditTagPage(
     @Composable
     override fun Body() {
         AnimatedFadeIn {
-            TagForm(
-                mode = mode,
-                tag = prefillWith,
-                onBack = {
-                    when (mode) {
-                        CREATE -> Router.goTo(TagsPage())
-                        EDIT -> Router.goTo(TagInfoPage(editingTagId))
+            VerticalScrollColumn(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp)
+            ) {
+                TagForm(
+                    mode = mode,
+                    tag = prefillWith,
+                    onBack = {
+                        when (mode) {
+                            CREATE -> Router.goTo(TagsPage())
+                            EDIT -> Router.goTo(TagInfoPage(editingTagId))
+                        }
+                    },
+                    onSubmit = {
+                        val tag = when (mode) {
+                            CREATE -> tagService.createTag(it)
+                            EDIT -> tagService.updateTag(it)
+                        }
+                        Router.goTo(TagInfoPage(tag.id))
                     }
-                },
-                onSubmit = {
-                    val tag = when (mode) {
-                        CREATE -> tagService.createTag(it)
-                        EDIT -> tagService.updateTag(it)
-                    }
-                    Router.goTo(TagInfoPage(tag.id))
-                }
-            )
+                )
+            }
         }
     }
 

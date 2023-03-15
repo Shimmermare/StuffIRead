@@ -1,13 +1,7 @@
 package com.shimmermare.stuffiread.ui.components.tag
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -24,6 +18,7 @@ import com.shimmermare.stuffiread.tags.TagWithCategory
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
 import com.shimmermare.stuffiread.ui.components.layout.FullscreenPopup
+import com.shimmermare.stuffiread.ui.components.layout.PickerWithSearchLayout
 import com.shimmermare.stuffiread.ui.components.layout.PopupContent
 import com.shimmermare.stuffiread.ui.components.search.SearchBar
 import com.shimmermare.stuffiread.ui.components.text.FilledNameText
@@ -102,36 +97,40 @@ private fun PickerPopup(
 
     FullscreenPopup {
         PopupContent {
-            Column(
-                modifier = Modifier
-                    .padding(10.dp)
-                    .width(600.dp)
-                    .heightIn(max = 600.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                Text(title, style = MaterialTheme.typography.h6)
-                if (pickedTag != null) {
-                    Text(text = "Picked tag:")
-                    TagName(pickedTag, onClick = { pickedTagId = TagId.None })
-                } else {
-                    Text(text = "Tag not picked")
-                }
-                SearchBar(
-                    searchText = searchText,
-                    onSearchTextChanged = { searchText = it }
-                )
-                Text(text = "Found ${availableToPickTags.size} tags:")
-                ChipVerticalGrid(modifier = Modifier.heightIn(max = 400.dp)) {
-                    availableToPickTags.forEach {
-                        TagName(
-                            tag = it,
-                            onClick = { pickedTagId = it.tag.id }
-                        )
+            PickerWithSearchLayout(
+                title = title,
+                pickedItems = {
+                    if (pickedTag != null) {
+                        Text(text = "Picked tag:")
+                        TagName(pickedTag, onClick = { pickedTagId = TagId.None })
+                    } else {
+                        Text(text = "Tag not picked")
                     }
-                }
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
+                },
+                searchBar = {
+                    SearchBar(
+                        searchText = searchText,
+                        onSearchTextChanged = { searchText = it }
+                    )
+                },
+                availableToPickItems = {
+                    if (availableToPickTags.isNotEmpty()) {
+                        Text(text = "Found ${availableToPickTags.size} tag(s):")
+                        ChipVerticalGrid {
+                            availableToPickTags.forEach {
+                                TagName(
+                                    tag = it,
+                                    onClick = { pickedTagId = it.tag.id }
+                                )
+                            }
+                        }
+                    } else if (allTags.isEmpty()) {
+                        Text("No tag(s) exist to pick.")
+                    } else {
+                        Text("No tag(s) found.")
+                    }
+                },
+                actionButtons = {
                     Button(onClick = onCloseRequest) {
                         Text("Cancel")
                     }
@@ -145,7 +144,7 @@ private fun PickerPopup(
                         Text("Quick create")
                     }
                 }
-            }
+            )
         }
     }
 

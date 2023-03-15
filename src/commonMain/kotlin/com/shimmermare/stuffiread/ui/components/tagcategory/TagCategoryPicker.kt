@@ -1,13 +1,7 @@
 package com.shimmermare.stuffiread.ui.components.tagcategory
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -23,6 +17,7 @@ import com.shimmermare.stuffiread.tags.TagCategoryId
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
 import com.shimmermare.stuffiread.ui.components.layout.FullscreenPopup
+import com.shimmermare.stuffiread.ui.components.layout.PickerWithSearchLayout
 import com.shimmermare.stuffiread.ui.components.layout.PopupContent
 import com.shimmermare.stuffiread.ui.components.search.SearchBar
 import com.shimmermare.stuffiread.ui.components.text.FilledNameText
@@ -102,33 +97,37 @@ private fun PickerPopup(
 
     FullscreenPopup {
         PopupContent {
-            Column(
-                modifier = Modifier
-                    .padding(10.dp)
-                    .width(600.dp)
-                    .heightIn(max = 600.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                Text(title, style = MaterialTheme.typography.h6)
-                if (pickedCategory != null) {
-                    Text("Picked category:")
-                    TagCategoryName(pickedCategory, onClick = { pickedCategoryId = TagCategoryId.None })
-                } else {
-                    Text("Category not picked")
-                }
-                SearchBar(
-                    searchText = searchText,
-                    onSearchTextChanged = { searchText = it }
-                )
-                Text("Found ${availableToPickCategories.size} categories:")
-                ChipVerticalGrid(modifier = Modifier.heightIn(max = 400.dp)) {
-                    availableToPickCategories.forEach {
-                        TagCategoryName(it, onClick = { pickedCategoryId = it.id })
+            PickerWithSearchLayout(
+                title = title,
+                pickedItems = {
+                    if (pickedCategory != null) {
+                        Text("Picked category:")
+                        TagCategoryName(pickedCategory, onClick = { pickedCategoryId = TagCategoryId.None })
+                    } else {
+                        Text("Category not picked")
                     }
-                }
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
+                },
+                searchBar = {
+                    SearchBar(
+                        searchText = searchText,
+                        onSearchTextChanged = { searchText = it }
+                    )
+                },
+                availableToPickItems = {
+                    if (availableToPickCategories.isNotEmpty()) {
+                        Text(text = "Found ${availableToPickCategories.size} categorie(s):")
+                        ChipVerticalGrid {
+                            availableToPickCategories.forEach {
+                                TagCategoryName(it, onClick = { pickedCategoryId = it.id })
+                            }
+                        }
+                    } else if (allCategories.isEmpty()) {
+                        Text("No categorie(s) exist to pick.")
+                    } else {
+                        Text("No categorie(s) found.")
+                    }
+                },
+                actionButtons = {
                     Button(onClick = onCloseRequest) {
                         Text("Cancel")
                     }
@@ -142,7 +141,7 @@ private fun PickerPopup(
                         Text("Quick create")
                     }
                 }
-            }
+            )
         }
     }
 

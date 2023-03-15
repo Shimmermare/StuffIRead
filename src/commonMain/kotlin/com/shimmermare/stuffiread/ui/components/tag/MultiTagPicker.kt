@@ -1,28 +1,15 @@
 package com.shimmermare.stuffiread.ui.components.tag
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.tags.Tag
 import com.shimmermare.stuffiread.tags.TagId
@@ -31,7 +18,7 @@ import com.shimmermare.stuffiread.ui.StoryArchiveHolder
 import com.shimmermare.stuffiread.ui.components.input.SizedIconButton
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
 import com.shimmermare.stuffiread.ui.components.layout.FullscreenPopup
-import com.shimmermare.stuffiread.ui.components.layout.PointerInsideTrackerBox
+import com.shimmermare.stuffiread.ui.components.layout.PickerWithSearchLayout
 import com.shimmermare.stuffiread.ui.components.layout.PopupContent
 import com.shimmermare.stuffiread.ui.components.search.SearchBar
 
@@ -49,7 +36,6 @@ fun MultiTagPicker(
 
     PickedTagsField(
         pickedTagIds = pickedTagIds,
-        onUnpickRequest = { onPick(pickedTagIds - it) },
         onOpenPopupRequest = { openPopup = true }
     )
 
@@ -70,7 +56,6 @@ fun MultiTagPicker(
 @Composable
 private fun PickedTagsField(
     pickedTagIds: Set<TagId>,
-    onUnpickRequest: (TagId) -> Unit,
     onOpenPopupRequest: () -> Unit
 ) {
     val pickedTags: List<TagWithCategory> = remember(pickedTagIds) {
@@ -79,30 +64,10 @@ private fun PickedTagsField(
 
     ChipVerticalGrid {
         pickedTags.forEach { tag ->
-            PickedTag(tag) { onUnpickRequest(tag.tag.id) }
-        }
-        SizedIconButton(onClick = onOpenPopupRequest, size = 36.dp) {
-            Icon(Icons.Filled.Add, null)
-        }
-    }
-}
-
-@Composable
-private fun PickedTag(
-    tag: TagWithCategory,
-    onUnselect: () -> Unit
-) {
-    PointerInsideTrackerBox { pointerInside ->
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(5.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
             TagName(tag)
-            if (pointerInside) {
-                Box(modifier = Modifier.clickable(onClick = onUnselect)) {
-                    Icon(Icons.Filled.Clear, null, modifier = Modifier.size(30.dp))
-                }
-            }
+        }
+        SizedIconButton(onClick = onOpenPopupRequest, size = 30.dp) {
+            Icon(Icons.Filled.Edit, null)
         }
     }
 }
@@ -141,39 +106,47 @@ private fun MultiPickerPopup(
 
     FullscreenPopup {
         PopupContent {
-            Column(
-                modifier = Modifier
-                    .padding(10.dp)
-                    .width(600.dp)
-                    .heightIn(max = 800.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                Text(title, style = MaterialTheme.typography.h6)
-                Text(text = "Picked ${pickedTags.size} tags:")
-                ChipVerticalGrid(modifier = Modifier.heightIn(max = 400.dp)) {
-                    pickedTags.forEach { tag ->
-                        TagName(
-                            tag = tag,
-                            onClick = { pickedTagIds = pickedTagIds - tag.tag.id }
-                        )
+            PickerWithSearchLayout(
+                title = title,
+                pickedItems = {
+                    if (pickedTags.isNotEmpty()) {
+                        Text(text = "Picked ${pickedTags.size} tag(s):")
+                        ChipVerticalGrid {
+                            pickedTags.forEach { tag ->
+                                TagName(
+                                    tag = tag,
+                                    onClick = { pickedTagIds = pickedTagIds - tag.tag.id }
+                                )
+                            }
+                        }
+                    } else {
+                        Text("No tag(s) picked.")
                     }
-                }
-                SearchBar(
-                    searchText = searchText,
-                    onSearchTextChanged = { searchText = it }
-                )
-                Text(text = "Found ${availableToPickTags.size} tags:")
-                ChipVerticalGrid(modifier = Modifier.heightIn(max = 400.dp)) {
-                    availableToPickTags.forEach {
-                        TagName(
-                            tag = it,
-                            onClick = { pickedTagIds = pickedTagIds + it.tag.id }
-                        )
+                },
+                searchBar = {
+                    SearchBar(
+                        searchText = searchText,
+                        onSearchTextChanged = { searchText = it }
+                    )
+                },
+                availableToPickItems = {
+                    if (availableToPickTags.isNotEmpty()) {
+                        Text(text = "Found ${availableToPickTags.size} tag(s):")
+                        ChipVerticalGrid {
+                            availableToPickTags.forEach {
+                                TagName(
+                                    tag = it,
+                                    onClick = { pickedTagIds = pickedTagIds + it.tag.id }
+                                )
+                            }
+                        }
+                    } else if (allTags.isEmpty()) {
+                        Text("No tag(s) exist to pick.")
+                    } else {
+                        Text("No tag(s) found.")
                     }
-                }
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
+                },
+                actionButtons = {
                     Button(onClick = onCloseRequest) {
                         Text("Cancel")
                     }
@@ -187,7 +160,7 @@ private fun MultiPickerPopup(
                         Text("Quick create")
                     }
                 }
-            }
+            )
         }
     }
 

@@ -6,6 +6,7 @@ import androidx.compose.ui.res.useResource
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.shimmermare.stuffiread.ui.App
+import com.shimmermare.stuffiread.ui.AwtWindowSizeProvider
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import java.awt.Dimension
@@ -33,7 +34,10 @@ fun main() {
         ) {
             window.minimumSize = Dimension(800, 600)
             window.preferredSize = Dimension(1280, 800)
-            App()
+
+            AwtWindowSizeProvider(window) {
+                App()
+            }
         }
     }
 }

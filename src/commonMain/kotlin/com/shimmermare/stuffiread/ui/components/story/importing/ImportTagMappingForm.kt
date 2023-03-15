@@ -102,7 +102,7 @@ fun ImportTagMappingForm(
                         modifier = Modifier.weight(1F)
                     ) {
                         TagPicker(
-                            title = "Pick mapped tack",
+                            title = "Pick mapped tag",
                             pickedTagId = mappedTags.getOrDefault(tagName, TagId.None),
                             onPick = { mappedTags = mappedTags + (tagName to it) }
                         )
