@@ -99,13 +99,11 @@ class FileBasedStoryService(
         }
     }
 
-    @OptIn(ExperimentalPathApi::class)
     override suspend fun deleteStoryById(storyId: StoryId) {
         withContext(Dispatchers.IO) {
             val storyDirectory = storiesDirectory.resolve(storyId.toString())
-            storyDirectory.walk(PathWalkOption.INCLUDE_DIRECTORIES)
-                .sortedDescending()
-                .forEach(Path::deleteIfExists)
+            // Deleting with nio.Path#walk was failing in Google Drive sync folder with ACCESS DENIED, but this works
+            storyDirectory.toFile().deleteRecursively()
         }
     }
 
