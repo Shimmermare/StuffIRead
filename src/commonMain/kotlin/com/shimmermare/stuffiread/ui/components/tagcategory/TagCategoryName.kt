@@ -7,11 +7,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.tags.TagCategory
 import com.shimmermare.stuffiread.ui.Router
+import com.shimmermare.stuffiread.ui.components.tag.DefaultTagNameHeight
 import com.shimmermare.stuffiread.ui.components.text.FilledNameText
 import com.shimmermare.stuffiread.ui.pages.tagcategory.info.TagCategoryInfoPage
+
+val DefaultCategoryNameHeight = DefaultTagNameHeight
+val DefaultCategoryNameModifier = Modifier.height(DefaultCategoryNameHeight)
 
 /**
  * Go to tag category page on click
@@ -20,7 +23,7 @@ import com.shimmermare.stuffiread.ui.pages.tagcategory.info.TagCategoryInfoPage
 fun TagCategoryNameRoutable(
     category: TagCategory,
     fontSize: TextUnit = MaterialTheme.typography.subtitle1.fontSize,
-    modifier: Modifier = Modifier.height(30.dp),
+    modifier: Modifier = DefaultCategoryNameModifier,
 ) {
     TagCategoryName(
         category = category,
@@ -34,7 +37,7 @@ fun TagCategoryNameRoutable(
 fun TagCategoryName(
     category: TagCategory,
     fontSize: TextUnit = MaterialTheme.typography.subtitle1.fontSize,
-    modifier: Modifier = Modifier.height(30.dp),
+    modifier: Modifier = DefaultCategoryNameModifier,
     onClick: () -> Unit
 ) {
     TagCategoryName(
@@ -48,7 +51,7 @@ fun TagCategoryName(
 fun TagCategoryName(
     category: TagCategory,
     fontSize: TextUnit = MaterialTheme.typography.subtitle1.fontSize,
-    modifier: Modifier = Modifier.height(30.dp),
+    modifier: Modifier = DefaultCategoryNameModifier,
 ) {
     FilledNameText(
         text = category.name.value,

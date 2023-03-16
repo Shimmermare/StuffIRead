@@ -61,18 +61,14 @@ fun StoryInfo(story: Story) {
 @Composable
 private fun LeftBlock(story: Story) {
     val tags = remember {
-        tagService.getExtendedTagsByIds(story.tags).flatMap { tag ->
-            buildList {
-                add(TagWithCategory(tag.tag, tag.category))
-                addAll(tag.impliedTags)
-                addAll(tag.indirectlyImpliedTags)
+        tagService.getTagsWithCategoryByIdsIncludingImplied(story.tags).sortedWith(
+            TagWithCategory.DEFAULT_ORDER.thenComparing { a, b ->
+                val aExplicit = story.tags.contains(a.tag.id)
+                val bExplicit = story.tags.contains(b.tag.id)
+                // Explicit first
+                bExplicit.compareTo(aExplicit)
             }
-        }.distinctBy { it.tag.id }.sortedWith(TagWithCategory.DEFAULT_ORDER.thenComparing { a, b ->
-            val aExplicit = story.tags.contains(a.tag.id)
-            val bExplicit = story.tags.contains(b.tag.id)
-            // Explicit first
-            bExplicit.compareTo(aExplicit)
-        })
+        )
     }
 
     Column(

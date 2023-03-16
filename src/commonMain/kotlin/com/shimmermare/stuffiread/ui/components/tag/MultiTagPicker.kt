@@ -2,6 +2,7 @@ package com.shimmermare.stuffiread.ui.components.tag
 
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
@@ -62,12 +63,18 @@ private fun PickedTagsField(
         StoryArchiveHolder.tagService.getTagsWithCategoryByIds(pickedTagIds).sortedWith(TagWithCategory.DEFAULT_ORDER)
     }
 
-    ChipVerticalGrid {
-        pickedTags.forEach { tag ->
-            TagName(tag)
-        }
-        SizedIconButton(onClick = onOpenPopupRequest, size = 30.dp) {
+    if (pickedTags.isEmpty()) {
+        IconButton(onClick = onOpenPopupRequest) {
             Icon(Icons.Filled.Edit, null)
+        }
+    } else {
+        ChipVerticalGrid {
+            pickedTags.forEach { tag ->
+                TagName(tag)
+            }
+            SizedIconButton(onClick = onOpenPopupRequest, size = 30.dp) {
+                Icon(Icons.Filled.Edit, null)
+            }
         }
     }
 }

@@ -158,7 +158,7 @@ private fun AdvancedStoryFilterControls(state: InputFormState<StoryFilter>) {
             modifier = Modifier.fillMaxWidth(),
         ) { formState ->
             LazyVerticalGrid(
-                columns = GridCells.Adaptive(600.dp),
+                columns = GridCells.Adaptive(500.dp),
                 horizontalArrangement = Arrangement.spacedBy(40.dp),
                 verticalArrangement = Arrangement.spacedBy(40.dp)
             ) {

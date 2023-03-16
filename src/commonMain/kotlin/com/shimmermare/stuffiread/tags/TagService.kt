@@ -44,6 +44,8 @@ interface TagService {
 
     fun getTagsWithCategoryByIds(tagIds: Iterable<TagId>): List<TagWithCategory>
 
+    fun getTagsWithCategoryByIdsIncludingImplied(tagIds: Iterable<TagId>): List<TagWithCategory>
+
     /**
      * @param name case-insensitive
      */

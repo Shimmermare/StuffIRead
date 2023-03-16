@@ -13,8 +13,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,7 +30,9 @@ import com.shimmermare.stuffiread.tags.TagWithCategory
 import com.shimmermare.stuffiread.ui.Router
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
 import com.shimmermare.stuffiread.ui.components.date.DateWithLabel
+import com.shimmermare.stuffiread.ui.components.dialog.InfoDialog
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
+import com.shimmermare.stuffiread.ui.components.tag.DefaultTagNameHeight
 import com.shimmermare.stuffiread.ui.components.tag.TagNameRoutable
 import com.shimmermare.stuffiread.ui.pages.story.info.StoryInfoPage
 
@@ -53,10 +59,6 @@ fun StoryCard(
 private fun VisibleStoryCard(
     story: Story,
 ) {
-    val tags = remember(story.id) {
-        tagService.getTagsWithCategoryByIds(story.tags).sortedWith(TagWithCategory.DEFAULT_ORDER)
-    }
-
     Surface(
         modifier = Modifier
             .border(1.dp, Color.LightGray)
@@ -108,21 +110,7 @@ private fun VisibleStoryCard(
                 modifier = Modifier.weight(1F),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                if (tags.isNotEmpty()) {
-                    ChipVerticalGrid {
-                        tags.take(PREVIEW_TAG_COUNT).forEach {
-                            TagNameRoutable(it)
-                        }
-                        if (tags.size > PREVIEW_TAG_COUNT) {
-                            Box(
-                                modifier = Modifier.height(30.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text("and ${tags.size - PREVIEW_TAG_COUNT} more")
-                            }
-                        }
-                    }
-                }
+                StoryCardTags(story)
                 if (story.description.isPresent) {
                     Column(
                         modifier = Modifier.weight(1F, false)
@@ -144,3 +132,53 @@ private fun VisibleStoryCard(
     }
 }
 
+@Composable
+private fun StoryCardTags(story: Story) {
+    val tags = remember(story.id) {
+        if (story.tags.isEmpty()) {
+            emptyList()
+        } else {
+            tagService.getTagsWithCategoryByIdsIncludingImplied(story.tags).sortedWith(
+                TagWithCategory.DEFAULT_ORDER.thenComparing { a, b ->
+                    val aExplicit = story.tags.contains(a.tag.id)
+                    val bExplicit = story.tags.contains(b.tag.id)
+                    // Explicit first
+                    bExplicit.compareTo(aExplicit)
+                }
+            )
+        }
+    }
+    val preview = remember(story.id) {
+        // Only explicit tags in preview
+        tags.asSequence().filter { story.tags.contains(it.tag.id) }.take(PREVIEW_TAG_COUNT).toList()
+    }
+
+    var showFullList: Boolean by remember(story.id) { mutableStateOf(false) }
+
+    if (tags.isNotEmpty()) {
+        ChipVerticalGrid {
+            preview.forEach {
+                TagNameRoutable(it)
+            }
+            if (tags.size > preview.size) {
+                TextButton(
+                    onClick = { showFullList = true },
+                    modifier = Modifier.height(DefaultTagNameHeight)
+                ) {
+                    Text("and ${tags.size - preview.size} more")
+                }
+            }
+        }
+    }
+
+    if (showFullList) {
+        InfoDialog(
+            title = { Text("All story tags") },
+            onDismissRequest = { showFullList = false },
+        ) {
+            ChipVerticalGrid {
+                tags.forEach { TagNameRoutable(it, indirect = !story.tags.contains(it.tag.id)) }
+            }
+        }
+    }
+}

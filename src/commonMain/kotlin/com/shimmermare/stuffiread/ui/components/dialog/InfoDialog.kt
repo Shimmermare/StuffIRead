@@ -2,7 +2,6 @@ package com.shimmermare.stuffiread.ui.components.dialog
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material.Button
@@ -18,16 +17,12 @@ import com.shimmermare.stuffiread.ui.components.layout.FullscreenPopup
 import com.shimmermare.stuffiread.ui.util.windowSize
 
 @Composable
-inline fun ConfirmationDialog(
+inline fun InfoDialog(
     crossinline title: @Composable () -> Unit,
-    modifier: Modifier = Modifier
-        .padding(20.dp)
+    modifier: Modifier = Modifier.padding(20.dp)
         .sizeIn(maxWidth = 500.dp, maxHeight = windowSize.height - 200.dp),
-    dismissButtonText: String = "Cancel",
+    dismissButtonText: String = "Close",
     noinline onDismissRequest: () -> Unit,
-    confirmButtonText: String = "Confirm",
-    confirmButtonEnabled: Boolean = true,
-    noinline onConfirmRequest: () -> Unit,
     crossinline content: @Composable () -> Unit,
 ) {
     FullscreenPopup {
@@ -42,15 +37,8 @@ inline fun ConfirmationDialog(
 
             content()
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(15.dp)
-            ) {
-                Button(onClick = onDismissRequest) {
-                    Text(dismissButtonText)
-                }
-                Button(enabled = confirmButtonEnabled, onClick = onConfirmRequest) {
-                    Text(confirmButtonText)
-                }
+            Button(onClick = onDismissRequest) {
+                Text(dismissButtonText)
             }
         }
     }

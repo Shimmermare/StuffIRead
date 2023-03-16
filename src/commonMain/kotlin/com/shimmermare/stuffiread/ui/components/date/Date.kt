@@ -6,6 +6,7 @@ import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.Instant
@@ -31,20 +32,22 @@ fun Date(
     value: LocalDateTime,
     style: TextStyle = LocalTextStyle.current
 ) {
-    Text(text = value.toJavaLocalDateTime().format(DEFAULT_FORMAT), style = style)
+    Text(text = value.toJavaLocalDateTime().format(DEFAULT_FORMAT), style = style, maxLines = 1)
 }
 
 @Composable
 fun DateWithLabel(
     label: String,
     value: Instant,
-    style: TextStyle = LocalTextStyle.current
+    style: TextStyle = LocalTextStyle.current,
+    modifier: Modifier = Modifier
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(5.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier,
     ) {
-        Text(label)
+        Text(label, maxLines = 1)
         Date(value, style)
     }
 }

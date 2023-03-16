@@ -29,6 +29,7 @@ import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagMappingService
 import com.shimmermare.stuffiread.ui.components.input.ExtendedOutlinedTextField
 import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollColumn
 import com.shimmermare.stuffiread.ui.components.story.StoryFormData
+import com.shimmermare.stuffiread.ui.components.tag.DefaultTagNameHeight
 import com.shimmermare.stuffiread.ui.components.tag.TagPicker
 import io.github.aakira.napier.Napier
 
@@ -87,7 +88,7 @@ fun ImportTagMappingForm(
             importedStory.tags.forEach { tagName ->
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    modifier = Modifier.width(800.dp).height(30.dp)
+                    modifier = Modifier.width(800.dp).height(DefaultTagNameHeight)
                 ) {
                     ExtendedOutlinedTextField(
                         value = tagName,

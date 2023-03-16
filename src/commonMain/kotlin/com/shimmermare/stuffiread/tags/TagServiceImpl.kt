@@ -56,6 +56,7 @@ class TagServiceImpl(
     override fun tagExistsById(tagId: TagId): Boolean {
         return tree.tagExistsById(tagId)
     }
+
     override fun doAllTagsWithIdsExist(tagIds: Iterable<TagId>): Boolean {
         return tree.doAllTagsWithIdsExist(tagIds)
     }
@@ -87,6 +88,19 @@ class TagServiceImpl(
 
     override fun getTagsWithCategoryByIds(tagIds: Iterable<TagId>): List<TagWithCategory> {
         return tree.getTagsWithCategoryByIds(tagIds)
+    }
+
+    override fun getTagsWithCategoryByIdsIncludingImplied(tagIds: Iterable<TagId>): List<TagWithCategory> {
+        val result = hashMapOf<TagId, TagWithCategory>()
+        val tree = tree
+        tagIds.forEach { tagId ->
+            val extended = tree.getExtendedTag(tagId) ?: return@forEach
+
+            result[tagId] = tree.getTagWithCategory(extended.tag.id)!!
+            extended.impliedTags.forEach { result.putIfAbsent(it.tag.id, it) }
+            extended.indirectlyImpliedTags.forEach { result.putIfAbsent(it.tag.id, it) }
+        }
+        return result.values.toList()
     }
 
     override fun getTagByName(name: TagName): Tag? {

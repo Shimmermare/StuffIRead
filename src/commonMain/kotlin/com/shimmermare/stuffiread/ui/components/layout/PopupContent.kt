@@ -1,5 +1,6 @@
 package com.shimmermare.stuffiread.ui.components.layout
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,6 +24,7 @@ inline fun PopupContent(
     ) {
         Box(
             modifier = Modifier
+                .background(MaterialTheme.colors.surface)
                 .let { if (border) it.border(2.dp, MaterialTheme.colors.primary, RoundedCornerShape(5.dp)) else it },
         ) {
             content()

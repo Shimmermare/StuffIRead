@@ -11,7 +11,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.tags.TagCategory
 import com.shimmermare.stuffiread.tags.TagCategoryId
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
@@ -59,7 +58,7 @@ private fun PickedTagCategory(pickedCategoryId: TagCategoryId, onOpenPopupReques
         FilledNameText(
             "Click to pick",
             MaterialTheme.colors.primary,
-            modifier = Modifier.height(30.dp).clickable(onClick = onOpenPopupRequest),
+            modifier = Modifier.height(DefaultCategoryNameHeight).clickable(onClick = onOpenPopupRequest),
         )
     }
 }
