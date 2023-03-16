@@ -26,6 +26,10 @@ class CachedStoryService(
         return story
     }
 
+    override suspend fun getStoryPrequelIds(storyId: StoryId, ignoreInvalid: Boolean): Flow<StoryId> {
+        return source.getStoryPrequelIds(storyId, ignoreInvalid)
+    }
+
     /**
      * Return stories present in cache and retrieve missing ones from source.
      */

@@ -9,6 +9,8 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.datetime.Clock
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -32,6 +34,10 @@ class FileBasedStoryService(
         return withContext(Dispatchers.IO) {
             readStory(storyId)
         }
+    }
+
+    override suspend fun getStoryPrequelIds(storyId: StoryId, ignoreInvalid: Boolean): Flow<StoryId> {
+        return getAllStories(ignoreInvalid).filter { it.sequels.contains(storyId) }.map { it.id }
     }
 
     override suspend fun getStoriesByIds(storyIds: Collection<StoryId>, ignoreInvalid: Boolean): Flow<Story> {
@@ -90,7 +96,7 @@ class FileBasedStoryService(
                 "Can't update non-existing story ${story.id}"
             }
             val updatedTs = Clock.System.now()
-            val updated = story.copy(id = nextFreeId(), updated = updatedTs)
+            val updated = story.copy(updated = updatedTs)
             writeStory(updated)
             return@withContext updated
         }

@@ -19,6 +19,7 @@ import com.shimmermare.stuffiread.ui.components.story.StoryFormData
 import com.shimmermare.stuffiread.ui.pages.LoadedPage
 import com.shimmermare.stuffiread.ui.pages.story.info.StoryInfoPage
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.toSet
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.coroutineContext
 
@@ -41,10 +42,12 @@ class EditStoryPage(
     override suspend fun load(): StoryFormData {
         return withContext(coroutineContext) {
             val story = async { storyService.getStoryByIdOrThrow(storyId) }
+            val prequels = async { storyService.getStoryPrequelIds(storyId).toSet() }
             val cover = async { storyCoverService.getStoryCover(storyId) }
             val files = async { storyFilesService.getStoryFiles(storyId) }
             StoryFormData(
                 story = story.await(),
+                originalPrequels = prequels.await(),
                 cover = cover.await(),
                 files = files.await()
             )

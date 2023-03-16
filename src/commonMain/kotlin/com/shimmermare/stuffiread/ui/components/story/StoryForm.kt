@@ -28,6 +28,7 @@ import com.shimmermare.stuffiread.stories.Score
 import com.shimmermare.stuffiread.stories.Story
 import com.shimmermare.stuffiread.stories.StoryAuthor
 import com.shimmermare.stuffiread.stories.StoryDescription
+import com.shimmermare.stuffiread.stories.StoryId
 import com.shimmermare.stuffiread.stories.StoryName
 import com.shimmermare.stuffiread.stories.StoryReview
 import com.shimmermare.stuffiread.stories.StoryURL
@@ -74,6 +75,20 @@ fun SavingStoryForm(
                     storyService.createStory(formData.story)
                 } else {
                     storyService.updateStory(formData.story)
+                }
+
+                if (formData.originalPrequels != formData.prequels) {
+                    val noLongerPrequel = formData.originalPrequels - formData.prequels
+                    noLongerPrequel.forEach {
+                        val story = storyService.getStoryByIdOrThrow(it)
+                        storyService.updateStory(story.copy(sequels = story.sequels - saved.id))
+                    }
+
+                    val newPrequel = formData.prequels - formData.originalPrequels
+                    newPrequel.forEach {
+                        val story = storyService.getStoryByIdOrThrow(it)
+                        storyService.updateStory(story.copy(sequels = story.sequels + saved.id))
+                    }
                 }
 
                 storyCoverService.updateStoryCover(saved.id, formData.cover)
@@ -232,6 +247,19 @@ private fun FormContainer(
                 onSelect = onValueChange
             )
         }
+        FormField(
+            id = "prequels",
+            state = state,
+            name = "Prequels",
+            getter = { it.prequels },
+            setter = { data, value -> data.copy(prequels = value) }
+        ) { value, _, onValueChange ->
+            MultiStorySelector(
+                selectedIds = value,
+                filter = { it.id != state.data.story.id },
+                onSelect = onValueChange
+            )
+        }
         OptionalFormField(
             id = "score",
             state = state,
@@ -382,6 +410,8 @@ private fun StoryCoverFormField(
 
 data class StoryFormData(
     val story: Story,
+    val originalPrequels: Set<StoryId> = emptySet(),
+    val prequels: Set<StoryId> = originalPrequels,
     val cover: StoryCover? = null,
     val files: List<StoryFile> = emptyList()
 )

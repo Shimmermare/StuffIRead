@@ -7,6 +7,8 @@ interface StoryService {
 
     suspend fun getStoryByIdOrThrow(storyId: StoryId) = getStoryById(storyId) ?: error("Story $storyId not found")
 
+    suspend fun getStoryPrequelIds(storyId: StoryId, ignoreInvalid: Boolean = false): Flow<StoryId>
+
     /**
      * @return only existing stories with IDs from [storyIds].
      */
