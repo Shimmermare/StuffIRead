@@ -8,12 +8,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
@@ -21,21 +23,26 @@ import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.stories.Story
 import com.shimmermare.stuffiread.stories.StoryFilter
 import com.shimmermare.stuffiread.stories.StoryId
+import com.shimmermare.stuffiread.stories.StoryRead
 import com.shimmermare.stuffiread.tags.TagWithCategory
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storyFilesService
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storySearchService
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storyService
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
+import com.shimmermare.stuffiread.ui.components.date.Date
 import com.shimmermare.stuffiread.ui.components.date.DateWithLabel
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
+import com.shimmermare.stuffiread.ui.components.layout.ExtendedTooltipArea
 import com.shimmermare.stuffiread.ui.components.layout.LoadingContainer
 import com.shimmermare.stuffiread.ui.components.tag.TagNameRoutable
 import com.shimmermare.stuffiread.ui.components.text.TextURI
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 
 @Composable
-fun StoryInfo(story: Story) {
+fun StoryInfo(story: Story, onRefreshInfoRequest: () -> Unit) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -52,7 +59,7 @@ fun StoryInfo(story: Story) {
             Box(
                 modifier = Modifier.weight(1F)
             ) {
-                RightBlock(story)
+                RightBlock(story, onRefreshInfoRequest)
             }
         }
     }
@@ -194,7 +201,7 @@ private fun StoryFilesInfo(story: Story) {
 }
 
 @Composable
-private fun RightBlock(story: Story) {
+private fun RightBlock(story: Story, onRefreshInfoRequest: () -> Unit) {
     SelectionContainer {
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -206,14 +213,14 @@ private fun RightBlock(story: Story) {
                 DateWithLabel("Last update in archive:", story.updated)
             }
 
-            Column {
-                Text("Times read: " + story.timesRead, style = MaterialTheme.typography.subtitle1)
-                if (story.firstRead != null) {
-                    DateWithLabel("First read:", story.firstRead)
+            Column(
+                verticalArrangement = Arrangement.spacedBy(5.dp)
+            ) {
+                Text("Story was read " + story.reads.size + " time(s):", style = MaterialTheme.typography.subtitle1)
+                story.reads.sorted().forEach { read ->
+                    Date(read.date)
                 }
-                if (story.lastRead != null) {
-                    DateWithLabel("Last read:", story.lastRead)
-                }
+                IReadItJustNowButton(story, onRefreshInfoRequest)
             }
 
             if (story.score != null) {
@@ -232,6 +239,28 @@ private fun RightBlock(story: Story) {
                 }
             } else {
                 Text("No review", style = MaterialTheme.typography.h6)
+            }
+        }
+    }
+}
+
+@Composable
+private fun IReadItJustNowButton(story: Story, onRefreshInfoRequest: () -> Unit) {
+    val coroutineScope = rememberCoroutineScope()
+
+    ExtendedTooltipArea(
+        tooltip = { Text("Add new read with current time") }
+    ) {
+        DisableSelection {
+            Button(
+                onClick = {
+                    coroutineScope.launch {
+                        storyService.updateStory(story.copy(reads = story.reads + StoryRead(Clock.System.now())))
+                        onRefreshInfoRequest()
+                    }
+                }
+            ) {
+                Text("I read it just now")
             }
         }
     }

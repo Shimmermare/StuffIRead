@@ -12,3 +12,11 @@ fun <E> List<E>.replaceAt(index: Int, with: E): List<E> {
     }
     return mapIndexed { i, e -> if (i == index) with else e }
 }
+
+fun <T> T.repeat(times: Long): List<T> {
+    return (1..times).map { this }
+}
+
+fun <T> T.repeat(times: Int): List<T> {
+    return (1..times).map { this }
+}

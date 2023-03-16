@@ -1,5 +1,3 @@
-@file:UseSerializers(StorySerializer::class)
-
 package com.shimmermare.stuffiread.stories
 
 import com.shimmermare.stuffiread.stories.FileBasedStoryService.Companion.STORIES_DIR_NAME
@@ -14,7 +12,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.datetime.Clock
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import java.nio.file.Path
@@ -116,7 +113,7 @@ class FileBasedStoryService(
         val storyFile = storyFilePath(storyId)
         if (storyFile.notExists()) return null
 
-        val story = storyFile.inputStream().use { AppJson.decodeFromStream<Story>(it) }
+        val story = storyFile.inputStream().use { AppJson.decodeFromStream(StorySerializer, it) }
         require(story.id == storyId) {
             "Story ID in file (${story.id}) doesn't match location ($storyId)"
         }
@@ -131,7 +128,7 @@ class FileBasedStoryService(
         } catch (e: NumberFormatException) {
             error("Story folder name is not valid ID: '${storyFile.parent.fileName}'")
         }
-        val story = storyFile.inputStream().use { AppJson.decodeFromStream<Story>(it) }
+        val story = storyFile.inputStream().use { AppJson.decodeFromStream(StorySerializer, it) }
         require(story.id == storyId) {
             "Story ID in file (${story.id}) doesn't match location ($storyId)"
         }
@@ -146,7 +143,7 @@ class FileBasedStoryService(
         if (storyDir.notExists()) storyDir.createDirectories()
 
         storyDir.resolve(STORY_FILE_NAME).outputStream().use {
-            AppJson.encodeToStream(story, it)
+            AppJson.encodeToStream(StorySerializer, story, it)
         }
     }
 

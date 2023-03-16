@@ -11,7 +11,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Button
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -19,6 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.painter.Painter
@@ -30,6 +34,7 @@ import com.shimmermare.stuffiread.stories.StoryAuthor
 import com.shimmermare.stuffiread.stories.StoryDescription
 import com.shimmermare.stuffiread.stories.StoryId
 import com.shimmermare.stuffiread.stories.StoryName
+import com.shimmermare.stuffiread.stories.StoryRead
 import com.shimmermare.stuffiread.stories.StoryReview
 import com.shimmermare.stuffiread.stories.StoryURL
 import com.shimmermare.stuffiread.stories.cover.StoryCover
@@ -38,14 +43,16 @@ import com.shimmermare.stuffiread.stories.file.StoryFile
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storyCoverService
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storyFilesService
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storyService
+import com.shimmermare.stuffiread.ui.components.date.DateWithLabel
 import com.shimmermare.stuffiread.ui.components.form.FormField
 import com.shimmermare.stuffiread.ui.components.form.InputFormState
 import com.shimmermare.stuffiread.ui.components.form.OptionalFormField
 import com.shimmermare.stuffiread.ui.components.form.OptionalInstantFormField
 import com.shimmermare.stuffiread.ui.components.form.SubmittableInputForm
 import com.shimmermare.stuffiread.ui.components.form.TextFormField
-import com.shimmermare.stuffiread.ui.components.form.UIntFormField
 import com.shimmermare.stuffiread.ui.components.form.ValidationResult
+import com.shimmermare.stuffiread.ui.components.input.SizedIconButton
+import com.shimmermare.stuffiread.ui.components.input.datetime.DateTimePicker
 import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollColumn
 import com.shimmermare.stuffiread.ui.components.tag.MultiTagPicker
 import com.shimmermare.stuffiread.ui.util.ExtensionFileFilter
@@ -54,6 +61,9 @@ import com.shimmermare.stuffiread.ui.util.SelectionMode
 import com.shimmermare.stuffiread.ui.util.TimeUtils
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
 
 /**
  * Wrapper over [StoryForm] that handles story saving. Works in creation and edit mode.
@@ -192,7 +202,7 @@ private fun FormContainer(
             state = state,
             name = "First published date",
             description = "Date when the story was initially published by author",
-            defaultValue = { TimeUtils.instantAtToday1200() },
+            defaultValue = { TimeUtils.instantTodayAt1200() },
             getter = { it.story.published },
             setter = { data, value ->
                 // If published is set to after changed - set changed to same as published
@@ -209,7 +219,7 @@ private fun FormContainer(
             state = state,
             name = "Last change date",
             description = "Date when the story was modified by author last time",
-            defaultValue = { state.data.story.published ?: TimeUtils.instantAtToday1200() },
+            defaultValue = { state.data.story.published ?: TimeUtils.instantTodayAt1200() },
             getter = { it.story.changed },
             setter = { data, value ->
                 // If changed is set to before published - set published to same as changed
@@ -281,48 +291,7 @@ private fun FormContainer(
             maxLength = StoryReview.MAX_LENGTH,
             textInputModifier = Modifier.fillMaxWidth().sizeIn(minHeight = 108.dp, maxHeight = 420.dp),
         )
-        OptionalInstantFormField(
-            id = "firstRead",
-            state = state,
-            name = "First read date",
-            description = "Date when you read story the first time",
-            defaultValue = { TimeUtils.instantAtToday1200() },
-            getter = { it.story.firstRead },
-            setter = { data, value ->
-                // If firstRead is set to after lastRead - set changed to same as firstRead
-                val lastRead = if (value != null && data.story.lastRead != null && value > data.story.lastRead) {
-                    value
-                } else {
-                    data.story.lastRead
-                }
-                data.copy(story = data.story.copy(firstRead = value, lastRead = lastRead))
-            },
-        )
-        OptionalInstantFormField(
-            id = "lastRead",
-            state = state,
-            name = "Last read date",
-            description = "Date when you read story the last time",
-            defaultValue = { state.data.story.firstRead ?: TimeUtils.instantAtToday1200() },
-            getter = { it.story.lastRead },
-            setter = { data, value ->
-                // If lastRead is set to before firstRead - set firstRead to same as lastRead
-                val firstRead = if (value != null && data.story.firstRead != null && value < data.story.firstRead) {
-                    value
-                } else {
-                    data.story.firstRead
-                }
-                data.copy(story = data.story.copy(firstRead = firstRead, lastRead = value))
-            },
-        )
-        UIntFormField(
-            id = "timesRead",
-            state = state,
-            name = "Times read",
-            getter = { it.story.timesRead },
-            setter = { data, value -> data.copy(story = data.story.copy(timesRead = value)) },
-            inputModifier = Modifier.width(100.dp).height(36.dp),
-        )
+        ReadsFormField(state)
         FormField(
             id = "files",
             state = state,
@@ -402,6 +371,72 @@ private fun StoryCoverFormField(
                     }
                 ) {
                     Text("Select file")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ReadsFormField(
+    state: InputFormState<StoryFormData>,
+) {
+    FormField(
+        id = "reads",
+        state = state,
+        name = "Reads",
+        description = "Times when you read the story",
+        getter = { it.story.reads },
+        setter = { data, value -> data.copy(story = data.story.copy(reads = value.sorted())) },
+    ) { value, _, onValueChange ->
+        Column(
+            verticalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
+            if (value.isNotEmpty()) {
+                Text("${value.size} recorded reads:")
+                value.forEachIndexed { index, read ->
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        DateWithLabel("#${index + 1}:", read.date)
+                        SizedIconButton(onClick = { onValueChange(value - read) }, size = 30.dp) {
+                            Icon(Icons.Filled.Clear, null)
+                        }
+                    }
+                }
+            } else {
+                Text("No recorded reads")
+            }
+
+            var showAdd: Boolean by remember { mutableStateOf(false) }
+
+            if (showAdd) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    var dateToAdd: LocalDateTime by remember { mutableStateOf(TimeUtils.todayAt1200()) }
+                    Text("Add new read:")
+                    DateTimePicker(
+                        value = dateToAdd,
+                        onValueChange = { dateToAdd = it }
+                    )
+                    Button(
+                        onClick = {
+                            val newRead = StoryRead(dateToAdd.toInstant(TimeZone.currentSystemDefault()))
+                            onValueChange(value + newRead)
+                            showAdd = false
+                        }
+                    ) {
+                        Text("Add")
+                    }
+                }
+            } else {
+                Button(
+                    onClick = { showAdd = true }
+                ) {
+                    Text("Add new read")
                 }
             }
         }

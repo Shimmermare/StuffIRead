@@ -87,7 +87,7 @@ class StoryInfoPage(val storyId: StoryId) : LoadedPage<Story>() {
             }
         ) {
             VerticalScrollColumn {
-                StoryInfo(content!!)
+                StoryInfo(content!!, onRefreshInfoRequest = { Router.goTo(StoryInfoPage(storyId)) })
             }
         }
 

@@ -3,10 +3,21 @@ package com.shimmermare.stuffiread.stories
 import com.shimmermare.stuffiread.stories.StoryId.Companion.None
 import com.shimmermare.stuffiread.tags.TagId
 import com.shimmermare.stuffiread.ui.util.TimeUtils
+import com.shimmermare.stuffiread.util.AppJson
 import com.shimmermare.stuffiread.util.JsonVersionedSerializer
+import com.shimmermare.stuffiread.util.Migration
+import com.shimmermare.stuffiread.util.repeat
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.Instant
+import kotlinx.datetime.plus
+import kotlinx.datetime.until
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Serializer
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.encodeToJsonElement
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.long
 
 /**
  * Story entity is centerpiece of the app.
@@ -64,18 +75,10 @@ data class Story(
      */
     val review: StoryReview = StoryReview.NONE,
     /**
-     * When user did read this story the first time.
-     */
-    val firstRead: Instant? = null,
-    /**
-     * When user did read this story the last time.
-     */
-    val lastRead: Instant? = firstRead,
-    /**
-     * How many times user did read this story.
+     * Times when user read the story.
      * Whenever that means only "full" reads or not is up to user.
      */
-    val timesRead: UInt = 1u,
+    val reads: List<StoryRead> = emptyList(),
     /**
      * Date when story entry was created in archive.
      */
@@ -85,12 +88,12 @@ data class Story(
      */
     val updated: Instant = created,
 ) {
+    val firstRead: Instant? by lazy { reads.minOfOrNull(StoryRead::date) }
+    val lastRead: Instant? by lazy { reads.maxOfOrNull(StoryRead::date) }
+
     init {
         require(published == null || changed == null || changed >= published) {
             "Changed date ($changed) is before published date ($published)"
-        }
-        require(firstRead == null || lastRead == null || lastRead >= firstRead) {
-            "Last read date ($lastRead) is before first read date ($firstRead)"
         }
         require(!sequels.contains(id)) {
             "Story can't be sequel to itself"
@@ -101,7 +104,7 @@ data class Story(
     }
 
     companion object {
-        const val VERSION: UInt = 1u
+        const val VERSION: UInt = 2u
     }
 }
 
@@ -112,10 +115,46 @@ data class Story(
 object StorySerializer : JsonVersionedSerializer<Story>(
     currentVersion = Story.VERSION,
     migrations = listOf(
-        // Example:
-        // Migration(1u) {
-        //     JsonObject(it.jsonObject + ("newProperty" to JsonPrimitive("new value")))
-        // }
+        // Migrate from dates of first and last reads to individual reads
+        Migration(2u) { element ->
+            element as JsonObject
+
+            val fields = element.toMutableMap()
+
+            val timesRead = fields.remove("timesRead")?.jsonPrimitive?.long ?: 0L
+            val firstRead = fields.remove("firstRead")?.let { AppJson.decodeFromJsonElement<Instant?>(it) }
+            val lastRead = fields.remove("lastRead")?.let { AppJson.decodeFromJsonElement<Instant?>(it) }
+
+            if (timesRead == 0L) {
+                return@Migration JsonObject(fields)
+            }
+
+            val reads: List<StoryRead> = when {
+                // Interpolate between firstRead and lastRead
+                timesRead > 1L && firstRead != null && lastRead != null -> {
+                    val secondsBetween = firstRead.until(lastRead, DateTimeUnit.SECOND)
+                    (0 until timesRead).map { index ->
+                        StoryRead(firstRead.plus(secondsBetween / (timesRead - 1) * index, DateTimeUnit.SECOND))
+                    }
+                }
+
+                firstRead != null -> {
+                    StoryRead(firstRead).repeat(timesRead)
+                }
+
+                lastRead != null -> {
+                    StoryRead(lastRead).repeat(timesRead)
+                }
+                else -> {
+                    // In case we don't have any timestamps - no other choice but to go for 1970.
+                    StoryRead(Instant.fromEpochSeconds(0)).repeat(timesRead)
+                }
+            }
+
+            fields["reads"] = AppJson.encodeToJsonElement(reads)
+
+            JsonObject(fields)
+        }
     ),
     actualSerializer = Story.serializer()
 )

@@ -15,55 +15,61 @@ class StorySearchServiceImpl(
     private val tagService: TagService,
 ) : StorySearchService {
     override suspend fun getStoriesByFilter(filter: StoryFilter, ignoreInvalidStories: Boolean): Flow<Story> {
-        var stories = (if (filter.idIn != null) {
+        val stories = (if (filter.idIn != null) {
             storyService.getStoriesByIds(filter.idIn, ignoreInvalidStories)
         } else {
             storyService.getAllStories(ignoreInvalidStories)
         }).buffer()
 
-        stories = stories.filterTextContains(filter.nameContains) { it.name.value }
-        stories = stories.filterTextContains(filter.authorContains) { it.author.value }
-        stories = stories.filterTextContains(filter.descriptionContains) { it.description.value }
-        stories = stories.filterTextContains(filter.urlContains) { it.url.value }
-        stories = stories.filterRange(filter.publishedAfter, filter.publishedBefore) { it.published }
-        stories = stories.filterRange(filter.changedAfter, filter.changedBefore) { it.changed }
+        return stories.filterTextContains(filter.nameContains) { it.name.value }
+            .filterTextContains(filter.authorContains) { it.author.value }
+            .filterTextContains(filter.descriptionContains) { it.description.value }
+            .filterTextContains(filter.urlContains) { it.url.value }
+            .filterRange(filter.publishedAfter, filter.publishedBefore) { it.published }
+            .filterRange(filter.changedAfter, filter.changedBefore) { it.changed }
+            .filterRange(filter.scoreGreaterOrEqual, filter.scoreLessOrEqual) { it.score }
+            .filterTextContains(filter.reviewContains) { it.review.value }
+            .filterRange(filter.firstReadAfter, filter.firstReadBefore) { it.firstRead }
+            .filterRange(filter.lastReadAfter, filter.lastReadBefore) { it.lastRead }
+            .filterRange(filter.timesReadGreaterOrEqual, filter.timesReadLessOrEqual) { it.reads.size.toUInt() }
+            .filterRange(filter.createdAfter, filter.createdBefore) { it.created }
+            .filterRange(filter.updatedAfter, filter.updatedBefore) { it.updated }
+            .filterOnFiles(filter)
+            .let {
+                if (filter.tagsPresent != null) {
+                    it.filter { story ->
+                        if (story.tags.isEmpty()) return@filter false
+                        if (story.tags.containsAll(filter.tagsPresent)) return@filter true
 
-        if (filter.tagsPresent != null) {
-            stories = stories.filter { story ->
-                if (story.tags.isEmpty()) return@filter false
-                if (story.tags.containsAll(filter.tagsPresent)) return@filter true
-
-                // Is this too costly?
-                val storyTagsWithImplicit = tagService.getAllTagIdsByExplicitTagIds(story.tags)
-                return@filter storyTagsWithImplicit.containsAll(filter.tagsPresent)
+                        // Is this too costly?
+                        val storyTagsWithImplicit = tagService.getAllTagIdsByExplicitTagIds(story.tags)
+                        return@filter storyTagsWithImplicit.containsAll(filter.tagsPresent)
+                    }
+                } else {
+                    it
+                }
             }
-        }
-        if (filter.tagsAbsent != null) {
-            stories = stories.filter { story ->
-                if (story.tags.isEmpty()) return@filter true
-                if (filter.tagsAbsent.any { story.tags.contains(it) }) return@filter false
+            .let {
+                if (filter.tagsAbsent != null) {
+                    it.filter { story ->
+                        if (story.tags.isEmpty()) return@filter true
+                        if (filter.tagsAbsent.any { story.tags.contains(it) }) return@filter false
 
-                // Is this too costly?
-                val storyTagsWithImplicit = tagService.getAllTagIdsByExplicitTagIds(story.tags)
-                return@filter filter.tagsAbsent.none { storyTagsWithImplicit.contains(it) }
+                        // Is this too costly?
+                        val storyTagsWithImplicit = tagService.getAllTagIdsByExplicitTagIds(story.tags)
+                        return@filter filter.tagsAbsent.none { storyTagsWithImplicit.contains(it) }
+                    }
+                } else {
+                    it
+                }
             }
-        }
-
-        if (filter.isPrequelOf != null) {
-            stories = stories.filter { story -> filter.isPrequelOf.any { story.sequels.contains(it) } }
-        }
-
-        stories = stories.filterRange(filter.scoreGreaterOrEqual, filter.scoreLessOrEqual) { it.score }
-        stories = stories.filterTextContains(filter.reviewContains) { it.review.value }
-        stories = stories.filterRange(filter.firstReadAfter, filter.firstReadBefore) { it.firstRead }
-        stories = stories.filterRange(filter.lastReadAfter, filter.lastReadBefore) { it.lastRead }
-        stories = stories.filterRange(filter.timesReadGreaterOrEqual, filter.timesReadLessOrEqual) { it.timesRead }
-        stories = stories.filterRange(filter.createdAfter, filter.createdBefore) { it.created }
-        stories = stories.filterRange(filter.updatedAfter, filter.updatedBefore) { it.updated }
-
-        stories = stories.filterOnFiles(filter)
-
-        return stories
+            .let {
+                if (filter.isPrequelOf != null) {
+                    it.filter { story -> filter.isPrequelOf.any { story.sequels.contains(it) } }
+                } else {
+                    it
+                }
+            }
     }
 
     private inline fun Flow<Story>.filterTextContains(
