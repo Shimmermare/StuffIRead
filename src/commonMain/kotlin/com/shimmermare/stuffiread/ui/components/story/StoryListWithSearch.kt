@@ -550,7 +550,7 @@ private enum class SortBy(
     );
 
     companion object {
-        val DEFAULT = NAME
+        val DEFAULT = UPDATED
 
         // To avoid alloc
         val values: Set<SortBy> = values().toSet()
@@ -566,7 +566,7 @@ private enum class SortBehavior(
     DESCENDING_UNKNOWN_FIRST("Descending (unknown first)");
 
     companion object {
-        val DEFAULT = ASCENDING
+        val DEFAULT = DESCENDING
 
         // To avoid alloc
         val values: Set<SortBehavior> = values().toSet()
