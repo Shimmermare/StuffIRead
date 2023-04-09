@@ -3,6 +3,7 @@ package com.shimmermare.stuffiread.settings
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.get
 import com.russhwolf.settings.set
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.settings.AppSettings.Companion.DEFAULT_CHECK_UPDATES
 import com.shimmermare.stuffiread.settings.AppSettings.Companion.DEFAULT_ENABLE_PONY_INTEGRATIONS
 import com.shimmermare.stuffiread.settings.AppSettings.Companion.DEFAULT_OPEN_LAST_ARCHIVE_ON_STARTUP
@@ -11,6 +12,8 @@ import com.shimmermare.stuffiread.settings.AppSettings.Companion.DEFAULT_THEME_B
 import com.shimmermare.stuffiread.settings.AppSettings.Companion.RECENTLY_OPENED_TO_KEEP
 import com.shimmermare.stuffiread.util.AppJson
 import com.shimmermare.stuffiread.util.PathSerializer
+import de.comahe.i18n4k.forLocaleTag
+import de.comahe.i18n4k.toTag
 import io.github.aakira.napier.Napier
 import kotlinx.serialization.builtins.ListSerializer
 
@@ -52,6 +55,15 @@ class AppSettingsServiceImpl : AppSettingsService {
      * Otherwise, app won't even start.
      */
     private fun loadFromSource() {
+        val locale = getFromSourceOrNull<String>(LOCALE_KEY)?.let {
+            val stored = forLocaleTag(it)
+            if (Strings.locales.contains(stored)) {
+                stored
+            } else {
+                Napier.w { "Can't use locale $stored from settings because it's unsupported. Default will be used." }
+                null
+            }
+        }
         val themeBehavior = getFromSourceAndParseOrDefault(THEME_BEHAVIOR_KEY, DEFAULT_THEME_BEHAVIOR) {
             ThemeBehavior.valueOf(it)
         }
@@ -69,6 +81,7 @@ class AppSettingsServiceImpl : AppSettingsService {
         val ponyIntegrations = getFromSourceOrDefault(PONY_INTEGRATIONS_KEY, DEFAULT_ENABLE_PONY_INTEGRATIONS)
 
         current = AppSettings(
+            locale = locale,
             themeBehavior = themeBehavior,
             scoreDisplayType = scoreDisplayType,
             openLastArchiveOnStartup = openLastArchiveOnStartup,
@@ -123,6 +136,7 @@ class AppSettingsServiceImpl : AppSettingsService {
 
     private fun updateToSource() {
         current.let {
+            settingsSource[LOCALE_KEY] = it.locale?.toTag()
             settingsSource[THEME_BEHAVIOR_KEY] = it.themeBehavior.name
             settingsSource[SCORE_DISPLAY_TYPE_KEY] = it.scoreDisplayType.name
             settingsSource[OPEN_LAST_ARCHIVE_ON_STARTUP_KEY] = it.openLastArchiveOnStartup
@@ -136,6 +150,7 @@ class AppSettingsServiceImpl : AppSettingsService {
     }
 
     companion object {
+        private const val LOCALE_KEY = "Locale"
         private const val THEME_BEHAVIOR_KEY = "ThemeBehavior"
         private const val SCORE_DISPLAY_TYPE_KEY = "ScoreDisplayType"
         private const val OPEN_LAST_ARCHIVE_ON_STARTUP_KEY = "OpenLastArchiveOnStartup"

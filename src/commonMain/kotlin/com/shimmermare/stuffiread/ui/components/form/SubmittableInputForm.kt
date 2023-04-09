@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 fun <FormData> SubmittableInputForm(
     data: FormData,
     modifier: Modifier = Modifier,
-    submitButtonText: String = "Submit",
+    submitButtonText: String,
     canSubmitWithoutChanges: Boolean = false,
     onSubmit: (FormData) -> Unit,
     actions: (@Composable (InputFormState<FormData>) -> Unit)? = null,

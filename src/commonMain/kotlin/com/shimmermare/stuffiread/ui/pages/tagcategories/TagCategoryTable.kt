@@ -19,9 +19,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.tags.TagCategory
 import com.shimmermare.stuffiread.ui.components.table.Table
 import com.shimmermare.stuffiread.ui.components.tagcategory.TagCategoryName
+import com.shimmermare.stuffiread.ui.util.remember
 
 
 @Composable
@@ -36,6 +38,9 @@ fun TagCategoryTable(
         val calculatedWidth = (categories.maxOfOrNull { it.sortOrder } ?: 0).toString().length * 12
         min(calculatedWidth.dp, 100.dp)
     }
+
+    val nameText = Strings.page_tagCategories_table_column_name.remember()
+    val descriptionText = Strings.page_tagCategories_table_column_description.remember()
 
     Table(
         items = categories,
@@ -67,7 +72,7 @@ fun TagCategoryTable(
         }
 
         column(
-            title = "Name",
+            title = nameText,
             columnWeight = 0.33F,
             sorter = Comparator.comparing { it.name }
         ) { item ->
@@ -75,7 +80,7 @@ fun TagCategoryTable(
         }
 
         column(
-            title = "Description",
+            title = descriptionText,
             columnWeight = 0.67F,
             sorter = Comparator.comparing { it.description }
         ) { _, item ->

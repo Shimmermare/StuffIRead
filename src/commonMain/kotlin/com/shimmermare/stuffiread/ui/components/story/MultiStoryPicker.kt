@@ -29,9 +29,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.stories.Story
 import com.shimmermare.stuffiread.stories.StoryFilter
 import com.shimmermare.stuffiread.stories.StoryId
@@ -42,6 +42,8 @@ import com.shimmermare.stuffiread.ui.components.layout.PopupContent
 import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollColumn
 import com.shimmermare.stuffiread.ui.components.search.DefaultSearchBarModifier
 import com.shimmermare.stuffiread.ui.components.search.SearchBar
+import com.shimmermare.stuffiread.ui.util.remember
+import com.shimmermare.stuffiread.util.i18n.PluralLocalizedString
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.onEach
@@ -54,7 +56,7 @@ import kotlinx.coroutines.launch
  * @param onSelect will be called when popup is dismissed.
  */
 @Composable
-fun MultiStorySelector(
+fun MultiStoryPicker(
     selectedIds: Set<StoryId>,
     filter: (Story) -> Boolean = { true },
     onSelect: (Set<StoryId>) -> Unit
@@ -157,10 +159,15 @@ private fun SelectorPopup(
                     .heightIn(max = 600.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Text("${selectedStoriesSorted.size} story(s) selected", fontWeight = FontWeight.Bold)
-                selectedStoriesSorted.forEach {
-                    SmallStoryCard(it, onClick = { selectedStories = selectedStories - it.id })
+                if (selectedStoriesSorted.isNotEmpty()) {
+                    Text(components_storyPicker_multi_picked.remember(selectedStoriesSorted.size))
+                    selectedStoriesSorted.forEach {
+                        SmallStoryCard(it, onClick = { selectedStories = selectedStories - it.id })
+                    }
+                } else {
+                    Text(Strings.components_storyPicker_multi_notPicked.remember())
                 }
+
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -170,7 +177,7 @@ private fun SelectorPopup(
                     ) {
                         SearchBar(
                             searchText = searchText,
-                            placeholderText = "Search by name",
+                            placeholderText = Strings.components_storyPicker_search_placeholder.remember(),
                             onSearchTextChanged = { searchText = it.ifBlank { "" } },
                             modifier = DefaultSearchBarModifier.onKeyEvent {
                                 if (it.key == Key.Enter && canSearch()) {
@@ -186,23 +193,42 @@ private fun SelectorPopup(
                         enabled = canSearch(),
                         onClick = ::doSearch
                     ) {
-                        Text("Search")
+                        Text(Strings.components_storyPicker_search_button.remember())
                     }
                 }
                 if (searchTextUsed.isBlank()) {
-                    Text("Click Search to find stories")
+                    Text(Strings.components_storyPicker_search_doSearchHint.remember())
                 } else {
                     val foundToShow by derivedStateOf { foundStories.filter { !selectedStories.containsKey(it.id) } }
-                    Text("${foundToShow.size} story(s) found by '$searchTextUsed'", fontWeight = FontWeight.Bold)
                     if (foundToShow.isNotEmpty()) {
+                        Text(components_storyPicker_multi_found.remember(foundToShow.size, searchTextUsed))
                         VerticalScrollColumn {
                             foundToShow.forEach {
                                 SmallStoryCard(it, onClick = { selectedStories = selectedStories + (it.id to it) })
                             }
                         }
+                    } else {
+                        Text(Strings.components_storyPicker_multi_notFound.remember(searchTextUsed))
                     }
                 }
             }
         }
     }
 }
+
+private val components_storyPicker_multi_picked = PluralLocalizedString(
+    Strings.components_storyPicker_multi_picked_other,
+    Strings.components_storyPicker_multi_picked_one,
+    Strings.components_storyPicker_multi_picked_two,
+    Strings.components_storyPicker_multi_picked_few,
+    Strings.components_storyPicker_multi_picked_many,
+    Strings.components_storyPicker_multi_picked_other,
+)
+private val components_storyPicker_multi_found = PluralLocalizedString(
+    Strings.components_storyPicker_multi_found_other,
+    Strings.components_storyPicker_multi_found_one,
+    Strings.components_storyPicker_multi_found_two,
+    Strings.components_storyPicker_multi_found_few,
+    Strings.components_storyPicker_multi_found_many,
+    Strings.components_storyPicker_multi_found_other,
+)

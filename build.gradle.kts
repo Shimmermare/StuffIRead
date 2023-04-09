@@ -4,6 +4,7 @@ plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization") version "1.7.10"
     id("org.jetbrains.compose")
+    id("de.comahe.i18n4k") version "0.5.0"
 }
 
 group = "com.shimmermare.stuffiread"
@@ -35,6 +36,7 @@ kotlin {
                 implementation("com.russhwolf:multiplatform-settings:${extra["multiplatform-settings.version"]}")
                 implementation("io.ktor:ktor-client-core:${extra["ktor-client.version"]}")
                 implementation("io.ktor:ktor-client-cio:${extra["ktor-client.version"]}")
+                implementation("de.comahe.i18n4k:i18n4k-core:${extra["i18n4k.version"]}")
             }
         }
 
@@ -47,6 +49,7 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation("org.jsoup:jsoup:${extra["jsoup.version"]}")
+                implementation("net.xyzsd.plurals:cldr-plural-rules:${extra["cldr-plural-rules.version"]}")
             }
         }
 
@@ -87,6 +90,10 @@ compose.desktop {
     }
 }
 
+i18n4k {
+    packageName = "com.shimmermare.stuffiread.i18n"
+    sourceCodeLocales = listOf("en", "ru")
+}
 
 tasks.register<Copy>("preparePackagedReleaseDistributionForCurrentOS") {
     dependsOn("check", "packageReleaseDistributionForCurrentOS")

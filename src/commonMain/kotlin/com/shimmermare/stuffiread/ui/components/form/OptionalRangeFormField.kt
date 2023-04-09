@@ -20,6 +20,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
+import com.shimmermare.stuffiread.ui.util.remember
 
 /**
  * Inclusive on both ends.
@@ -43,9 +45,10 @@ fun <FormData, FieldValue : Comparable<FieldValue>> OptionalRangeFormField(
     var valid: Boolean by remember { mutableStateOf(false) }
     var error: String? by remember { mutableStateOf(null) }
 
-    LaunchedEffect(from, to) {
+    val invalidRangeText = Strings.components_form_rangeField_invalidRange.remember()
+    LaunchedEffect(from, to, invalidRangeText) {
         val validationResult = if (from != null && to != null && from!! > to!!) {
-            ValidationResult(false, "Invalid range")
+            ValidationResult(false, invalidRangeText)
         } else {
             validator(from, to)
         }
@@ -57,7 +60,7 @@ fun <FormData, FieldValue : Comparable<FieldValue>> OptionalRangeFormField(
             state.data = setter(state.data, from, to)
             state.invalidFields.remove(id)
         } else {
-            state.invalidFields[id] = validationResult.error ?: "Invalid value"
+            state.invalidFields[id] = validationResult.error ?: invalidRangeText
         }
     }
 
@@ -75,9 +78,9 @@ fun <FormData, FieldValue : Comparable<FieldValue>> OptionalRangeFormField(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("From")
+            Text(Strings.components_form_rangeField_from.remember())
             InputOrNorSpecified(from, valid, defaultValue = { to ?: defaultValue() }, input) { from = it }
-            Text("to")
+            Text(Strings.components_form_rangeField_to.remember())
             InputOrNorSpecified(to, valid, defaultValue = { from ?: defaultValue() }, input) { to = it }
         }
     }
@@ -107,7 +110,7 @@ private fun <FieldValue> RowScope.InputOrNorSpecified(
             Button(
                 onClick = { onValueChange(defaultValue()) },
             ) {
-                Text("Set")
+                Text(Strings.components_form_rangeField_set.remember())
             }
         }
     }

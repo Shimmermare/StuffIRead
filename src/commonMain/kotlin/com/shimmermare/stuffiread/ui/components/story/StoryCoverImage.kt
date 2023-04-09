@@ -20,9 +20,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.res.loadImageBitmap
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.stories.StoryId
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storyCoverService
 import com.shimmermare.stuffiread.ui.components.layout.OptionalLoadingContainer
+import com.shimmermare.stuffiread.ui.util.remember
 import io.github.aakira.napier.Napier
 
 @Composable
@@ -51,7 +53,10 @@ fun StoryCoverImage(
                             .background(Color.LightGray),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("Failed to load cover", color = MaterialTheme.colors.error)
+                        Text(
+                            Strings.components_storyCoverImage_failedToLoad.remember(),
+                            color = MaterialTheme.colors.error
+                        )
                     }
                     Napier.e(it) { "Failed to load cover for $storyId" }
                 }

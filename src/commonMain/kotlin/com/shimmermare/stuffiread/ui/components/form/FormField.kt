@@ -13,6 +13,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
+import com.shimmermare.stuffiread.ui.util.remember
 
 @Composable
 fun <FormData, FieldValue> FormField(
@@ -38,7 +40,7 @@ fun <FormData, FieldValue> FormField(
             state.data = setter(state.data, value)
             state.invalidFields.remove(id)
         } else {
-            state.invalidFields[id] = validationResult.error ?: "Invalid value"
+            state.invalidFields[id] = validationResult.error ?: Strings.components_form_error_invalidValue()
         }
     }
 
@@ -95,7 +97,7 @@ fun FormFieldInfo(
 
         if (!valid) {
             Text(
-                text = error ?: "Invalid value",
+                text = error ?: Strings.components_form_error_invalidValue.remember(),
                 color = MaterialTheme.colors.error
             )
         }

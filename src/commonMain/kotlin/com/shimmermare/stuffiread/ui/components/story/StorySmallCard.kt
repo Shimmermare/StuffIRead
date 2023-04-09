@@ -17,16 +17,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.stories.Story
 import com.shimmermare.stuffiread.ui.Router
-import com.shimmermare.stuffiread.ui.pages.story.info.StoryInfoPage
+import com.shimmermare.stuffiread.ui.pages.stories.StoryInfoPage
+import com.shimmermare.stuffiread.ui.util.remember
 
-val StorySmallCardDefaultModifier = Modifier
-    .padding(start = 2.5.dp, end = 5.dp, top = 2.5.dp, bottom = 5.dp)
+val StorySmallCardDefaultModifier = Modifier.padding(start = 2.5.dp, end = 5.dp, top = 2.5.dp, bottom = 5.dp)
 
-val StorySmallCardDefaultContentModifier = Modifier
-    .fillMaxWidth()
-    .padding(horizontal = 10.dp, vertical = 5.dp)
+val StorySmallCardDefaultContentModifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp)
 
 @Composable
 fun SmallStoryCard(
@@ -40,8 +39,7 @@ fun SmallStoryCard(
     ) {
         Surface(
             modifier = Modifier.border(1.dp, Color.LightGray)
-                .let { if (onClick != null) it.clickable(onClick = onClick) else it },
-            elevation = 2.dp
+                .let { if (onClick != null) it.clickable(onClick = onClick) else it }, elevation = 2.dp
         ) {
             Column(
                 modifier = contentModifier
@@ -53,7 +51,11 @@ fun SmallStoryCard(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = "by " + (story.author.value ?: "unknown author"),
+                    text = if (story.author.isPresent) {
+                        story.author.toString()
+                    } else {
+                        Strings.components_storyInfo_author_unknown.remember()
+                    },
                     style = MaterialTheme.typography.subtitle2,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -69,12 +71,10 @@ fun SmallStoryCardRoutableWithPreview(
     modifier: Modifier = StorySmallCardDefaultModifier,
     contentModifier: Modifier = StorySmallCardDefaultContentModifier,
 ) {
-    SmallStoryCardWithPreview(
-        story = story,
+    SmallStoryCardWithPreview(story = story,
         modifier = modifier,
         contentModifier = contentModifier,
-        onClick = { Router.goTo(StoryInfoPage(storyId = story.id)) }
-    )
+        onClick = { Router.goTo(StoryInfoPage(storyId = story.id)) })
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -85,20 +85,15 @@ fun SmallStoryCardWithPreview(
     contentModifier: Modifier = StorySmallCardDefaultContentModifier,
     onClick: (() -> Unit)? = null,
 ) {
-    TooltipArea(
-        tooltip = {
-            Box(
-                modifier = Modifier.width(800.dp)
-            ) {
-                StoryCard(story)
-            }
+    TooltipArea(tooltip = {
+        Box(
+            modifier = Modifier.width(800.dp)
+        ) {
+            StoryCard(story)
         }
-    ) {
+    }) {
         SmallStoryCard(
-            story = story,
-            modifier = modifier,
-            contentModifier = contentModifier,
-            onClick = onClick
+            story = story, modifier = modifier, contentModifier = contentModifier, onClick = onClick
         )
     }
 }

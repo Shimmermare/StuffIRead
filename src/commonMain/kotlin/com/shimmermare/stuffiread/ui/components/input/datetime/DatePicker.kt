@@ -41,10 +41,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.ui.components.input.DropdownPicker
 import com.shimmermare.stuffiread.ui.components.input.ExtendedOutlinedTextField
 import com.shimmermare.stuffiread.ui.components.input.SizedIconButton
 import com.shimmermare.stuffiread.ui.components.layout.PopupContent
+import com.shimmermare.stuffiread.ui.util.remember
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
@@ -157,7 +159,7 @@ private fun DatePickerPopup(value: LocalDate, onDismissRequest: () -> Unit, onVa
                     columns = GridCells.Fixed(7),
                     modifier = Modifier.width(252.dp)
                 ) {
-                    items(DayOfWeek.values()) { DayOfWeekCell(it) }
+                    items(dayOfWeekShortNames) { DayOfWeekCell(it.remember()) }
 
                     // If first day of month is not monday - fill offset with empty cells
                     val offset = firstDayOfMonth.dayOfWeek.value - DayOfWeek.MONDAY.value
@@ -186,8 +188,8 @@ private fun MonthDropdown(value: Month, onValueChange: (Month) -> Unit) {
     DropdownPicker(
         value = value,
         onValueChange = onValueChange,
-        displayText = { it.getDisplayName() },
-        dropdownValues = allMonths,
+        displayText = { monthNames[it].toString() },
+        dropdownValues = monthNames.keys,
     )
 }
 
@@ -225,13 +227,13 @@ private fun YearDropdown(value: Int, onValueChange: (Int) -> Unit) {
 }
 
 @Composable
-private fun DayOfWeekCell(value: DayOfWeek) {
+private fun DayOfWeekCell(shortName: String) {
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier.size(36.dp)
     ) {
         Text(
-            text = value.name.take(2).lowercase().replaceFirstChar { it.uppercaseChar() },
+            text = shortName,
             color = MaterialTheme.colors.onSurface.copy(alpha = 0.6F)
         )
     }
@@ -266,12 +268,32 @@ private fun DayCell(value: Int, selected: Boolean = false, onClick: () -> Unit) 
     }
 }
 
+@Composable
 private fun dateToDisplayString(date: LocalDate): String {
-    return "${date.month.getDisplayName()} ${date.dayOfMonth}, ${date.year}"
+    return "${monthNames[date.month]!!.remember()} ${date.dayOfMonth}, ${date.year}"
 }
 
-private fun Month.getDisplayName(): String {
-    return toString().lowercase().replaceFirstChar { it.uppercaseChar() }
-}
+private val dayOfWeekShortNames = listOf(
+    Strings.components_datePicker_dayOfWeek_short_monday,
+    Strings.components_datePicker_dayOfWeek_short_tuesday,
+    Strings.components_datePicker_dayOfWeek_short_wednesday,
+    Strings.components_datePicker_dayOfWeek_short_thursday,
+    Strings.components_datePicker_dayOfWeek_short_friday,
+    Strings.components_datePicker_dayOfWeek_short_saturday,
+    Strings.components_datePicker_dayOfWeek_short_sunday,
+)
 
-private val allMonths = Month.values().toList()
+private val monthNames = mapOf(
+    Month.JANUARY to Strings.components_datePicker_month_january,
+    Month.FEBRUARY to Strings.components_datePicker_month_february,
+    Month.MARCH to Strings.components_datePicker_month_march,
+    Month.APRIL to Strings.components_datePicker_month_april,
+    Month.MAY to Strings.components_datePicker_month_may,
+    Month.JUNE to Strings.components_datePicker_month_june,
+    Month.JULY to Strings.components_datePicker_month_july,
+    Month.AUGUST to Strings.components_datePicker_month_august,
+    Month.SEPTEMBER to Strings.components_datePicker_month_september,
+    Month.OCTOBER to Strings.components_datePicker_month_october,
+    Month.NOVEMBER to Strings.components_datePicker_month_november,
+    Month.DECEMBER to Strings.components_datePicker_month_december,
+)

@@ -1,4 +1,4 @@
-package com.shimmermare.stuffiread.ui.pages.tag.info
+package com.shimmermare.stuffiread.ui.components.tag
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Button
 import androidx.compose.material.FloatingActionButton
@@ -30,21 +30,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.stories.StoryFilter
 import com.shimmermare.stuffiread.tags.ExtendedTag
 import com.shimmermare.stuffiread.tags.TagId
+import com.shimmermare.stuffiread.tags.TagWithCategory
 import com.shimmermare.stuffiread.ui.Router
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storySearchService
 import com.shimmermare.stuffiread.ui.components.date.Date
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
 import com.shimmermare.stuffiread.ui.components.layout.LoadingContainer
 import com.shimmermare.stuffiread.ui.components.story.SmallStoryCardRoutableWithPreview
-import com.shimmermare.stuffiread.ui.components.tag.DeleteTagDialog
-import com.shimmermare.stuffiread.ui.components.tag.TagNameRoutable
 import com.shimmermare.stuffiread.ui.components.tagcategory.TagCategoryNameRoutable
 import com.shimmermare.stuffiread.ui.pages.stories.StoriesPage
-import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPage
+import com.shimmermare.stuffiread.ui.pages.tags.EditTagPage
 import com.shimmermare.stuffiread.ui.pages.tags.TagsPage
+import com.shimmermare.stuffiread.ui.util.remember
+import de.comahe.i18n4k.strings.LocalizedStringFactory1
 import kotlinx.coroutines.flow.toList
 
 private const val STORIES_WITH_TAG_PREVIEW_COUNT = 5
@@ -77,7 +79,7 @@ fun TagInfo(tag: ExtendedTag) {
             horizontalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterHorizontally)
         ) {
             Row(
-                modifier = Modifier.width(800.dp)
+                modifier = Modifier.widthIn(min = 800.dp, max = 1200.dp)
             ) {
                 Box(
                     modifier = Modifier.weight(0.5F)
@@ -110,82 +112,56 @@ private fun PropertiesBlock(tag: ExtendedTag) {
     SelectionContainer {
         Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                Text(text = "Name", style = MaterialTheme.typography.h6)
+                Text(Strings.components_tagInfo_name.remember(), style = MaterialTheme.typography.h6)
                 TagNameRoutable(tag)
             }
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                Text(text = "Category", style = MaterialTheme.typography.h6)
+                Text(Strings.components_tagInfo_category.remember(), style = MaterialTheme.typography.h6)
                 TagCategoryNameRoutable(tag.category)
             }
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                Text(text = "Description", style = MaterialTheme.typography.h6)
+                Text(Strings.components_tagInfo_description.remember(), style = MaterialTheme.typography.h6)
                 if (tag.tag.description.isPresent) {
-                    Text(text = tag.tag.description.value!!)
+                    Text(tag.tag.description.value!!)
                 } else {
-                    Text(text = "No description", fontStyle = FontStyle.Italic, color = Color.LightGray)
-                }
-            }
-            if (tag.implyingTags.isNotEmpty()) {
-                Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                     Text(
-                        text = "Implied by ${tag.implyingTags.size} tag(s)",
-                        style = MaterialTheme.typography.h6
+                        Strings.components_tagInfo_description_noDescription.remember(),
+                        fontStyle = FontStyle.Italic,
+                        color = Color.LightGray
                     )
-                    ChipVerticalGrid {
-                        tag.implyingTags.forEach {
-                            TagNameRoutable(it)
-                        }
-                    }
-                }
-            }
-            if (tag.indirectlyImplyingTags.isNotEmpty()) {
-                Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                    Text(
-                        text = "Indirectly implied by ${tag.indirectlyImplyingTags.size} tag(s)",
-                        style = MaterialTheme.typography.h6
-                    )
-                    ChipVerticalGrid {
-                        tag.indirectlyImplyingTags.forEach {
-                            TagNameRoutable(it, indirect = true)
-                        }
-                    }
-                }
-            }
-            if (tag.impliedTags.isNotEmpty()) {
-                Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                    Text(
-                        text = "Implies ${tag.impliedTags.size} tag(s)",
-                        style = MaterialTheme.typography.h6
-                    )
-                    ChipVerticalGrid {
-                        tag.impliedTags.forEach {
-                            TagNameRoutable(it)
-                        }
-                    }
-                }
-            }
-            if (tag.indirectlyImpliedTags.isNotEmpty()) {
-                Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                    Text(
-                        text = "Indirectly implies ${tag.indirectlyImpliedTags.size} tag(s)",
-                        style = MaterialTheme.typography.h6
-                    )
-                    ChipVerticalGrid {
-                        tag.indirectlyImpliedTags.forEach {
-                            TagNameRoutable(it, indirect = true)
-                        }
-                    }
                 }
             }
 
+            RelatedTagsBlock(tag.implyingTags, Strings.components_tagInfo_implyingTags_title)
+            RelatedTagsBlock(tag.indirectlyImplyingTags, Strings.components_tagInfo_indirectlyImplyingTags_title)
+            RelatedTagsBlock(tag.impliedTags, Strings.components_tagInfo_impliedTags_title)
+            RelatedTagsBlock(tag.indirectlyImpliedTags, Strings.components_tagInfo_indirectlyImpliedTags_title)
+
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                Text(text = "Created", style = MaterialTheme.typography.h6)
+                Text(Strings.components_tagInfo_created.remember(), style = MaterialTheme.typography.h6)
                 Date(tag.tag.created)
             }
             if (tag.tag.created != tag.tag.updated) {
                 Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                    Text(text = "Updated", style = MaterialTheme.typography.h6)
+                    Text(Strings.components_tagInfo_updated.remember(), style = MaterialTheme.typography.h6)
                     Date(tag.tag.updated)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RelatedTagsBlock(tags: List<TagWithCategory>, title: LocalizedStringFactory1) {
+    if (tags.isNotEmpty()) {
+        Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+            Text(
+                text = title.remember(tags.size),
+                style = MaterialTheme.typography.h6
+            )
+            ChipVerticalGrid {
+                tags.forEach {
+                    TagNameRoutable(it)
                 }
             }
         }
@@ -206,10 +182,8 @@ private fun StatsBlock(
                     .toList().sortedBy { it.name }
             }
         ) { storiesWithTag ->
-            if (storiesWithTag.isEmpty()) {
-                Text("No stories with tag", fontWeight = FontWeight.Bold)
-            } else {
-                Text("${storiesWithTag.size} story(s) with tag", fontWeight = FontWeight.Bold)
+            Text(Strings.components_tagInfo_storiesWithTag_title.remember(storiesWithTag.size), fontWeight = FontWeight.Bold)
+            if (storiesWithTag.isNotEmpty()) {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(5.dp)
                 ) {
@@ -217,7 +191,7 @@ private fun StatsBlock(
                         SmallStoryCardRoutableWithPreview(it)
                     }
                     if (storiesWithTag.size > STORIES_WITH_TAG_PREVIEW_COUNT) {
-                        Text("and ${storiesWithTag.size - STORIES_WITH_TAG_PREVIEW_COUNT} more")
+                        Text(Strings.components_tagInfo_storiesWithTag_andMore.remember(storiesWithTag.size - STORIES_WITH_TAG_PREVIEW_COUNT))
                     }
                 }
                 Button(
@@ -226,7 +200,7 @@ private fun StatsBlock(
                         Router.goTo(StoriesPage(presetFilter = filter))
                     }
                 ) {
-                    Text("Show all")
+                    Text(Strings.components_tagInfo_storiesWithTag_showAllButton.remember())
                 }
             }
         }

@@ -11,14 +11,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.ui.components.error.ErrorCard
 import com.shimmermare.stuffiread.ui.components.error.ErrorInfo
 import com.shimmermare.stuffiread.ui.components.layout.FullscreenPopup
+import com.shimmermare.stuffiread.ui.util.remember
 
 @Composable
 inline fun ErrorDialog(
     error: ErrorInfo,
     modifier: Modifier = Modifier.padding(20.dp).sizeIn(maxWidth = 800.dp, maxHeight = 600.dp),
+    dismissButtonText: String = Strings.components_dialog_error_dismissButtonDefault.remember(),
     noinline onDismissRequest: () -> Unit,
     crossinline actions: @Composable () -> Unit = {},
 ) {
@@ -36,7 +39,7 @@ inline fun ErrorDialog(
                 horizontalArrangement = Arrangement.spacedBy(15.dp),
             ) {
                 Button(onClick = onDismissRequest) {
-                    Text("Ok")
+                    Text(dismissButtonText)
                 }
                 actions()
             }

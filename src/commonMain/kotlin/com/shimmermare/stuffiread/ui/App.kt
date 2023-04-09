@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.ui.AppSettingsHolder.settings
 import com.shimmermare.stuffiread.ui.components.date.Date
 import com.shimmermare.stuffiread.ui.components.dialog.ConfirmationDialog
@@ -35,15 +36,29 @@ import com.shimmermare.stuffiread.ui.theme.LocalExtendedColors
 import com.shimmermare.stuffiread.ui.theme.LocalTheme
 import com.shimmermare.stuffiread.ui.theme.LocalThemeProvider
 import com.shimmermare.stuffiread.ui.theme.Theme
+import com.shimmermare.stuffiread.ui.util.remember
 import com.shimmermare.stuffiread.util.AppVersionUtils
 import com.shimmermare.stuffiread.util.NewUpdate
+import de.comahe.i18n4k.config.I18n4kConfigDefault
+import de.comahe.i18n4k.i18n4k
 import io.github.aakira.napier.Napier
 
 val Router: Router = Router()
 
+var CurrentLocale by mutableStateOf(i18n4k.locale)
+    private set
+
 @Composable
 @Preview
 fun App() {
+    LaunchedEffect(settings.locale) {
+        val expectedLocale = settings.locale ?: i18n4k.defaultLocale
+        if (i18n4k.locale != expectedLocale) {
+            i18n4k = I18n4kConfigDefault().apply { locale = expectedLocale }
+        }
+        CurrentLocale = expectedLocale
+    }
+
     var wasOnOpenArchivePageBefore: Boolean by remember { mutableStateOf(false) }
     LaunchedEffect(StoryArchiveHolder.storyArchive) {
         if (StoryArchiveHolder.isOpen) {
@@ -110,14 +125,14 @@ private fun UpdateChecker() {
     notifyAboutNewUpdate?.let { newUpdate ->
         val uriHandler = LocalUriHandler.current
         ConfirmationDialog(
-            title = { Text("New update") },
-            dismissButtonText = "Skip version",
+            title = { Text(Strings.updateCheck_newUpdate.remember()) },
+            dismissButtonText = Strings.updateCheck_skipButton.remember(),
             onDismissRequest = {
                 AppSettingsHolder.update(settings.copy(ignoreVersion = newUpdate.version))
                 notifyAboutNewUpdate = null
                 Napier.i { "User skipped new update ${newUpdate.version}" }
             },
-            confirmButtonText = "Ok",
+            confirmButtonText = Strings.updateCheck_okButton.remember(),
             onConfirmRequest = {
                 notifyAboutNewUpdate = null
             }
@@ -126,12 +141,12 @@ private fun UpdateChecker() {
                 horizontalArrangement = Arrangement.spacedBy(5.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("New update")
+                Text(Strings.updateCheck_message_newUpdate.remember())
                 Text(newUpdate.version, fontWeight = FontWeight.Bold)
-                Text("released on")
+                Text(Strings.updateCheck_message_releasedOn.remember())
                 Date(newUpdate.date)
             }
-            Text("Currently app doesn't support auto-update. To update you need to manually download new version:")
+            Text(Strings.updateCheck_message_noAutoUpdate.remember())
             TextButton(onClick = { uriHandler.openUri(newUpdate.url) }) {
                 Text(newUpdate.url)
             }

@@ -18,12 +18,9 @@ enum class StoryCoverFormat(
         }
     }
 
-    override fun toString(): String {
-        return "$name (${extension.joinToString(separator = ", ")})"
-    }
-
     companion object {
-        val ALL_EXTENSIONS = values().flatMap { it.extension.toList() }.toSet()
+        val VALUES = values().toSet()
+        val ALL_EXTENSIONS = VALUES.flatMap { it.extension.toList() }.toSet()
 
         private val FORMAT_BY_EXTENSION = values().flatMap { format -> format.extension.map { it to format } }.toMap()
 

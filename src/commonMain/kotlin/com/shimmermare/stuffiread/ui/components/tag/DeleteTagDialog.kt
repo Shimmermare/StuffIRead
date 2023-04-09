@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.stories.StoryFilter
 import com.shimmermare.stuffiread.tags.ExtendedTag
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storySearchService
@@ -16,6 +17,7 @@ import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
 import com.shimmermare.stuffiread.ui.components.dialog.ConfirmationDialog
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
 import com.shimmermare.stuffiread.ui.components.layout.LoadingContainer
+import com.shimmermare.stuffiread.ui.util.remember
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.onEach
@@ -34,7 +36,7 @@ fun DeleteTagDialog(
                 horizontalArrangement = Arrangement.spacedBy(5.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("Confirm removal of ")
+                Text(Strings.components_deleteTagDialog_title.remember())
                 TagName(tag)
             }
         },
@@ -51,12 +53,12 @@ fun DeleteTagDialog(
             loader = { storySearchService.getStoriesByFilter(StoryFilter(tagsPresent = setOf(tag.tag.id))).count() }
         ) { storiesUsingTagCount ->
             if (storiesUsingTagCount > 0) {
-                Text("Tag is used by $storiesUsingTagCount story(s)")
+                Text(Strings.components_deleteTagDialog_storyCount.remember(storiesUsingTagCount))
             }
         }
         if (tag.implyingTags.isNotEmpty()) {
             Column {
-                Text("Tag is implied by ${tag.implyingTags.size} other tag(s)")
+                Text(Strings.components_deleteTagDialog_implyingTagCount.remember(tag.implyingTags.size))
                 ChipVerticalGrid {
                     tag.implyingTags.forEach {
                         TagName(it)
@@ -66,7 +68,7 @@ fun DeleteTagDialog(
         }
         if (tag.impliedTags.isNotEmpty()) {
             Column {
-                Text("Tag implies ${tag.impliedTags.size} other tag(s)")
+                Text(Strings.components_deleteTagDialog_impliedTagCount.remember(tag.impliedTags.size))
                 ChipVerticalGrid {
                     tag.impliedTags.forEach {
                         TagName(it)

@@ -9,12 +9,12 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.tags.TagCategory
 import com.shimmermare.stuffiread.tags.TagCategoryName
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder
 import com.shimmermare.stuffiread.ui.components.layout.FullscreenPopup
-import com.shimmermare.stuffiread.ui.pages.tagcategory.edit.EditTagCategoryPageMode
-import com.shimmermare.stuffiread.ui.pages.tagcategory.edit.TagCategoryForm
+import com.shimmermare.stuffiread.ui.util.remember
 
 @Composable
 fun QuickCreateTagCategory(
@@ -26,10 +26,10 @@ fun QuickCreateTagCategory(
             verticalArrangement = Arrangement.spacedBy(10.dp),
             modifier = Modifier.padding(20.dp)
         ) {
-            Text("Create tag category", style = MaterialTheme.typography.h6)
+            Text(Strings.components_quickCreateTagCategory_title.remember(), style = MaterialTheme.typography.h6)
             TagCategoryForm(
-                mode = EditTagCategoryPageMode.CREATE,
-                category = TagCategory(name = TagCategoryName("New category")),
+                creationMode = true,
+                category = TagCategory(name = TagCategoryName(Strings.components_tagCategoryForm_name_default_new())),
                 modifier = Modifier.width(800.dp),
                 onBack = onCloseRequest,
                 onSubmit = { onCreate(StoryArchiveHolder.tagService.createCategory(it)) }

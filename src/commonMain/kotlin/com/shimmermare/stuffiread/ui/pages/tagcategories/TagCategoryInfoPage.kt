@@ -1,13 +1,16 @@
-package com.shimmermare.stuffiread.ui.pages.tagcategory.info
+package com.shimmermare.stuffiread.ui.pages.tagcategories
 
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.text.style.TextOverflow
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.tags.TagCategory
 import com.shimmermare.stuffiread.tags.TagCategoryId
+import com.shimmermare.stuffiread.ui.CurrentLocale
 import com.shimmermare.stuffiread.ui.Router
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
+import com.shimmermare.stuffiread.ui.components.tagcategory.TagCategoryInfo
 import com.shimmermare.stuffiread.ui.pages.LoadedPage
 import com.shimmermare.stuffiread.ui.pages.error.ErrorPage
 import io.github.aakira.napier.Napier
@@ -22,12 +25,12 @@ class TagCategoryInfoPage(private val categoryId: TagCategoryId) : LoadedPage<Ta
 
     @Composable
     override fun Title() {
-        val title = remember(categoryId) {
+        val title = remember(categoryId, CurrentLocale) {
             val category = tagService.getCategoryById(categoryId)
             if (category == null) {
-                "Tag category $categoryId not found!"
+                Strings.page_tagCategoryInfo_error_notFound(categoryId)
             } else {
-                "Tag category - ${category.name} [${category.id}]"
+                Strings.page_tagCategoryInfo_title(category.name) + " [" + categoryId + "]"
             }
         }
         Text(text = title, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -43,9 +46,9 @@ class TagCategoryInfoPage(private val categoryId: TagCategoryId) : LoadedPage<Ta
 
         Router.goTo(
             ErrorPage(
-                title = "Failed to load tag category $categoryId",
+                title = Strings.page_tagCategoryInfo_error_failedToLoad(categoryId),
                 exception = error,
-                actions = listOf(ErrorPage.Action("Try Again") {
+                actions = listOf(ErrorPage.Action(Strings.page_tagCategoryInfo_error_failedToLoad_tryAgainButton.toString()) {
                     Router.goTo(TagCategoryInfoPage(categoryId))
                 })
             )

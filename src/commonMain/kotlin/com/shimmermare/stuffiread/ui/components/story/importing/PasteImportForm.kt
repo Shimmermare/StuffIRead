@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.importer.ImportSource
 import com.shimmermare.stuffiread.importer.ImportedStory
 import com.shimmermare.stuffiread.importer.UrlParser
@@ -13,6 +14,7 @@ import com.shimmermare.stuffiread.importer.pastebased.PasteImportSettings
 import com.shimmermare.stuffiread.ui.components.form.InputFormState
 import com.shimmermare.stuffiread.ui.components.form.TextFormField
 import com.shimmermare.stuffiread.ui.components.form.ValidationResult
+import com.shimmermare.stuffiread.ui.util.remember
 
 @Suppress("UNCHECKED_CAST")
 @Composable
@@ -48,10 +50,10 @@ private fun <PasteId> PasteUrlsFormField(
     TextFormField(
         id = "urls",
         state = state,
-        name = "Paste URLs",
-        description = """Specify one or multiple paste URLs (one per line).
-            |Multiple pastes are treated as single story.
-            |Examples: ${examplePasteUrls.joinToString(", ")}""".trimMargin(),
+        name = Strings.components_importing_pasteImportForm_pasteUrls.remember(),
+        description = Strings.components_importing_pasteImportForm_pasteUrls_description.remember(
+            examplePasteUrls.joinToString(", ")
+        ),
         getter = { it.urls.joinToString(separator = "\n") },
         setter = { data, value ->
             data.copy(urls = value.lineSequence()
@@ -61,7 +63,9 @@ private fun <PasteId> PasteUrlsFormField(
         },
         validator = { urlsText ->
             if (urlsText.isBlank()) {
-                return@TextFormField ValidationResult(false, "At least one paste URL is required")
+                return@TextFormField ValidationResult(
+                    false, Strings.components_importing_pasteImportForm_pasteUrls_invalid_atLeastOne()
+                )
             }
             val errors = mutableListOf<Pair<Int, String>>()
             val urls = urlsText.lineSequence().map { it.trim() }.toList()
@@ -69,11 +73,11 @@ private fun <PasteId> PasteUrlsFormField(
             urls.forEachIndexed { line, url ->
                 if (url.isEmpty()) return@forEachIndexed
                 if (!urlParser.matches(url)) {
-                    errors.add(line to "Invalid paste URL")
+                    errors.add(line to Strings.components_importing_pasteImportForm_pasteUrls_invalid_url())
                     return@forEachIndexed
                 }
                 if (validUrls.contains(url)) {
-                    errors.add(line to "Duplicate paste URL")
+                    errors.add(line to Strings.components_importing_pasteImportForm_pasteUrls_invalid_duplicate())
                     return@forEachIndexed
                 }
                 validUrls.add(url)
@@ -82,7 +86,11 @@ private fun <PasteId> PasteUrlsFormField(
                 null
             } else {
                 errors.joinToString(separator = "\n") { (line, error) ->
-                    error + if (urls.size > 1) " at line ${line + 1}" else ""
+                    if (urls.size > 1) {
+                        Strings.components_importing_pasteImportForm_pasteUrls_errorAtLine(error, line + 1)
+                    } else {
+                        error
+                    }
                 }
             }
             ValidationResult(errors.isEmpty(), errorMessage)

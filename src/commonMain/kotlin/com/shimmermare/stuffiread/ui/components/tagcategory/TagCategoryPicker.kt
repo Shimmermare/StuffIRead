@@ -11,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.tags.TagCategory
 import com.shimmermare.stuffiread.tags.TagCategoryId
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
@@ -20,6 +21,8 @@ import com.shimmermare.stuffiread.ui.components.layout.PickerWithSearchLayout
 import com.shimmermare.stuffiread.ui.components.layout.PopupContent
 import com.shimmermare.stuffiread.ui.components.search.SearchBar
 import com.shimmermare.stuffiread.ui.components.text.FilledNameText
+import com.shimmermare.stuffiread.ui.util.remember
+import com.shimmermare.stuffiread.util.i18n.PluralLocalizedString
 
 
 @Composable
@@ -29,7 +32,7 @@ fun TagCategoryPicker(
     filter: (TagCategory) -> Boolean = { true },
     onPick: (TagCategoryId) -> Unit,
 ) {
-    var openPopup: Boolean by remember { mutableStateOf(false) }
+    var openPopup: Boolean by remember(pickedCategoryId) { mutableStateOf(false) }
 
     PickedTagCategory(pickedCategoryId, onOpenPopupRequest = { openPopup = true })
 
@@ -56,7 +59,7 @@ private fun PickedTagCategory(pickedCategoryId: TagCategoryId, onOpenPopupReques
         TagCategoryName(pickedCategory, onClick = onOpenPopupRequest)
     } else {
         FilledNameText(
-            "Click to pick",
+            Strings.components_tagCategoryPicker_pickerButton.remember(),
             MaterialTheme.colors.primary,
             modifier = Modifier.height(DefaultCategoryNameHeight).clickable(onClick = onOpenPopupRequest),
         )
@@ -100,10 +103,10 @@ private fun PickerPopup(
                 title = title,
                 pickedItems = {
                     if (pickedCategory != null) {
-                        Text("Picked category:")
+                        Text(Strings.components_tagCategoryPicker_pickedTag.remember())
                         TagCategoryName(pickedCategory, onClick = { pickedCategoryId = TagCategoryId.None })
                     } else {
-                        Text("Category not picked")
+                        Text(Strings.components_tagCategoryPicker_notPicked.remember())
                     }
                 },
                 searchBar = {
@@ -114,30 +117,30 @@ private fun PickerPopup(
                 },
                 availableToPickItems = {
                     if (availableToPickCategories.isNotEmpty()) {
-                        Text(text = "Found ${availableToPickCategories.size} categorie(s):")
+                        Text(components_tagCategoryPicker_search_found.remember(availableToPickCategories.size))
                         ChipVerticalGrid {
                             availableToPickCategories.forEach {
                                 TagCategoryName(it, onClick = { pickedCategoryId = it.id })
                             }
                         }
                     } else if (allCategories.isEmpty()) {
-                        Text("No categorie(s) exist to pick.")
+                        Text(Strings.components_tagCategoryPicker_search_noExisting.remember())
                     } else {
-                        Text("No categorie(s) found.")
+                        Text(Strings.components_tagCategoryPicker_search_notFound.remember())
                     }
                 },
                 actionButtons = {
                     Button(onClick = onCloseRequest) {
-                        Text("Cancel")
+                        Text(Strings.components_tagCategoryPicker_cancelButton.remember())
                     }
                     Button(
                         enabled = currentlyPickedCategoryId != pickedCategoryId,
                         onClick = { onPicked(pickedCategoryId) }
                     ) {
-                        Text("Confirm")
+                        Text(Strings.components_tagCategoryPicker_confirmButton.remember())
                     }
                     Button(onClick = { showQuickCreate = true }) {
-                        Text("Quick create")
+                        Text(Strings.components_tagCategoryPicker_quickCreateButton.remember())
                     }
                 }
             )
@@ -154,3 +157,12 @@ private fun PickerPopup(
         )
     }
 }
+
+private val components_tagCategoryPicker_search_found = PluralLocalizedString(
+    Strings.components_tagCategoryPicker_search_found_other,
+    Strings.components_tagCategoryPicker_search_found_one,
+    Strings.components_tagCategoryPicker_search_found_two,
+    Strings.components_tagCategoryPicker_search_found_few,
+    Strings.components_tagCategoryPicker_search_found_many,
+    Strings.components_tagCategoryPicker_search_found_other,
+)

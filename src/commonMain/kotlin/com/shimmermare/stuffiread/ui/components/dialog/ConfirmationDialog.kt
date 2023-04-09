@@ -14,7 +14,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.ui.components.layout.FullscreenPopup
+import com.shimmermare.stuffiread.ui.util.remember
 import com.shimmermare.stuffiread.ui.util.windowSize
 
 @Composable
@@ -23,9 +25,9 @@ inline fun ConfirmationDialog(
     modifier: Modifier = Modifier
         .padding(20.dp)
         .sizeIn(maxWidth = 500.dp, maxHeight = windowSize.height - 200.dp),
-    dismissButtonText: String = "Cancel",
+    dismissButtonText: String = Strings.components_dialog_confirmation_dismissButtonDefault.remember(),
     noinline onDismissRequest: () -> Unit,
-    confirmButtonText: String = "Confirm",
+    confirmButtonText: String = Strings.components_dialog_confirmation_confirmButtonDefault.remember(),
     confirmButtonEnabled: Boolean = true,
     noinline onConfirmRequest: () -> Unit,
     crossinline content: @Composable () -> Unit,

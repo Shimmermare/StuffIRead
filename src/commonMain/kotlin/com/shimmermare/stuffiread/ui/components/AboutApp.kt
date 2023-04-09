@@ -14,8 +14,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.ui.components.layout.FullscreenPopup
 import com.shimmermare.stuffiread.ui.components.text.TextURI
+import com.shimmermare.stuffiread.ui.util.remember
 import com.shimmermare.stuffiread.util.AppVersionUtils
 
 private const val GITHUB_URL = "https://github.com/Shimmermare/StuffIRead"
@@ -36,18 +38,20 @@ fun AboutApp(onDismissRequest: () -> Unit) {
                 verticalArrangement = Arrangement.spacedBy(5.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Row {
-                    Text("Made by ")
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                ) {
+                    Text(Strings.aboutApp_madeBy.remember())
                     TextURI("https://shimmermare.com", "Shimmermare")
                 }
-                Text("Version: $version")
+                Text(Strings.aboutApp_version.remember(version))
 
-                Text("To report bugs or request features please use GitHub page:")
+                Text(Strings.aboutApp_description.remember())
                 TextURI(GITHUB_URL, style = MaterialTheme.typography.subtitle1)
             }
 
             Button(onClick = onDismissRequest) {
-                Text("Close")
+                Text(Strings.components_dialog_info_dismissButtonDefault.remember())
             }
         }
     }

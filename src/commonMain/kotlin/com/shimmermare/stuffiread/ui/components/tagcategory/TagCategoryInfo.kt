@@ -1,4 +1,4 @@
-package com.shimmermare.stuffiread.ui.pages.tagcategory.info
+package com.shimmermare.stuffiread.ui.components.tagcategory
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.FloatingActionButton
@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.tags.TagCategory
 import com.shimmermare.stuffiread.tags.TagWithCategory
 import com.shimmermare.stuffiread.ui.Router
@@ -38,14 +39,13 @@ import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
 import com.shimmermare.stuffiread.ui.components.date.Date
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
 import com.shimmermare.stuffiread.ui.components.tag.TagNameRoutable
-import com.shimmermare.stuffiread.ui.components.tagcategory.DeleteTagCategoryDialog
-import com.shimmermare.stuffiread.ui.components.tagcategory.TagCategoryNameRoutable
+import com.shimmermare.stuffiread.ui.pages.tagcategories.EditTagCategoryPage
 import com.shimmermare.stuffiread.ui.pages.tagcategories.TagCategoriesPage
-import com.shimmermare.stuffiread.ui.pages.tagcategory.edit.EditTagCategoryPage
 import com.shimmermare.stuffiread.ui.util.ColorUtils.blueInt
 import com.shimmermare.stuffiread.ui.util.ColorUtils.greenInt
 import com.shimmermare.stuffiread.ui.util.ColorUtils.redInt
 import com.shimmermare.stuffiread.ui.util.ColorUtils.toHexColor
+import com.shimmermare.stuffiread.ui.util.remember
 
 @Composable
 fun TagCategoryInfo(category: TagCategory) {
@@ -64,7 +64,7 @@ fun TagCategoryInfo(category: TagCategory) {
                     Icon(Icons.Filled.ContentCopy, null)
                 }
                 FloatingActionButton(
-                    onClick = { Router.goTo(EditTagCategoryPage(category)) }
+                    onClick = { Router.goTo(EditTagCategoryPage.edit(category)) }
                 ) {
                     Icon(Icons.Filled.Edit, null)
                 }
@@ -81,7 +81,7 @@ fun TagCategoryInfo(category: TagCategory) {
             horizontalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterHorizontally)
         ) {
             Row(
-                modifier = Modifier.width(800.dp)
+                modifier = Modifier.widthIn(min = 800.dp, max = 1200.dp)
             ) {
                 Box(
                     modifier = Modifier.weight(0.5F)
@@ -118,23 +118,27 @@ private fun PropertiesBlock(category: TagCategory) {
     SelectionContainer {
         Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                Text(text = "Name", style = MaterialTheme.typography.h6)
+                Text(Strings.components_tagCategoryInfo_name.remember(), style = MaterialTheme.typography.h6)
                 TagCategoryNameRoutable(category)
             }
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                Text(text = "Description", style = MaterialTheme.typography.h6)
+                Text(Strings.components_tagCategoryInfo_description.remember(), style = MaterialTheme.typography.h6)
                 if (category.description.isPresent) {
-                    Text(text = category.description.value!!)
+                    Text(category.description.value!!)
                 } else {
-                    Text(text = "No description", fontStyle = FontStyle.Italic, color = Color.LightGray)
+                    Text(
+                        Strings.components_tagCategoryInfo_description_noDescription.remember(),
+                        fontStyle = FontStyle.Italic,
+                        color = Color.LightGray
+                    )
                 }
             }
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                Text(text = "Sorting order", style = MaterialTheme.typography.h6)
-                Text(text = category.sortOrder.toString())
+                Text(Strings.components_tagCategoryInfo_sortingOrder.remember(), style = MaterialTheme.typography.h6)
+                Text(category.sortOrder.toString())
             }
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                Text(text = "Color", style = MaterialTheme.typography.h6)
+                Text(Strings.components_tagCategoryInfo_color.remember(), style = MaterialTheme.typography.h6)
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -145,12 +149,12 @@ private fun PropertiesBlock(category: TagCategory) {
                 }
             }
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                Text(text = "Created", style = MaterialTheme.typography.h6)
+                Text(Strings.components_tagCategoryInfo_created.remember(), style = MaterialTheme.typography.h6)
                 Date(category.created)
             }
             if (category.created != category.updated) {
                 Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                    Text(text = "Updated", style = MaterialTheme.typography.h6)
+                    Text(Strings.components_tagCategoryInfo_updated.remember(), style = MaterialTheme.typography.h6)
                     Date(category.updated)
                 }
             }
@@ -174,14 +178,14 @@ private fun StatsBlock(category: TagCategory) {
     Column(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Text(text = "Tags in category: ${tagsInCategory.size}", style = MaterialTheme.typography.h6)
+        Text(Strings.components_tagCategoryInfo_tagsInCategory.remember(tagsInCategory.size), style = MaterialTheme.typography.h6)
         ChipVerticalGrid {
             tagsInCategory.forEach { tag ->
                 TagNameRoutable(tag)
             }
         }
 
-        Text(text = "Tags implied by tags in category: ${tagsImplied.size}", style = MaterialTheme.typography.h6)
+        Text(Strings.components_tagCategoryInfo_impliedTagsInCategory.remember(tagsImplied.size), style = MaterialTheme.typography.h6)
         ChipVerticalGrid {
             tagsImplied.forEach { tag ->
                 TagNameRoutable(tag)

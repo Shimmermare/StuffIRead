@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.ui.components.input.OutlinedIntField
 import com.shimmermare.stuffiread.ui.components.input.OutlinedUIntField
 
@@ -27,13 +28,7 @@ fun <FormData> RangedIntFormField(
         getter = getter,
         setter = setter,
         inputModifier = inputModifier,
-        validator = {
-            if (it !in range) {
-                ValidationResult(false, "Value is out of range $range")
-            } else {
-                ValidationResult.Valid
-            }
-        }
+        validator = range::validate,
     )
 }
 
@@ -87,13 +82,7 @@ fun <FormData> RangedOptionalIntFormField(
         getter = getter,
         setter = setter,
         inputModifier = inputModifier,
-        validator = {
-            if (it != null && it !in range) {
-                ValidationResult(false, "Value is out of range $range")
-            } else {
-                ValidationResult.Valid
-            }
-        }
+        validator = { if (it != null) range.validate(it) else ValidationResult.Valid }
     )
 }
 
@@ -125,6 +114,14 @@ fun <FormData> OptionalIntFormField(
             isError = !valid,
             onValueChange = onValueChange
         )
+    }
+}
+
+private fun IntRange.validate(value: Int): ValidationResult {
+    return if (value !in this) {
+        ValidationResult(false, Strings.components_form_intField_error_outOfRange(value, this.first, this.last))
+    } else {
+        ValidationResult.Valid
     }
 }
 

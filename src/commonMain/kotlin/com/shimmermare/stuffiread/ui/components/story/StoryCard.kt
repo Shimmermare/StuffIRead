@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.stories.Story
 import com.shimmermare.stuffiread.tags.TagWithCategory
 import com.shimmermare.stuffiread.ui.Router
@@ -34,7 +35,8 @@ import com.shimmermare.stuffiread.ui.components.dialog.InfoDialog
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
 import com.shimmermare.stuffiread.ui.components.tag.DefaultTagNameHeight
 import com.shimmermare.stuffiread.ui.components.tag.TagNameRoutable
-import com.shimmermare.stuffiread.ui.pages.story.info.StoryInfoPage
+import com.shimmermare.stuffiread.ui.pages.stories.StoryInfoPage
+import com.shimmermare.stuffiread.ui.util.remember
 
 private const val PREVIEW_TAG_COUNT = 20
 
@@ -84,7 +86,11 @@ private fun VisibleStoryCard(
                             overflow = TextOverflow.Ellipsis
                         )
                         Text(
-                            text = story.author.value ?: "Unknown author",
+                            text = if (story.author.isPresent) {
+                                story.author.toString()
+                            } else {
+                                Strings.components_storyInfo_author_unknown.remember()
+                            },
                             style = MaterialTheme.typography.subtitle1,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
@@ -96,10 +102,10 @@ private fun VisibleStoryCard(
                     modifier = Modifier.align(Alignment.BottomStart),
                 ) {
                     if (story.published != null) {
-                        DateWithLabel("Published:", story.published)
+                        DateWithLabel(Strings.components_storyInfo_published.remember(), story.published)
                     }
                     if (story.changed != null) {
-                        DateWithLabel("Last changed:", story.changed)
+                        DateWithLabel(Strings.components_storyInfo_changed.remember(), story.changed)
                     }
                     if (story.score != null) {
                         StoryScore(story.score)
@@ -115,7 +121,7 @@ private fun VisibleStoryCard(
                     Column(
                         modifier = Modifier.weight(1F, false)
                     ) {
-                        Text("Description", fontWeight = FontWeight.Bold)
+                        Text(Strings.components_storyInfo_description.remember(), fontWeight = FontWeight.Bold)
                         Text(story.description.toString(), overflow = TextOverflow.Ellipsis)
                     }
                 }
@@ -123,7 +129,7 @@ private fun VisibleStoryCard(
                     Column(
                         modifier = Modifier.weight(1F, false)
                     ) {
-                        Text("Review", fontWeight = FontWeight.Bold)
+                        Text(Strings.components_storyInfo_review.remember(), fontWeight = FontWeight.Bold)
                         Text(story.review.toString(), overflow = TextOverflow.Ellipsis)
                     }
                 }
@@ -165,7 +171,7 @@ private fun StoryCardTags(story: Story) {
                     onClick = { showFullList = true },
                     modifier = Modifier.height(DefaultTagNameHeight)
                 ) {
-                    Text("and ${tags.size - preview.size} more")
+                    Text(Strings.components_storyCard_tags_andMore.remember(tags.size - preview.size))
                 }
             }
         }
@@ -173,7 +179,7 @@ private fun StoryCardTags(story: Story) {
 
     if (showFullList) {
         InfoDialog(
-            title = { Text("All story tags") },
+            title = { Text(Strings.components_storyCard_tags_allTagsTitle.remember()) },
             onDismissRequest = { showFullList = false },
         ) {
             ChipVerticalGrid {

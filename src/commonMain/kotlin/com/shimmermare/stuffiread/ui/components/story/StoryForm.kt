@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.loadImageBitmap
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.stories.Score
 import com.shimmermare.stuffiread.stories.Story
 import com.shimmermare.stuffiread.stories.StoryAuthor
@@ -44,6 +45,7 @@ import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storyCoverService
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storyFilesService
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storyService
 import com.shimmermare.stuffiread.ui.components.date.DateWithLabel
+import com.shimmermare.stuffiread.ui.components.form.BackFormButton
 import com.shimmermare.stuffiread.ui.components.form.FormField
 import com.shimmermare.stuffiread.ui.components.form.InputFormState
 import com.shimmermare.stuffiread.ui.components.form.OptionalFormField
@@ -59,6 +61,8 @@ import com.shimmermare.stuffiread.ui.util.ExtensionFileFilter
 import com.shimmermare.stuffiread.ui.util.FileDialog
 import com.shimmermare.stuffiread.ui.util.SelectionMode
 import com.shimmermare.stuffiread.ui.util.TimeUtils
+import com.shimmermare.stuffiread.ui.util.remember
+import com.shimmermare.stuffiread.util.i18n.PluralLocalizedString
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDateTime
@@ -107,7 +111,11 @@ fun SavingStoryForm(
             }
         },
         onBack = onBack,
-        submitButtonText = if (creationMode) "Create" else "Save",
+        submitButtonText = if (creationMode) {
+            Strings.components_storyForm_submitButton_create.remember()
+        } else {
+            Strings.components_storyForm_submitButton_edit.remember()
+        },
         canSubmitWithoutChanges = creationMode
     )
 }
@@ -117,7 +125,7 @@ fun StoryForm(
     prefillData: StoryFormData,
     onSubmit: (StoryFormData) -> Unit,
     onBack: () -> Unit,
-    submitButtonText: String = "Submit",
+    submitButtonText: String,
     canSubmitWithoutChanges: Boolean = false,
 ) {
     VerticalScrollColumn {
@@ -152,17 +160,15 @@ private fun FormContainer(
         canSubmitWithoutChanges = canSubmitWithoutChanges,
         onSubmit = onSubmit,
         actions = {
-            Button(onClick = onBack) {
-                Text("Back")
-            }
+            BackFormButton(onBack)
         }
     ) { state ->
         StoryCoverFormField(state)
         TextFormField(
             id = "author",
             state = state,
-            name = "Author",
-            description = "Leave empty if author is not known",
+            name = Strings.components_storyForm_author.remember(),
+            description = Strings.components_storyForm_author_description.remember(),
             getter = { it.story.author.value ?: "" },
             setter = { data, value -> data.copy(story = data.story.copy(author = StoryAuthor.of(value))) },
             validator = { ValidationResult.fromException { StoryAuthor.of(it) } },
@@ -171,7 +177,7 @@ private fun FormContainer(
         TextFormField(
             id = "name",
             state = state,
-            name = "Name",
+            name = Strings.components_storyForm_name.remember(),
             getter = { it.story.name.value },
             setter = { data, value -> data.copy(story = data.story.copy(name = StoryName(value))) },
             validator = { ValidationResult.fromException { StoryName(it) } },
@@ -180,7 +186,7 @@ private fun FormContainer(
         TextFormField(
             id = "url",
             state = state,
-            name = "URL",
+            name = Strings.components_storyForm_url.remember(),
             getter = { it.story.url.toString() },
             setter = { data, value -> data.copy(story = data.story.copy(url = StoryURL.of(value))) },
             validator = { ValidationResult.fromException { StoryURL.of(it) } },
@@ -189,7 +195,7 @@ private fun FormContainer(
         TextFormField(
             id = "description",
             state = state,
-            name = "Description",
+            name = Strings.components_storyForm_description.remember(),
             getter = { it.story.description.toString() },
             setter = { data, value -> data.copy(story = data.story.copy(description = StoryDescription.of(value))) },
             validator = { ValidationResult.fromException { StoryDescription.of(it) } },
@@ -200,8 +206,8 @@ private fun FormContainer(
         OptionalInstantFormField(
             id = "published",
             state = state,
-            name = "First published date",
-            description = "Date when the story was initially published by author",
+            name = Strings.components_storyForm_published.remember(),
+            description = Strings.components_storyForm_published_description.remember(),
             defaultValue = { TimeUtils.instantTodayAt1200() },
             getter = { it.story.published },
             setter = { data, value ->
@@ -217,8 +223,8 @@ private fun FormContainer(
         OptionalInstantFormField(
             id = "changed",
             state = state,
-            name = "Last change date",
-            description = "Date when the story was modified by author last time",
+            name = Strings.components_storyForm_changed.remember(),
+            description = Strings.components_storyForm_changed_description.remember(),
             defaultValue = { state.data.story.published ?: TimeUtils.instantTodayAt1200() },
             getter = { it.story.changed },
             setter = { data, value ->
@@ -234,12 +240,12 @@ private fun FormContainer(
         FormField(
             id = "tags",
             state = state,
-            name = "Tags",
+            name = Strings.components_storyForm_tags.remember(),
             getter = { it.story.tags },
             setter = { data, value -> data.copy(story = data.story.copy(tags = value)) },
         ) { value, _, onValueChange ->
             MultiTagPicker(
-                title = "Pick story tags",
+                title = Strings.components_storyForm_tags_pickerTitle.remember(),
                 pickedTagIds = value,
                 onPick = onValueChange
             )
@@ -247,11 +253,11 @@ private fun FormContainer(
         FormField(
             id = "sequels",
             state = state,
-            name = "Sequels",
+            name = Strings.components_storyForm_sequels.remember(),
             getter = { it.story.sequels },
             setter = { data, value -> data.copy(story = data.story.copy(sequels = value)) }
         ) { value, _, onValueChange ->
-            MultiStorySelector(
+            MultiStoryPicker(
                 selectedIds = value,
                 filter = { it.id != state.data.story.id },
                 onSelect = onValueChange
@@ -260,11 +266,11 @@ private fun FormContainer(
         FormField(
             id = "prequels",
             state = state,
-            name = "Prequels",
+            name = Strings.components_storyForm_prequels.remember(),
             getter = { it.prequels },
             setter = { data, value -> data.copy(prequels = value) }
         ) { value, _, onValueChange ->
-            MultiStorySelector(
+            MultiStoryPicker(
                 selectedIds = value,
                 filter = { it.id != state.data.story.id },
                 onSelect = onValueChange
@@ -273,7 +279,7 @@ private fun FormContainer(
         OptionalFormField(
             id = "score",
             state = state,
-            name = "Score",
+            name = Strings.components_storyForm_score.remember(),
             defaultValue = { Score(0F) },
             getter = { it.story.score },
             setter = { data, value -> data.copy(story = data.story.copy(score = value)) },
@@ -283,7 +289,7 @@ private fun FormContainer(
         TextFormField(
             id = "review",
             state = state,
-            name = "Review",
+            name = Strings.components_storyForm_review.remember(),
             getter = { it.story.review.toString() },
             setter = { data, value -> data.copy(story = data.story.copy(review = StoryReview.of(value))) },
             validator = { ValidationResult.fromException { StoryReview.of(it) } },
@@ -295,8 +301,8 @@ private fun FormContainer(
         FormField(
             id = "files",
             state = state,
-            name = "Files",
-            description = "Files with story content.",
+            name = Strings.components_storyForm_files.remember(),
+            description = Strings.components_storyForm_files_description.remember(),
             getter = { it.files },
             setter = { data, value -> data.copy(files = value) }
         ) { value, _, onValueChange ->
@@ -312,8 +318,10 @@ private fun StoryCoverFormField(
     FormField(
         id = "cover",
         state = state,
-        name = "Cover",
-        description = "Story cover image in one of listed formats: BMP, GIF, HEIF, ICO, JPEG, PNG, WBMP, WebP",
+        name = Strings.components_storyForm_cover.remember(),
+        description = Strings.components_storyForm_cover_description.remember(
+            StoryCoverFormat.VALUES.joinToString(", ")
+        ),
         getter = { it.cover },
         setter = { data, value -> data.copy(cover = value) }
     ) { value, _, onValueChange ->
@@ -332,7 +340,7 @@ private fun StoryCoverFormField(
             image?.let { image ->
                 Image(
                     painter = image,
-                    contentDescription = "Story cover",
+                    contentDescription = Strings.components_storyForm_cover_contentDescription.remember(),
                     modifier = Modifier.height(300.dp)
                 )
             }
@@ -343,18 +351,18 @@ private fun StoryCoverFormField(
                     Button(
                         onClick = { onValueChange(null) }
                     ) {
-                        Text("Clear")
+                        Text(Strings.components_storyForm_cover_clearButton.remember())
                     }
                 }
                 Button(
                     onClick = {
                         val path = FileDialog.showOpenDialog(
-                            title = "Select cover image",
+                            title = Strings.components_storyForm_cover_picker_title(),
                             selectionMode = SelectionMode.FILES_ONLY,
                             fileFilter = ExtensionFileFilter(
-                                description = "Supported cover image formats (${
-                                    StoryCoverFormat.values().joinToString(", ")
-                                })",
+                                description = Strings.components_storyForm_cover_picker_filterDescription(
+                                    StoryCoverFormat.ALL_EXTENSIONS.joinToString(", ")
+                                ),
                                 extensions = StoryCoverFormat.ALL_EXTENSIONS.toTypedArray()
                             )
                         )
@@ -370,7 +378,7 @@ private fun StoryCoverFormField(
                         }
                     }
                 ) {
-                    Text("Select file")
+                    Text(Strings.components_storyForm_cover_selectButton.remember())
                 }
             }
         }
@@ -384,8 +392,8 @@ private fun ReadsFormField(
     FormField(
         id = "reads",
         state = state,
-        name = "Reads",
-        description = "Times when you read the story",
+        name = Strings.components_storyForm_reads.remember(),
+        description = Strings.components_storyForm_reads_description.remember(),
         getter = { it.story.reads },
         setter = { data, value -> data.copy(story = data.story.copy(reads = value.sorted())) },
     ) { value, _, onValueChange ->
@@ -393,7 +401,7 @@ private fun ReadsFormField(
             verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
             if (value.isNotEmpty()) {
-                Text("${value.size} recorded reads:")
+                Text(components_storyForm_reads_count.remember(value.size))
                 value.forEachIndexed { index, read ->
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -406,7 +414,7 @@ private fun ReadsFormField(
                     }
                 }
             } else {
-                Text("No recorded reads")
+                Text(Strings.components_storyForm_reads_noReads.remember())
             }
 
             var showAdd: Boolean by remember { mutableStateOf(false) }
@@ -417,7 +425,7 @@ private fun ReadsFormField(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     var dateToAdd: LocalDateTime by remember { mutableStateOf(TimeUtils.todayAt1200()) }
-                    Text("Add new read:")
+                    Text(Strings.components_storyForm_reads_addNew_label.remember())
                     DateTimePicker(
                         value = dateToAdd,
                         onValueChange = { dateToAdd = it }
@@ -429,14 +437,14 @@ private fun ReadsFormField(
                             showAdd = false
                         }
                     ) {
-                        Text("Add")
+                        Text(Strings.components_storyForm_reads_addNew_confirmButton.remember())
                     }
                 }
             } else {
                 Button(
                     onClick = { showAdd = true }
                 ) {
-                    Text("Add new read")
+                    Text(Strings.components_storyForm_reads_addNew_button.remember())
                 }
             }
         }
@@ -449,4 +457,13 @@ data class StoryFormData(
     val prequels: Set<StoryId> = originalPrequels,
     val cover: StoryCover? = null,
     val files: List<StoryFile> = emptyList()
+)
+
+private val components_storyForm_reads_count = PluralLocalizedString(
+    Strings.components_storyForm_reads_count_other,
+    Strings.components_storyForm_reads_count_one,
+    Strings.components_storyForm_reads_count_two,
+    Strings.components_storyForm_reads_count_few,
+    Strings.components_storyForm_reads_count_many,
+    Strings.components_storyForm_reads_count_other,
 )

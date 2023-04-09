@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.ui.AppSettingsHolder
 import com.shimmermare.stuffiread.ui.components.dialog.ConfirmationDialog
 import com.shimmermare.stuffiread.ui.components.layout.PointerInsideTrackerBox
@@ -33,6 +34,7 @@ import com.shimmermare.stuffiread.ui.util.DirectoriesOnlyFileFilter
 import com.shimmermare.stuffiread.ui.util.FileDialog
 import com.shimmermare.stuffiread.ui.util.FileFilter
 import com.shimmermare.stuffiread.ui.util.SelectionMode
+import com.shimmermare.stuffiread.ui.util.remember
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.exists
@@ -48,12 +50,12 @@ fun ArchiveDirectorySelector(onSelected: (Path) -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "No active story archive",
+            text = Strings.page_openArchive_selector_noActive_title.remember(),
             fontWeight = FontWeight.Bold,
             fontSize = 20.sp,
         )
         Text(
-            text = "Create new or open existing story archive.",
+            text = Strings.page_openArchive_selector_noActive_description.remember(),
             fontWeight = FontWeight.Bold,
         )
         Row(
@@ -64,7 +66,7 @@ fun ArchiveDirectorySelector(onSelected: (Path) -> Unit) {
 
         if (recentlyOpened.isNotEmpty()) {
             Spacer(modifier = Modifier.height(20.dp))
-            Text("Recent", style = MaterialTheme.typography.h6)
+            Text(Strings.page_openArchive_selector_recent.remember(), style = MaterialTheme.typography.h6)
 
             Column(
                 horizontalAlignment = Alignment.Start,
@@ -93,7 +95,7 @@ private fun OpenArchiveDirButton(onClick: (Path) -> Unit) {
     Button(
         onClick = {
             val dir = FileDialog.showOpenDialog(
-                title = "Select story archive directory",
+                title = Strings.page_openArchive_selector_openDirTitle(),
                 fileFilter = storyArchiveFileFilter(),
                 selectionMode = SelectionMode.DIRECTORIES_ONLY,
             )
@@ -101,27 +103,27 @@ private fun OpenArchiveDirButton(onClick: (Path) -> Unit) {
                 if (dir.notExists()) {
                     askCreateFor = dir
                 } else {
-                    onClick.invoke(dir)
+                    onClick(dir)
                 }
             }
         }
     ) {
-        Text("Open")
+        Text(Strings.page_openArchive_selector_openButton.remember())
     }
 
-    if (askCreateFor != null) {
+    askCreateFor?.let { askCreateForValue ->
         ConfirmationDialog(
-            title = { Text("Directory doesn't exist") },
+            title = { Text(Strings.page_openArchive_selector_dirNotExists_title.remember()) },
             onDismissRequest = {
                 askCreateFor = null
             },
-            confirmButtonText = "Create",
+            confirmButtonText = Strings.page_openArchive_selector_dirNotExists_createButton.remember(),
             onConfirmRequest = {
-                onClick(askCreateFor!!)
+                onClick(askCreateForValue)
                 askCreateFor = null
             }
         ) {
-            Text("Directory '$askCreateFor' doesn't exist. Create new story archive?")
+            Text(Strings.page_openArchive_selector_dirNotExists_description.remember(askCreateForValue))
         }
     }
 }
@@ -133,7 +135,7 @@ private fun CreateArchiveDirButton(onClick: (Path) -> Unit) {
     Button(
         onClick = {
             val dir = FileDialog.showSaveDialog(
-                title = "Create story archive directory",
+                title = Strings.page_openArchive_selector_openDirTitle(),
                 fileFilter = storyArchiveFileFilter(),
                 selectionMode = SelectionMode.DIRECTORIES_ONLY,
             )
@@ -146,28 +148,28 @@ private fun CreateArchiveDirButton(onClick: (Path) -> Unit) {
             }
         }
     ) {
-        Text("Create")
+        Text(Strings.page_openArchive_selector_createButton.remember())
     }
 
-    if (askOpenFor != null) {
+    askOpenFor?.let { askOpenForValue ->
         ConfirmationDialog(
-            title = { Text("Directory already exists") },
+            title = { Text(Strings.page_openArchive_selector_dirAlreadyExists_title.remember()) },
             onDismissRequest = {
                 askOpenFor = null
             },
-            confirmButtonText = "Open",
+            confirmButtonText = Strings.page_openArchive_selector_dirAlreadyExists_openButton.remember(),
             onConfirmRequest = {
-                onClick(askOpenFor!!)
+                onClick(askOpenForValue)
                 askOpenFor = null
             }
         ) {
-            Text("Directory '$askOpenFor' already exists. Open as story archive?")
+            Text(Strings.page_openArchive_selector_dirAlreadyExists_description.remember(askOpenForValue))
         }
     }
 }
 
 private fun storyArchiveFileFilter(): FileFilter {
-    return DirectoriesOnlyFileFilter("Story archive directory")
+    return DirectoriesOnlyFileFilter(Strings.page_openArchive_selector_dirFilter.toString())
 }
 
 @Composable

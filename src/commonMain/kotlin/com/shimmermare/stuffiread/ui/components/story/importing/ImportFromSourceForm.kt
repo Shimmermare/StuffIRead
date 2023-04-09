@@ -15,12 +15,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.importer.ImportSource
 import com.shimmermare.stuffiread.importer.ImportedStory
 import com.shimmermare.stuffiread.importer.pastebin.PasteKey
 import com.shimmermare.stuffiread.ui.AppSettingsHolder.settings
 import com.shimmermare.stuffiread.ui.components.input.OptionalOutlinedEnumField
 import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollColumn
+import com.shimmermare.stuffiread.ui.util.remember
 
 @Composable
 fun ImportFromSourceForm(
@@ -43,7 +45,7 @@ fun ImportFromSourceForm(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("Import from")
+            Text(Strings.components_importing_importFromSourceForm_importFrom.remember())
             OptionalOutlinedEnumField(
                 value = importSource,
                 allowedValues = enabledSources,

@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.stories.Story
 import com.shimmermare.stuffiread.stories.StoryFilter
 import com.shimmermare.stuffiread.stories.StoryId
@@ -36,6 +37,8 @@ import com.shimmermare.stuffiread.ui.components.layout.ExtendedTooltipArea
 import com.shimmermare.stuffiread.ui.components.layout.LoadingContainer
 import com.shimmermare.stuffiread.ui.components.tag.TagNameRoutable
 import com.shimmermare.stuffiread.ui.components.text.TextURI
+import com.shimmermare.stuffiread.ui.util.remember
+import com.shimmermare.stuffiread.util.i18n.PluralLocalizedString
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
@@ -95,16 +98,25 @@ private fun LeftBlock(story: Story) {
                     modifier = Modifier.weight(1F), verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Text(story.name.toString(), style = MaterialTheme.typography.h5)
-                    Text(story.author.toString(), style = MaterialTheme.typography.h6)
+
+                    Text(
+                        text = if (story.author.isPresent) {
+                            story.author.toString()
+                        } else {
+                            Strings.components_storyInfo_author_unknown.remember()
+                        },
+                        style = MaterialTheme.typography.h6,
+                    )
+
 
                     Column {
                         if (story.published != null) {
-                            DateWithLabel("Published:", story.published)
+                            DateWithLabel(Strings.components_storyInfo_published.remember(), story.published)
                         } else {
-                            Text("Unknown publishing date")
+                            Text(Strings.components_storyInfo_published_unknown.remember())
                         }
                         if (story.changed != null && story.published != story.changed) {
-                            DateWithLabel("Last changed:", story.changed)
+                            DateWithLabel(Strings.components_storyInfo_changed.remember(), story.changed)
                         }
                     }
                 }
@@ -119,18 +131,18 @@ private fun LeftBlock(story: Story) {
 
         if (story.url.isPresent) {
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                Text("URL", style = MaterialTheme.typography.h6)
+                Text(Strings.components_storyInfo_url.remember(), style = MaterialTheme.typography.h6)
                 TextURI(story.url.toString(), style = MaterialTheme.typography.subtitle1)
             }
         }
 
         if (story.description.isPresent) {
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                Text("Description", style = MaterialTheme.typography.h6)
+                Text(Strings.components_storyInfo_description.remember(), style = MaterialTheme.typography.h6)
                 Text(story.description.toString())
             }
         } else {
-            Text("No description", style = MaterialTheme.typography.h6)
+            Text(Strings.components_storyInfo_description_noDescription.remember(), style = MaterialTheme.typography.h6)
         }
 
         StorySequels(story.sequels)
@@ -145,7 +157,7 @@ private fun StorySequels(ids: Set<StoryId>) {
         Column(
             verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
-            Text("Sequels", style = MaterialTheme.typography.h6)
+            Text(Strings.components_storyInfo_sequels.remember(), style = MaterialTheme.typography.h6)
             LoadingContainer(
                 key = ids,
                 loader = { ids -> storyService.getStoriesByIds(ids).toList().sortedBy { it.name } },
@@ -166,7 +178,7 @@ private fun StoryPrequels(id: StoryId) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(5.dp)
             ) {
-                Text("Prequels", style = MaterialTheme.typography.h6)
+                Text(Strings.components_storyInfo_prequels.remember(), style = MaterialTheme.typography.h6)
                 stories.forEach { SmallStoryCardRoutableWithPreview(story = it) }
             }
         }
@@ -182,7 +194,7 @@ private fun StoryFilesInfo(story: Story) {
         if (files.isNotEmpty()) {
             Column {
                 val uriHandler = LocalUriHandler.current
-                Text("Story has ${files.size} archived files", style = MaterialTheme.typography.h6)
+                Text(components_storyInfo_files_count.remember(files.size), style = MaterialTheme.typography.h6)
                 Button(
                     onClick = {
                         val filesDirUri = storyFilesService.getStoryFilesDirectory(story.id).toUri()
@@ -190,12 +202,12 @@ private fun StoryFilesInfo(story: Story) {
                         uriHandler.openUri(filesDirUri.toASCIIString())
                     }
                 ) {
-                    Text("Open files directory")
+                    Text(Strings.components_storyInfo_files_openDirButton.remember())
                 }
                 StoryFileListView(files)
             }
         } else {
-            Text("Story has no archived files", style = MaterialTheme.typography.h6)
+            Text(Strings.components_storyInfo_files_noFiles.remember(), style = MaterialTheme.typography.h6)
         }
     }
 }
@@ -209,14 +221,17 @@ private fun RightBlock(story: Story, onRefreshInfoRequest: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             Column {
-                DateWithLabel("First added to archive:", story.created)
-                DateWithLabel("Last update in archive:", story.updated)
+                DateWithLabel(Strings.components_storyInfo_created.remember(), story.created)
+                DateWithLabel(Strings.components_storyInfo_updated.remember(), story.updated)
             }
 
             Column(
                 verticalArrangement = Arrangement.spacedBy(5.dp)
             ) {
-                Text("Story was read " + story.reads.size + " time(s):", style = MaterialTheme.typography.subtitle1)
+                Text(
+                    components_storyInfo_reads_count.remember(story.reads.size),
+                    style = MaterialTheme.typography.subtitle1
+                )
                 story.reads.sorted().forEach { read ->
                     Date(read.date)
                 }
@@ -224,21 +239,21 @@ private fun RightBlock(story: Story, onRefreshInfoRequest: () -> Unit) {
             }
 
             if (story.score != null) {
-                Row {
-                    Text("Score: ", style = MaterialTheme.typography.subtitle1)
+                Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                    Text(Strings.components_storyInfo_score.remember(), style = MaterialTheme.typography.subtitle1)
                     StoryScore(story.score)
                 }
             } else {
-                Text("Story not scored")
+                Text(Strings.components_storyInfo_score_missing.remember())
             }
 
             if (story.review.isPresent) {
                 Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                    Text("Review", style = MaterialTheme.typography.h6)
+                    Text(Strings.components_storyInfo_review.remember(), style = MaterialTheme.typography.h6)
                     Text(story.review.toString())
                 }
             } else {
-                Text("No review", style = MaterialTheme.typography.h6)
+                Text(Strings.components_storyInfo_review_missing.remember(), style = MaterialTheme.typography.h6)
             }
         }
     }
@@ -249,7 +264,7 @@ private fun IReadItJustNowButton(story: Story, onRefreshInfoRequest: () -> Unit)
     val coroutineScope = rememberCoroutineScope()
 
     ExtendedTooltipArea(
-        tooltip = { Text("Add new read with current time") }
+        tooltip = { Text(Strings.components_storyInfo_reads_addNew_tooltip.remember()) }
     ) {
         DisableSelection {
             Button(
@@ -260,8 +275,25 @@ private fun IReadItJustNowButton(story: Story, onRefreshInfoRequest: () -> Unit)
                     }
                 }
             ) {
-                Text("I read it just now")
+                Text(Strings.components_storyInfo_reads_addNew_button.remember())
             }
         }
     }
 }
+
+private val components_storyInfo_files_count = PluralLocalizedString(
+    Strings.components_storyInfo_files_count_other,
+    Strings.components_storyInfo_files_count_one,
+    Strings.components_storyInfo_files_count_two,
+    Strings.components_storyInfo_files_count_few,
+    Strings.components_storyInfo_files_count_many,
+    Strings.components_storyInfo_files_count_other,
+)
+private val components_storyInfo_reads_count = PluralLocalizedString(
+    Strings.components_storyInfo_reads_count_other,
+    Strings.components_storyInfo_reads_count_one,
+    Strings.components_storyInfo_reads_count_two,
+    Strings.components_storyInfo_reads_count_few,
+    Strings.components_storyInfo_reads_count_many,
+    Strings.components_storyInfo_reads_count_other,
+)

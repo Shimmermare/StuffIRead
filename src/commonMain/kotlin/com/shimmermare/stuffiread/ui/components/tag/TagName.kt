@@ -23,7 +23,7 @@ import com.shimmermare.stuffiread.tags.ExtendedTag
 import com.shimmermare.stuffiread.tags.Tag
 import com.shimmermare.stuffiread.tags.TagWithCategory
 import com.shimmermare.stuffiread.ui.Router
-import com.shimmermare.stuffiread.ui.pages.tag.info.TagInfoPage
+import com.shimmermare.stuffiread.ui.pages.tags.TagInfoPage
 import com.shimmermare.stuffiread.ui.util.dashedBorder
 
 val DefaultTagNameHeight = 30.dp

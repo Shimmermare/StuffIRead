@@ -2,7 +2,6 @@ package com.shimmermare.stuffiread.ui.components.story
 
 import androidx.compose.foundation.ContextMenuArea
 import androidx.compose.foundation.ContextMenuItem
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -20,7 +19,6 @@ import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Icon
 import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material.LocalContentColor
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
@@ -32,14 +30,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.stories.file.StoryFile
 import com.shimmermare.stuffiread.stories.file.StoryFileFormat
 import com.shimmermare.stuffiread.stories.file.StoryFileMeta
 import com.shimmermare.stuffiread.ui.util.FileDialog
 import com.shimmermare.stuffiread.ui.util.SelectionMode
+import com.shimmermare.stuffiread.ui.util.remember
 import com.shimmermare.stuffiread.util.dropAt
 import com.shimmermare.stuffiread.util.replaceAt
 import kotlinx.coroutines.launch
@@ -74,7 +73,7 @@ fun StoryFileListInput(files: List<StoryFile>, onValueChange: (List<StoryFile>) 
                     }
                 }
             ) {
-                Text("Add from file")
+                Text(Strings.components_storyFileListInput_addFileButton.remember())
             }
         }
         LazyColumn(
@@ -121,32 +120,35 @@ private fun StoryFileCard(
             items = {
                 buildList {
                     if (index > 0) {
-                        add(ContextMenuItem("Move up") { onIndexChangeRequest(index - 1) })
+                        add(ContextMenuItem(Strings.components_storyFileListInput_reorder_moveUp()) {
+                            onIndexChangeRequest(index - 1)
+                        })
                     }
                     if (index < filesTotal - 1) {
-                        add(ContextMenuItem("Move down") { onIndexChangeRequest(index + 1) })
+                        add(ContextMenuItem(Strings.components_storyFileListInput_reorder_moveDown()) {
+                            onIndexChangeRequest(index + 1)
+                        })
                     }
                     if (index > 0) {
-                        add(ContextMenuItem("Move to top") { onIndexChangeRequest(0) })
+                        add(ContextMenuItem(Strings.components_storyFileListInput_reorder_moveTop()) {
+                            onIndexChangeRequest(0)
+                        })
                     }
                     if (index < filesTotal - 1) {
-                        add(ContextMenuItem("Move to bottom") { onIndexChangeRequest(filesTotal - 1) })
+                        add(ContextMenuItem(Strings.components_storyFileListInput_reorder_moveBottom()) {
+                            onIndexChangeRequest(filesTotal - 1)
+                        })
                     }
                 }
             }
         ) {
-            Surface(
-                modifier = Modifier.border(1.dp, Color.LightGray),
-                elevation = 3.dp
-            ) {
-                StoryFileCardContent(meta) {
-                    StoryFileCardActionButton(icon = Icons.Filled.Clear, onClick = onDeleteRequest)
-                    StoryFileCardActionButton(Icons.Filled.ArrowUpward, enabled = index > 0) {
-                        onIndexChangeRequest(index - 1)
-                    }
-                    StoryFileCardActionButton(Icons.Filled.ArrowDownward, enabled = index == filesTotal - 1) {
-                        onIndexChangeRequest(index + 1)
-                    }
+            StoryFileCard(meta) {
+                StoryFileCardActionButton(icon = Icons.Filled.Clear, onClick = onDeleteRequest)
+                StoryFileCardActionButton(Icons.Filled.ArrowUpward, enabled = index > 0) {
+                    onIndexChangeRequest(index - 1)
+                }
+                StoryFileCardActionButton(Icons.Filled.ArrowDownward, enabled = index == filesTotal - 1) {
+                    onIndexChangeRequest(index + 1)
                 }
             }
         }
@@ -179,7 +181,7 @@ private fun StoryFileCardActionButton(icon: ImageVector, enabled: Boolean = true
 
 private fun openAndLoadStoryFile(): StoryFile? {
     val filePath = FileDialog.showOpenDialog(
-        title = "Open story file",
+        title = Strings.components_storyFileListInput_addFileTitle(),
         selectionMode = SelectionMode.FILES_ONLY,
     ) ?: return null
 

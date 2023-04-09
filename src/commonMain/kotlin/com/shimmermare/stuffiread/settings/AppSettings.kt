@@ -1,9 +1,15 @@
 package com.shimmermare.stuffiread.settings
 
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.settings.AppSettings.Companion.RECENTLY_OPENED_TO_KEEP
+import de.comahe.i18n4k.Locale
 import java.nio.file.Path
 
 data class AppSettings(
+    /**
+     * If not set - system locale will be used.
+     */
+    val locale: Locale? = null,
     val themeBehavior: ThemeBehavior = DEFAULT_THEME_BEHAVIOR,
     val scoreDisplayType: ScoreDisplayType = DEFAULT_SCORE_DISPLAY_TYPE,
     val openLastArchiveOnStartup: Boolean = DEFAULT_OPEN_LAST_ARCHIVE_ON_STARTUP,
@@ -17,6 +23,9 @@ data class AppSettings(
     val enablePonyIntegrations: Boolean = DEFAULT_ENABLE_PONY_INTEGRATIONS,
 ) {
     init {
+        require(locale == null || Strings.locales.contains(locale)) {
+            "Unsupported locale: $locale"
+        }
         require(recentlyOpenedArchives.size.toUInt() <= RECENTLY_OPENED_TO_KEEP) {
             "${recentlyOpenedArchives.size} recently opened archives is more than allowed to keep ($RECENTLY_OPENED_TO_KEEP)"
         }
@@ -27,6 +36,7 @@ data class AppSettings(
 
     fun copyAndResetUserSettings(): AppSettings {
         return copy(
+            locale = null,
             themeBehavior = DEFAULT_THEME_BEHAVIOR,
             scoreDisplayType = DEFAULT_SCORE_DISPLAY_TYPE,
             openLastArchiveOnStartup = DEFAULT_OPEN_LAST_ARCHIVE_ON_STARTUP,

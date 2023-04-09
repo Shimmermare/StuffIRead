@@ -1,4 +1,4 @@
-package com.shimmermare.stuffiread.ui.pages.story.info
+package com.shimmermare.stuffiread.ui.pages.stories
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -18,6 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.stories.Story
 import com.shimmermare.stuffiread.stories.StoryId
 import com.shimmermare.stuffiread.ui.Router
@@ -27,8 +28,6 @@ import com.shimmermare.stuffiread.ui.components.story.DeleteStoryDialog
 import com.shimmermare.stuffiread.ui.components.story.StoryInfo
 import com.shimmermare.stuffiread.ui.pages.LoadedPage
 import com.shimmermare.stuffiread.ui.pages.error.ErrorPage
-import com.shimmermare.stuffiread.ui.pages.stories.StoriesPage
-import com.shimmermare.stuffiread.ui.pages.story.edit.EditStoryPage
 import io.github.aakira.napier.Napier
 
 class StoryInfoPage(val storyId: StoryId) : LoadedPage<Story>() {
@@ -40,9 +39,9 @@ class StoryInfoPage(val storyId: StoryId) : LoadedPage<Story>() {
     override fun Title() {
         val title = remember(status) {
             when (status) {
-                Status.LOADING -> "Loading story ID $storyId..."
-                Status.LOADED -> "Story - ${content!!.name} [${content!!.id}]"
-                Status.FAILED -> "Failed to load story with ID $storyId"
+                Status.LOADING -> Strings.page_storyInfo_loading() + " [" + storyId + "]"
+                Status.LOADED -> Strings.page_storyInfo_title(content!!.name) + " [" + storyId + "]"
+                Status.FAILED -> Strings.page_storyInfo_error_failedToLoad(storyId)
             }
         }
         Text(text = title, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -58,9 +57,9 @@ class StoryInfoPage(val storyId: StoryId) : LoadedPage<Story>() {
 
         Router.goTo(
             ErrorPage(
-                title = "Failed to load story $storyId",
+                title = Strings.page_storyInfo_error_failedToLoad(storyId),
                 exception = error,
-                actions = listOf(ErrorPage.Action("Try Again") {
+                actions = listOf(ErrorPage.Action(Strings.page_storyInfo_error_failedToLoad_tryAgainButton()) {
                     Router.goTo(StoryInfoPage(storyId))
                 })
             )

@@ -15,6 +15,8 @@ import androidx.compose.ui.Modifier
 import com.shimmermare.stuffiread.ui.Router
 import com.shimmermare.stuffiread.ui.components.search.SearchList
 import com.shimmermare.stuffiread.ui.routing.Router
+import com.shimmermare.stuffiread.util.i18n.PluralLocalizedString
+import de.comahe.i18n4k.strings.LocalizedStringFactory1
 
 /**
  * Base for page with mutable table of items.
@@ -38,7 +40,7 @@ abstract class MutableTablePage<Id, Item> : LoadedPage<Map<Id, Item>>() {
             SearchList(
                 itemsById.values,
                 nameGetter = { it.name() },
-                unitNameProvider = ::getUnitName,
+                resultText = getSearchResultText(),
             ) { filtered ->
                 TableContent(filtered, onDeleteRequest = { showDeleteDialogFor = it })
             }
@@ -60,7 +62,7 @@ abstract class MutableTablePage<Id, Item> : LoadedPage<Map<Id, Item>>() {
 
     protected abstract fun Item.name(): String
 
-    protected abstract fun getUnitName(count: Int): String
+    protected abstract fun getSearchResultText(): PluralLocalizedString<LocalizedStringFactory1>
 
     protected abstract fun Router.goToCreatePage()
 
