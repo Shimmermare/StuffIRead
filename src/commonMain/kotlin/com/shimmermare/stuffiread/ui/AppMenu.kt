@@ -8,7 +8,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.ui.components.AboutApp
+import com.shimmermare.stuffiread.ui.util.remember
 
 @Composable
 fun AppMenu(
@@ -24,14 +26,14 @@ fun AppMenu(
     ) {
         if (StoryArchiveHolder.isOpen) {
             DropdownMenuItem(onClick = { StoryArchiveHolder.closeStoryArchive() }) {
-                Text("Close archive")
+                Text(Strings.appMenu_closeArchive.remember())
             }
         }
         DropdownMenuItem(onClick = onOpenSettingsRequest) {
-            Text("Settings")
+            Text(Strings.appMenu_settings.remember())
         }
         DropdownMenuItem(onClick = { showAbout = true }) {
-            Text("About")
+            Text(Strings.appMenu_about.remember())
         }
     }
 

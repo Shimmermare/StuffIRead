@@ -1,11 +1,11 @@
 package com.shimmermare.stuffiread.stories.file
 
-enum class StoryFileFormat(val extension: String?) {
+enum class StoryFileFormat(val extension: String) {
     TXT("txt"),
     EPUB("epub"),
     PDF("pdf"),
     HTML("html"),
-    OTHER(null);
+    OTHER("?");
 
     companion object {
         private val formatsByExtension = values().associateBy { it.extension }

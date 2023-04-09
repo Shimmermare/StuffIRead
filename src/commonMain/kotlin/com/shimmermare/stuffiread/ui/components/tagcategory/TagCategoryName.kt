@@ -11,7 +11,7 @@ import com.shimmermare.stuffiread.tags.TagCategory
 import com.shimmermare.stuffiread.ui.Router
 import com.shimmermare.stuffiread.ui.components.tag.DefaultTagNameHeight
 import com.shimmermare.stuffiread.ui.components.text.FilledNameText
-import com.shimmermare.stuffiread.ui.pages.tagcategory.info.TagCategoryInfoPage
+import com.shimmermare.stuffiread.ui.pages.tagcategories.TagCategoryInfoPage
 
 val DefaultCategoryNameHeight = DefaultTagNameHeight
 val DefaultCategoryNameModifier = Modifier.height(DefaultCategoryNameHeight)

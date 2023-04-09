@@ -1,6 +1,5 @@
 package com.shimmermare.stuffiread.ui.components.story.importing
 
-import ResetFormButton
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.widthIn
@@ -16,12 +15,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.importer.ImportSource
 import com.shimmermare.stuffiread.importer.ImportedStory
 import com.shimmermare.stuffiread.ui.components.error.ErrorCard
 import com.shimmermare.stuffiread.ui.components.error.ErrorInfo
 import com.shimmermare.stuffiread.ui.components.form.InputForm
 import com.shimmermare.stuffiread.ui.components.form.InputFormState
+import com.shimmermare.stuffiread.ui.components.form.ResetFormButton
+import com.shimmermare.stuffiread.ui.util.remember
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.launch
 
@@ -46,7 +48,7 @@ fun <FormData> BaseSourceImportForm(
         error?.let { ErrorCard(it, modifier = Modifier.widthIn(max = 800.dp)) }
 
         if (inProcess) {
-            Text("Importing...")
+            Text(Strings.components_importing_baseSourceImportForm_inProcess.remember())
             CircularProgressIndicator()
         } else {
             InputForm(
@@ -56,7 +58,7 @@ fun <FormData> BaseSourceImportForm(
                     ResetFormButton(
                         state = state,
                         originalData = defaultData(),
-                        name = "Clear",
+                        text = Strings.components_importing_baseSourceImportForm_clearButton.remember(),
                     )
                     Button(
                         onClick = {
@@ -68,14 +70,17 @@ fun <FormData> BaseSourceImportForm(
                                     onImported(importedStory)
                                 } catch (e: Exception) {
                                     Napier.e(e) { "Failed to import story from $source with form: $formData" }
-                                    error = ErrorInfo(title = "Import failed", exception = e)
+                                    error = ErrorInfo(
+                                        title = Strings.components_importing_baseSourceImportForm_error_importFailed(),
+                                        exception = e
+                                    )
                                 }
                                 inProcess = false
                             }
                         },
                         enabled = state.isValid,
                     ) {
-                        Text("Import")
+                        Text(Strings.components_importing_baseSourceImportForm_importButton.remember())
                     }
                 },
                 fields = fields

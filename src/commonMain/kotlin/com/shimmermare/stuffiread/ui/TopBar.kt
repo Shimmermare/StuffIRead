@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.ui.pages.openarchive.OpenArchivePage
 import com.shimmermare.stuffiread.ui.pages.settings.SettingsPage
 import com.shimmermare.stuffiread.ui.pages.stories.StoriesPage
@@ -29,6 +30,8 @@ import com.shimmermare.stuffiread.ui.pages.tags.TagsPage
 import com.shimmermare.stuffiread.ui.routing.Page
 import com.shimmermare.stuffiread.ui.theme.LocalTheme
 import com.shimmermare.stuffiread.ui.theme.Theme
+import com.shimmermare.stuffiread.ui.util.remember
+import de.comahe.i18n4k.strings.LocalizedString
 
 @Composable
 fun TopBar() {
@@ -50,11 +53,11 @@ fun TopBar() {
         },
         actions = {
             if (StoryArchiveHolder.isOpen) {
-                GoToPageActionButton("Stories") { StoriesPage() }
-                GoToPageActionButton("Tags") { TagsPage() }
-                GoToPageActionButton("Tag categories") { TagCategoriesPage() }
+                GoToPageActionButton(Strings.page_stories_navigationButton) { StoriesPage() }
+                GoToPageActionButton(Strings.page_tags_navigationButton) { TagsPage() }
+                GoToPageActionButton(Strings.page_tagCategories_navigationButton) { TagCategoriesPage() }
             } else if (Router.currentPage !is OpenArchivePage) {
-                GoToPageActionButton("Open archive") { OpenArchivePage() }
+                GoToPageActionButton(Strings.page_openArchive_navigationButton) { OpenArchivePage() }
             }
         }
     )
@@ -62,10 +65,10 @@ fun TopBar() {
 
 @Composable
 private inline fun <reified T : Page> GoToPageActionButton(
-    pageName: String,
+    pageName: LocalizedString,
     crossinline pageSupplier: () -> T
 ) {
-    ActionButton(pageName, Router.currentPage !is T, onClick = { Router.goTo(pageSupplier()) })
+    ActionButton(pageName.remember(), Router.currentPage !is T, onClick = { Router.goTo(pageSupplier()) })
 }
 
 @Composable

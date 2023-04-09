@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.tags.ExtendedTag
 import com.shimmermare.stuffiread.tags.TagWithCategory
 import com.shimmermare.stuffiread.ui.components.layout.ChipVerticalGrid
@@ -32,6 +33,7 @@ import com.shimmermare.stuffiread.ui.components.table.Table
 import com.shimmermare.stuffiread.ui.components.tag.TagName
 import com.shimmermare.stuffiread.ui.components.tag.TagNameRoutable
 import com.shimmermare.stuffiread.ui.components.tagcategory.TagCategoryName
+import com.shimmermare.stuffiread.ui.util.remember
 
 
 @Composable
@@ -41,13 +43,22 @@ fun TagTable(
     onEditRequest: (ExtendedTag) -> Unit,
     onDeleteRequest: (ExtendedTag) -> Unit
 ) {
+    val nameText = Strings.page_tags_table_column_name.remember()
+    val categoryText = Strings.page_tags_table_column_category.remember()
+    val descriptionText = Strings.page_tags_table_column_description.remember()
+    val implicationsText = Strings.page_tags_table_column_implications.remember()
+    val impliedTagsText = Strings.page_tags_table_column_implications_impliedTags.remember()
+    val indirectlyImpliedTagsText = Strings.page_tags_table_column_implications_indirectlyImpliedTags.remember()
+    val implyingTagsText = Strings.page_tags_table_column_implications_implyingTags.remember()
+    val indirectlyImplyingTagsText = Strings.page_tags_table_column_implications_indirectlyImplyingTags.remember()
+
     Table(
         items = tags,
         defaultOrder = ExtendedTag.DEFAULT_ORDER,
         onRowClick = onRowClick,
     ) {
         column(
-            title = "Name",
+            title = nameText,
             columnWeight = 1F,
             sorter = Comparator.comparing { it.tag.name }
         ) { item ->
@@ -55,7 +66,7 @@ fun TagTable(
         }
 
         column(
-            title = "Category",
+            title = categoryText,
             columnWeight = 1F,
             sorter = Comparator.comparing { it.category.name }
         ) { item ->
@@ -63,7 +74,7 @@ fun TagTable(
         }
 
         column(
-            title = "Description",
+            title = descriptionText,
             columnWeight = 2F,
             sorter = Comparator.comparing { it.tag.description }
         ) { item ->
@@ -73,31 +84,31 @@ fun TagTable(
         }
 
         column(
-            title = "Implications",
+            title = implicationsText,
             columnWeight = 1F,
         ) { item ->
             Row(verticalAlignment = Alignment.CenterVertically) {
                 TagImplication(
                     items = item.impliedTags,
-                    tooltip = "Implied tags",
+                    tooltip = impliedTagsText,
                     indirect = false,
                     icon = Icons.Filled.ArrowDownward
                 )
                 TagImplication(
                     items = item.indirectlyImpliedTags,
-                    tooltip = "Indirectly implied tags",
+                    tooltip = indirectlyImpliedTagsText,
                     indirect = true,
                     icon = Icons.Filled.ArrowDownward
                 )
                 TagImplication(
                     items = item.implyingTags,
-                    tooltip = "Implying tags",
+                    tooltip = implyingTagsText,
                     indirect = false,
                     icon = Icons.Filled.ArrowUpward
                 )
                 TagImplication(
                     items = item.indirectlyImplyingTags,
-                    tooltip = "Indirectly implying tags",
+                    tooltip = indirectlyImplyingTagsText,
                     indirect = true,
                     icon = Icons.Filled.ArrowUpward
                 )

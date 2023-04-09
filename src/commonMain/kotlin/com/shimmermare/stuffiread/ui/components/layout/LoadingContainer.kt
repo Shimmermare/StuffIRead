@@ -11,6 +11,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import com.shimmermare.stuffiread.i18n.Strings
+import com.shimmermare.stuffiread.ui.util.remember
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.withTimeout
 import kotlin.time.Duration
@@ -20,13 +22,13 @@ import kotlin.time.Duration.Companion.seconds
  * Same as [OptionalLoadingContainer] but [loader] is not allowed to return null.
  */
 @Composable
-inline fun <K, V> LoadingContainer(
+inline fun <K : Any, V> LoadingContainer(
     key: K,
     timeout: Duration = 5.seconds,
     crossinline loader: suspend CoroutineScope.(K) -> V,
     crossinline onError: @Composable (Exception) -> Unit = {
         Text(
-            text = "Loading failed. Key: $key",
+            text = Strings.components_loadingContainer_error.remember(key),
             color = MaterialTheme.colors.error
         )
     },
@@ -46,13 +48,13 @@ inline fun <K, V> LoadingContainer(
  * Will show loading indicator while in loading and error if loading failed.
  */
 @Composable
-inline fun <K, V> OptionalLoadingContainer(
+inline fun <K : Any, V> OptionalLoadingContainer(
     key: K,
     timeout: Duration = 5.seconds,
     crossinline loader: suspend CoroutineScope.(K) -> V?,
     crossinline onError: @Composable (Exception) -> Unit = {
         Text(
-            text = "Loading failed. Key: $key",
+            text = Strings.components_loadingContainer_error.remember(key),
             color = MaterialTheme.colors.error
         )
     },

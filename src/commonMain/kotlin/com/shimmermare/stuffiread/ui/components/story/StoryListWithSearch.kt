@@ -37,10 +37,12 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.stories.Score
 import com.shimmermare.stuffiread.stories.Story
 import com.shimmermare.stuffiread.stories.StoryFilter
 import com.shimmermare.stuffiread.stories.StoryId
+import com.shimmermare.stuffiread.ui.CurrentLocale
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storySearchService
 import com.shimmermare.stuffiread.ui.components.error.ErrorCard
 import com.shimmermare.stuffiread.ui.components.error.ErrorInfo
@@ -56,11 +58,10 @@ import com.shimmermare.stuffiread.ui.components.input.OutlinedUIntField
 import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollColumn
 import com.shimmermare.stuffiread.ui.components.search.DefaultSearchBarModifier
 import com.shimmermare.stuffiread.ui.components.search.SearchBar
-import com.shimmermare.stuffiread.ui.components.story.SortBehavior.ASCENDING_UNKNOWN_FIRST
-import com.shimmermare.stuffiread.ui.components.story.SortBehavior.DESCENDING
-import com.shimmermare.stuffiread.ui.components.story.SortBehavior.DESCENDING_UNKNOWN_FIRST
 import com.shimmermare.stuffiread.ui.components.tag.MultiTagPicker
 import com.shimmermare.stuffiread.ui.util.TimeUtils
+import com.shimmermare.stuffiread.ui.util.remember
+import com.shimmermare.stuffiread.util.i18n.PluralLocalizedString
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
@@ -86,7 +87,7 @@ fun StoryListWithSearch(presetFilter: StoryFilter = StoryFilter.DEFAULT) {
 @Composable
 private fun StoryFilterControls(currentFilter: StoryFilter, onFilterChange: (StoryFilter) -> Unit) {
     val state = remember(currentFilter) { InputFormState(currentFilter) }
-    var showAdvanced: Boolean by remember { mutableStateOf(false) }
+    var showFilters: Boolean by remember { mutableStateOf(false) }
 
     Column(
         horizontalAlignment = Alignment.Start,
@@ -102,7 +103,7 @@ private fun StoryFilterControls(currentFilter: StoryFilter, onFilterChange: (Sto
             ) {
                 SearchBar(
                     searchText = state.data.nameContains ?: "",
-                    placeholderText = "Search by name",
+                    placeholderText = Strings.page_stories_search_nameSearchbarPlaceholder.remember(),
                     onSearchTextChanged = { state.data = state.data.copy(nameContains = it.ifBlank { null }) },
                     modifier = DefaultSearchBarModifier.onKeyEvent {
                         if (it.key == Key.Enter && state.isValid && currentFilter != state.data) {
@@ -124,63 +125,64 @@ private fun StoryFilterControls(currentFilter: StoryFilter, onFilterChange: (Sto
                 modifier = Modifier.requiredWidth(IntrinsicSize.Max),
             ) {
                 Button(
-                    onClick = { showAdvanced = !showAdvanced },
+                    onClick = { showFilters = !showFilters },
                 ) {
-                    Text(if (showAdvanced) "Hide advanced" else "Show advanced")
+                    Text(
+                        if (showFilters)
+                            Strings.page_stories_search_hideAdvancedFiltersButton.remember()
+                        else
+                            Strings.page_stories_search_showAdvancedFiltersButton.remember()
+                    )
                 }
                 Button(
                     onClick = { onFilterChange(StoryFilter.DEFAULT) },
                     enabled = state.data != StoryFilter.DEFAULT,
                 ) {
-                    Text("Reset")
+                    Text(Strings.page_stories_search_resetButton.remember())
                 }
                 Button(
                     onClick = { if (state.isValid && currentFilter != state.data) onFilterChange(state.data) },
                     enabled = state.isValid && currentFilter != state.data
                 ) {
-                    Text("Search")
+                    Text(Strings.page_stories_search_searchButton.remember())
                 }
             }
         }
-        if (showAdvanced) {
-            AdvancedStoryFilterControls(state)
-        }
-    }
-}
 
-@Composable
-private fun AdvancedStoryFilterControls(state: InputFormState<StoryFilter>) {
-    Box(
-        modifier = Modifier.heightIn(max = 300.dp)
-    ) {
-        InputForm(
-            state = state,
-            modifier = Modifier.fillMaxWidth(),
-        ) { formState ->
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(500.dp),
-                horizontalArrangement = Arrangement.spacedBy(40.dp),
-                verticalArrangement = Arrangement.spacedBy(40.dp)
+        if (showFilters) {
+            Box(
+                modifier = Modifier.heightIn(max = 300.dp)
             ) {
-                this.advancedStoryFilterFields(formState)
+                InputForm(
+                    state = state,
+                    modifier = Modifier.fillMaxWidth(),
+                ) { formState ->
+                    LazyVerticalGrid(
+                        columns = GridCells.Adaptive(800.dp),
+                        horizontalArrangement = Arrangement.spacedBy(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(40.dp)
+                    ) {
+                        this.filterFields(formState)
+                    }
+                }
             }
         }
     }
 }
 
-private fun LazyGridScope.advancedStoryFilterFields(state: InputFormState<StoryFilter>) {
-    advancedControlItem(Arrangement.spacedBy(20.dp)) {
+private fun LazyGridScope.filterFields(state: InputFormState<StoryFilter>) {
+    filterItem(Arrangement.spacedBy(20.dp)) {
         TextFormField(
             id = "authorContains",
             state = state,
-            name = "Author",
+            name = Strings.page_stories_search_filter_authorContains.remember(),
             getter = { it.authorContains ?: "" },
             setter = { data, value -> data.copy(authorContains = value.ifBlank { null }) }
         )
         TextFormField(
             id = "descriptionContains",
             state = state,
-            name = "Description contains",
+            name = Strings.page_stories_search_filter_descriptionContains.remember(),
             getter = { it.descriptionContains ?: "" },
             setter = { data, value -> data.copy(descriptionContains = value.ifBlank { null }) },
             singleLine = false
@@ -188,24 +190,24 @@ private fun LazyGridScope.advancedStoryFilterFields(state: InputFormState<StoryF
         TextFormField(
             id = "contentContains",
             state = state,
-            name = "Content contains",
+            name = Strings.page_stories_search_filter_contentContains.remember(),
             getter = { it.contentContains ?: "" },
             setter = { data, value -> data.copy(contentContains = value.ifBlank { null }) },
             singleLine = false
         )
     }
-    advancedControlItem(Arrangement.spacedBy(10.dp)) {
+    filterItem(Arrangement.spacedBy(10.dp)) {
         TextFormField(
             id = "urlContains",
             state = state,
-            name = "URL",
+            name = Strings.page_stories_search_filter_url.remember(),
             getter = { it.urlContains ?: "" },
             setter = { data, value -> data.copy(urlContains = value.ifBlank { null }) },
         )
         OptionalInstantRangeFormField(
             id = "publishedRange",
             state = state,
-            name = "Published date range (inclusive)",
+            name = Strings.page_stories_search_filter_publishedRange.remember(),
             defaultValue = { TimeUtils.instantTodayAt0000() },
             fromGetter = { it.publishedAfter },
             toGetter = { it.publishedBefore },
@@ -214,23 +216,23 @@ private fun LazyGridScope.advancedStoryFilterFields(state: InputFormState<StoryF
         OptionalInstantRangeFormField(
             id = "changedRange",
             state = state,
-            name = "Changed date range (inclusive)",
+            name = Strings.page_stories_search_filter_changedRange.remember(),
             defaultValue = { TimeUtils.instantTodayAt0000() },
             fromGetter = { it.changedAfter },
             toGetter = { it.changedBefore },
             setter = { data, from, to -> data.copy(changedAfter = from, changedBefore = to) },
         )
     }
-    advancedControlItem(Arrangement.spacedBy(15.dp)) {
+    filterItem(Arrangement.spacedBy(15.dp)) {
         FormField(
             id = "tagsPresent",
             state = state,
-            name = "With tags",
+            name = Strings.page_stories_search_filter_tagsPresent.remember(),
             getter = { it.tagsPresent ?: emptySet() },
             setter = { form, value -> form.copy(tagsPresent = value.ifEmpty { null }) },
         ) { value, _, onValueChange ->
             MultiTagPicker(
-                title = "Pick tags that should be present (including implied)",
+                title = Strings.page_stories_search_filter_tagsPresent_pickerTitle.remember(),
                 pickedTagIds = value,
                 onPick = onValueChange
             )
@@ -238,12 +240,12 @@ private fun LazyGridScope.advancedStoryFilterFields(state: InputFormState<StoryF
         FormField(
             id = "tagsAbsent",
             state = state,
-            name = "Without tags",
+            name = Strings.page_stories_search_filter_tagsAbsent.remember(),
             getter = { it.tagsAbsent ?: emptySet() },
             setter = { form, value -> form.copy(tagsAbsent = value.ifEmpty { null }) },
         ) { value, _, onValueChange ->
             MultiTagPicker(
-                title = "Pick tags that should be absent (including implied)",
+                title = Strings.page_stories_search_filter_tagsAbsent_pickerTitle.remember(),
                 pickedTagIds = value,
                 onPick = onValueChange
             )
@@ -251,7 +253,7 @@ private fun LazyGridScope.advancedStoryFilterFields(state: InputFormState<StoryF
         OptionalRangeFormField(
             id = "wordCountRange",
             state = state,
-            name = "Word count range (inclusive)",
+            name = Strings.page_stories_search_filter_wordCountRange.remember(),
             defaultValue = { 0u },
             fromGetter = { it.wordCountGreaterOrEqual },
             toGetter = { it.wordCountLessOrEqual },
@@ -265,11 +267,11 @@ private fun LazyGridScope.advancedStoryFilterFields(state: InputFormState<StoryF
             )
         }
     }
-    advancedControlItem(Arrangement.spacedBy(20.dp)) {
+    filterItem(Arrangement.spacedBy(20.dp)) {
         OptionalRangeFormField(
             id = "scoreRange",
             state = state,
-            name = "Score range (inclusive)",
+            name = Strings.page_stories_search_filter_scoreRange.remember(),
             defaultValue = { Score(0F) },
             fromGetter = { it.scoreGreaterOrEqual },
             toGetter = { it.scoreLessOrEqual },
@@ -280,17 +282,17 @@ private fun LazyGridScope.advancedStoryFilterFields(state: InputFormState<StoryF
         TextFormField(
             id = "reviewContains",
             state = state,
-            name = "Review contains",
+            name = Strings.page_stories_search_filter_reviewContains.remember(),
             getter = { it.reviewContains ?: "" },
             setter = { data, value -> data.copy(reviewContains = value.ifBlank { null }) },
             singleLine = false
         )
     }
-    advancedControlItem(Arrangement.spacedBy(10.dp)) {
+    filterItem(Arrangement.spacedBy(10.dp)) {
         OptionalInstantRangeFormField(
             id = "firstReadRange",
             state = state,
-            name = "First read date range (inclusive)",
+            name = Strings.page_stories_search_filter_firstReadRange.remember(),
             defaultValue = { TimeUtils.instantTodayAt0000() },
             fromGetter = { it.firstReadAfter },
             toGetter = { it.firstReadBefore },
@@ -299,7 +301,7 @@ private fun LazyGridScope.advancedStoryFilterFields(state: InputFormState<StoryF
         OptionalInstantRangeFormField(
             id = "lastReadRange",
             state = state,
-            name = "First read date range (inclusive)",
+            name = Strings.page_stories_search_filter_lastReadRange.remember(),
             defaultValue = { TimeUtils.instantTodayAt0000() },
             fromGetter = { it.lastReadAfter },
             toGetter = { it.lastReadBefore },
@@ -308,7 +310,7 @@ private fun LazyGridScope.advancedStoryFilterFields(state: InputFormState<StoryF
         OptionalRangeFormField(
             id = "timesReadRange",
             state = state,
-            name = "Times read range (inclusive)",
+            name = Strings.page_stories_search_filter_timesReadRange.remember(),
             defaultValue = { 0u },
             fromGetter = { it.timesReadGreaterOrEqual },
             toGetter = { it.timesReadLessOrEqual },
@@ -322,11 +324,11 @@ private fun LazyGridScope.advancedStoryFilterFields(state: InputFormState<StoryF
             )
         }
     }
-    advancedControlItem(Arrangement.spacedBy(10.dp)) {
+    filterItem(Arrangement.spacedBy(10.dp)) {
         OptionalInstantRangeFormField(
             id = "createdRange",
             state = state,
-            name = "Created date range (inclusive)",
+            name = Strings.page_stories_search_filter_createdRange.remember(),
             defaultValue = { TimeUtils.instantTodayAt0000() },
             fromGetter = { it.createdAfter },
             toGetter = { it.createdBefore },
@@ -335,7 +337,7 @@ private fun LazyGridScope.advancedStoryFilterFields(state: InputFormState<StoryF
         OptionalInstantRangeFormField(
             id = "updatedRange",
             state = state,
-            name = "Created date range (inclusive)",
+            name = Strings.page_stories_search_filter_updatedRange.remember(),
             defaultValue = { TimeUtils.instantTodayAt0000() },
             fromGetter = { it.updatedAfter },
             toGetter = { it.updatedBefore },
@@ -344,7 +346,7 @@ private fun LazyGridScope.advancedStoryFilterFields(state: InputFormState<StoryF
         RangedOptionalIntFormField(
             id = "id",
             state = state,
-            name = "ID",
+            name = Strings.page_stories_search_filter_id.remember(),
             defaultValue = 1,
             getter = { it.idIn?.firstOrNull()?.value?.toInt() },
             setter = { data, value -> data.copy(idIn = value?.let { setOf(StoryId(it.toUInt())) }) },
@@ -353,7 +355,7 @@ private fun LazyGridScope.advancedStoryFilterFields(state: InputFormState<StoryF
     }
 }
 
-private fun LazyGridScope.advancedControlItem(
+private fun LazyGridScope.filterItem(
     verticalArrangement: Arrangement.Vertical,
     content: @Composable () -> Unit
 ) {
@@ -374,8 +376,8 @@ private fun LazyGridScope.advancedControlItem(
 @Composable
 private fun StoryList(filter: StoryFilter) {
     var sortBy: SortBy by remember { mutableStateOf(SortBy.DEFAULT) }
-    var sortBehavior: SortBehavior by remember { mutableStateOf(SortBehavior.DEFAULT) }
-    val comparator: Comparator<Story> = remember(sortBy, sortBehavior) { buildComparator(sortBy, sortBehavior) }
+    var sortOrder: SortOrder by remember { mutableStateOf(SortOrder.DEFAULT) }
+    val comparator: Comparator<Story> = remember(sortBy, sortOrder) { buildComparator(sortBy, sortOrder) }
 
     var ignoreInvalidStories: Boolean by remember { mutableStateOf(false) }
 
@@ -397,16 +399,16 @@ private fun StoryList(filter: StoryFilter) {
         } catch (e: Exception) {
             Napier.e(e) { "Failed to search stories with filter $filter" }
             error = ErrorInfo(
-                title = "Search failed",
+                title = Strings.page_stories_search_searchFailed_title.toString(),
                 exception = e,
-                suggestion = "You can exclude invalid stories from search."
+                suggestion = Strings.page_stories_search_searchFailed_suggestion.toString()
             )
             stories.clear()
         }
         inProgress = false
     }
 
-    LaunchedEffect(sortBy, sortBehavior) {
+    LaunchedEffect(sortBy, sortOrder) {
         stories.sortWith(comparator)
     }
 
@@ -417,7 +419,7 @@ private fun StoryList(filter: StoryFilter) {
         ) {
             ErrorCard(error!!)
             Button(onClick = { ignoreInvalidStories = true }) {
-                Text("Ignore invalid stories")
+                Text(Strings.page_stories_search_searchFailed_ignoreInvalidButton.remember())
             }
         }
     } else {
@@ -426,37 +428,32 @@ private fun StoryList(filter: StoryFilter) {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
-            val storiesFoundText = when {
-                inProgress -> when {
-                    stories.isEmpty() -> "Searching..."
-                    stories.size == 1 -> "Found 1 story. Searching for more..."
-                    else -> "Found ${stories.size} stories. Searching for more..."
+            Column {
+                if (stories.isNotEmpty() || !inProgress) {
+                    Text(stories_search_result.remember(stories.size), style = MaterialTheme.typography.h6)
                 }
-
-                else -> when {
-                    stories.isEmpty() -> "No stories found"
-                    stories.size == 1 -> "Found 1 story"
-                    else -> "Found ${stories.size} stories"
+                if (inProgress) {
+                    Text(Strings.page_stories_search_searching.remember(), style = MaterialTheme.typography.h6)
                 }
             }
-            Text(storiesFoundText, style = MaterialTheme.typography.h5)
 
             Row(
                 horizontalArrangement = Arrangement.spacedBy(5.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                Text(Strings.page_stories_search_sort_sortBy.remember())
                 OutlinedEnumField(
                     value = sortBy,
                     allowedValues = SortBy.values,
-                    displayNameProvider = { "Sort by: " + it.displayName },
+                    displayNameProvider = sortByDisplayNameProvider(),
                     onValueChange = { sortBy = it },
                     inputFieldModifier = Modifier.width(300.dp).height(36.dp)
                 )
                 OutlinedEnumField(
-                    value = sortBehavior,
-                    allowedValues = SortBehavior.values,
-                    displayNameProvider = { it.displayName },
-                    onValueChange = { sortBehavior = it },
+                    value = sortOrder,
+                    allowedValues = SortOrder.values,
+                    displayNameProvider = sortOrderDisplayNameProvider(),
+                    onValueChange = { sortOrder = it },
                     inputFieldModifier = Modifier.width(250.dp).height(36.dp)
                 )
             }
@@ -479,14 +476,47 @@ private fun StoryList(filter: StoryFilter) {
     }
 }
 
-private fun buildComparator(sortBy: SortBy, behavior: SortBehavior): Comparator<Story> {
+@Composable
+private fun sortByDisplayNameProvider(): (SortBy) -> String {
+    val map = remember(CurrentLocale) {
+        hashMapOf(
+            SortBy.ID to Strings.page_stories_search_sort_sortBy_ID.toString(),
+            SortBy.NAME to Strings.page_stories_search_sort_sortBy_NAME.toString(),
+            SortBy.AUTHOR to Strings.page_stories_search_sort_sortBy_AUTHOR.toString(),
+            SortBy.PUBLISHED to Strings.page_stories_search_sort_sortBy_PUBLISHED.toString(),
+            SortBy.CHANGED to Strings.page_stories_search_sort_sortBy_CHANGED.toString(),
+            SortBy.SCORE to Strings.page_stories_search_sort_sortBy_SCORE.toString(),
+            SortBy.FIRST_READ to Strings.page_stories_search_sort_sortBy_FIRST_READ.toString(),
+            SortBy.LAST_READ to Strings.page_stories_search_sort_sortBy_LAST_READ.toString(),
+            SortBy.TIMES_READ to Strings.page_stories_search_sort_sortBy_TIMES_READ.toString(),
+            SortBy.CREATED to Strings.page_stories_search_sort_sortBy_CREATED.toString(),
+            SortBy.UPDATED to Strings.page_stories_search_sort_sortBy_UPDATED.toString(),
+        )
+    }
+    return { map.getOrDefault(it, it.name) }
+}
+
+@Composable
+private fun sortOrderDisplayNameProvider(): (SortOrder) -> String {
+    val map = remember(CurrentLocale) {
+        hashMapOf(
+            SortOrder.ASCENDING to Strings.page_stories_search_sort_sortOrder_ASCENDING.toString(),
+            SortOrder.DESCENDING to Strings.page_stories_search_sort_sortOrder_DESCENDING.toString(),
+            SortOrder.ASCENDING_UNKNOWN_FIRST to Strings.page_stories_search_sort_sortOrder_ASCENDING_UNKNOWN_FIRST.toString(),
+            SortOrder.DESCENDING_UNKNOWN_FIRST to Strings.page_stories_search_sort_sortOrder_DESCENDING_UNKNOWN_FIRST.toString(),
+        )
+    }
+    return { map.getOrDefault(it, it.name) }
+}
+
+private fun buildComparator(sortBy: SortBy, behavior: SortOrder): Comparator<Story> {
     return Comparator { a, b ->
         val aUnknown = sortBy.isUnknown(a)
         val bUnknown = sortBy.isUnknown(b)
 
         val unknownSorted = aUnknown.compareTo(bUnknown)
         if (unknownSorted != 0) {
-            return@Comparator if (behavior == ASCENDING_UNKNOWN_FIRST || behavior == DESCENDING_UNKNOWN_FIRST) {
+            return@Comparator if (behavior == SortOrder.ASCENDING_UNKNOWN_FIRST || behavior == SortOrder.DESCENDING_UNKNOWN_FIRST) {
                 unknownSorted * -1
             } else {
                 unknownSorted
@@ -494,7 +524,7 @@ private fun buildComparator(sortBy: SortBy, behavior: SortBehavior): Comparator<
         }
 
         val byValue = sortBy.comparator.compare(a, b)
-        return@Comparator if (behavior == DESCENDING || behavior == DESCENDING_UNKNOWN_FIRST) {
+        return@Comparator if (behavior == SortOrder.DESCENDING || behavior == SortOrder.DESCENDING_UNKNOWN_FIRST) {
             byValue * -1
         } else {
             byValue
@@ -502,52 +532,21 @@ private fun buildComparator(sortBy: SortBy, behavior: SortBehavior): Comparator<
     }
 }
 
-@Suppress("unused")
 private enum class SortBy(
-    val displayName: String,
-    val isUnknown: (Story) -> Boolean = { false },
-    val comparator: Comparator<Story>
+    val comparator: Comparator<Story>,
+    val isUnknown: (Story) -> Boolean = { false }
 ) {
-    ID("ID", comparator = Comparator.comparing { it.id }),
-    NAME("Name", comparator = Comparator.comparing { it.name }),
-    AUTHOR("Author", isUnknown = { !it.author.isPresent }, comparator = Comparator.comparing { it.author }),
-    PUBLISHED(
-        "Published",
-        isUnknown = { it.published == null },
-        comparator = Comparator.comparing { it.published ?: DISTANT_FUTURE }
-    ),
-    CHANGED(
-        "Changed",
-        isUnknown = { it.changed == null },
-        comparator = Comparator.comparing { it.changed ?: DISTANT_FUTURE }
-    ),
-    SCORE(
-        "Score",
-        isUnknown = { it.score == null },
-        comparator = Comparator.comparing { it.score ?: Score(1F) }
-    ),
-    FIRST_READ(
-        "First read",
-        isUnknown = { it.firstRead == null },
-        comparator = Comparator.comparing { it.firstRead ?: DISTANT_FUTURE }
-    ),
-    LAST_READ(
-        "Last read",
-        isUnknown = { it.lastRead == null },
-        comparator = Comparator.comparing { it.lastRead ?: DISTANT_FUTURE }
-    ),
-    TIMES_READ(
-        "Times read",
-        comparator = Comparator.comparing { it.reads.size }
-    ),
-    CREATED(
-        "Created",
-        comparator = Comparator.comparing { it.created }
-    ),
-    UPDATED(
-        "Updated",
-        comparator = Comparator.comparing { it.updated }
-    );
+    ID(Comparator.comparing { it.id }),
+    NAME(Comparator.comparing { it.name }),
+    AUTHOR(Comparator.comparing { it.author }, isUnknown = { !it.author.isPresent }),
+    PUBLISHED(Comparator.comparing { it.published ?: DISTANT_FUTURE }, isUnknown = { it.published == null }),
+    CHANGED(Comparator.comparing { it.changed ?: DISTANT_FUTURE }, isUnknown = { it.changed == null }),
+    SCORE(Comparator.comparing { it.score ?: Score(1F) }, isUnknown = { it.score == null }),
+    FIRST_READ(Comparator.comparing { it.firstRead ?: DISTANT_FUTURE }, isUnknown = { it.firstRead == null }),
+    LAST_READ(Comparator.comparing { it.lastRead ?: DISTANT_FUTURE }, isUnknown = { it.lastRead == null }),
+    TIMES_READ(Comparator.comparing { it.reads.size }),
+    CREATED(Comparator.comparing { it.created }),
+    UPDATED(Comparator.comparing { it.updated });
 
     companion object {
         val DEFAULT = UPDATED
@@ -557,18 +556,25 @@ private enum class SortBy(
     }
 }
 
-private enum class SortBehavior(
-    val displayName: String,
-) {
-    ASCENDING("Ascending"),
-    DESCENDING("Descending"),
-    ASCENDING_UNKNOWN_FIRST("Ascending (unknown first)"),
-    DESCENDING_UNKNOWN_FIRST("Descending (unknown first)");
+private enum class SortOrder {
+    ASCENDING,
+    DESCENDING,
+    ASCENDING_UNKNOWN_FIRST,
+    DESCENDING_UNKNOWN_FIRST;
 
     companion object {
         val DEFAULT = DESCENDING
 
         // To avoid alloc
-        val values: Set<SortBehavior> = values().toSet()
+        val values: Set<SortOrder> = values().toSet()
     }
 }
+
+private val stories_search_result = PluralLocalizedString(
+    Strings.page_stories_search_result_zero,
+    Strings.page_stories_search_result_one,
+    Strings.page_stories_search_result_two,
+    Strings.page_stories_search_result_few,
+    Strings.page_stories_search_result_many,
+    Strings.page_stories_search_result_other,
+)

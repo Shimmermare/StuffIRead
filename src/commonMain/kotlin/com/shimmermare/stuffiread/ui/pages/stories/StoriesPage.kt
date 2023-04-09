@@ -15,7 +15,6 @@ import androidx.compose.ui.unit.dp
 import com.shimmermare.stuffiread.stories.StoryFilter
 import com.shimmermare.stuffiread.ui.Router
 import com.shimmermare.stuffiread.ui.components.story.StoryListWithSearch
-import com.shimmermare.stuffiread.ui.pages.story.create.CreateStoryPage
 import com.shimmermare.stuffiread.ui.routing.Page
 
 class StoriesPage(

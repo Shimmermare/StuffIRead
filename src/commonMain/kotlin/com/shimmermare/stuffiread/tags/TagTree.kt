@@ -34,14 +34,22 @@ class TagTree private constructor(
     }
 
     init {
-        categoriesById.forEach { (id, _) ->
+        categoriesById.forEach { (id, category) ->
             require(id != TagCategoryId.None) {
                 "Category can't have 0 ID"
+            }
+            val nameUsedBy = categoriesByNameLowercase[category.name.value.lowercase()]
+            require(nameUsedBy == null || nameUsedBy.id == id) {
+                "Category $id has name '${category.name}' that is already taken by category ${nameUsedBy!!.id}"
             }
         }
         tagsById.forEach { (id, tag) ->
             require(id != TagId.None) {
                 "Tag can't have 0 ID"
+            }
+            val nameUsedBy = tagsByNameLowercase[tag.name.value.lowercase()]
+            require(nameUsedBy == null || nameUsedBy.id == id) {
+                "Tag $id has name '${tag.name}' that is already taken by tag ${nameUsedBy!!.id}"
             }
             require(categoriesById.containsKey(tag.categoryId)) {
                 "Tag $id has missing category ${tag.categoryId}"
@@ -189,27 +197,13 @@ class TagTree private constructor(
         )
     }
 
-    fun copyAndUpdateTag(tag: Tag): CopyTreeResult<Tag> {
-        require(tagsById.containsKey(tag.id)) {
-            "Tag ${tag.id} doesn't exist"
-        }
-        requireUniqueTagName(tag.name, allowedId = tag.id)
-        val updated = tag.copy(updated = Clock.System.now())
-        return CopyTreeResult(
-            TagTree(
-                categoriesById,
-                tagsById + (updated.id to updated),
-            ),
-            updated
-        )
-    }
-
     fun copyAndUpdateTags(tags: Iterable<Tag>): CopyTreeResult<List<Tag>> {
         val updatedTags = tags.associate { tag ->
             require(tagsById.containsKey(tag.id)) {
                 "Tag ${tag.id} doesn't exist"
             }
             requireUniqueTagName(tag.name, allowedId = tag.id)
+            requireExistingCategory(tag.categoryId)
             tag.id to tag.copy(updated = Clock.System.now())
         }
         return CopyTreeResult(
@@ -226,6 +220,7 @@ class TagTree private constructor(
             "Tag to create already has ID ${tag.id}"
         }
         requireUniqueTagName(tag.name, allowedId = null)
+        requireExistingCategory(tag.categoryId)
         val createdTs = Clock.System.now()
         val created = tag.copy(
             id = nextFreeTagId(),
@@ -245,6 +240,12 @@ class TagTree private constructor(
         val usedBy = tagsByNameLowercase[name.value.lowercase()]
         require(usedBy == null || usedBy.id == allowedId) {
             "Name '$name' is already taken by ${usedBy!!.id}"
+        }
+    }
+
+    private fun requireExistingCategory(id: TagCategoryId) {
+        require(categoriesById.containsKey(id)) {
+            "Category $id doesn't exist"
         }
     }
 

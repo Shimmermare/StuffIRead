@@ -1,4 +1,4 @@
-package com.shimmermare.stuffiread.ui.pages.story.create
+package com.shimmermare.stuffiread.ui.pages.stories
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.stories.Story
 import com.shimmermare.stuffiread.stories.StoryName
 import com.shimmermare.stuffiread.ui.Router
@@ -25,13 +26,13 @@ import com.shimmermare.stuffiread.ui.components.animation.AnimatedFadeIn
 import com.shimmermare.stuffiread.ui.components.story.SavingStoryForm
 import com.shimmermare.stuffiread.ui.components.story.StoryFormData
 import com.shimmermare.stuffiread.ui.components.story.importing.StoryImportForm
-import com.shimmermare.stuffiread.ui.pages.story.info.StoryInfoPage
 import com.shimmermare.stuffiread.ui.routing.Page
+import com.shimmermare.stuffiread.ui.util.remember
 
 class CreateStoryPage : Page {
     @Composable
     override fun Title() {
-        Text(text = "New story", maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(text = Strings.page_storyCreate_title.remember(), maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 
     @Composable
@@ -80,10 +81,20 @@ class CreateStoryPage : Page {
             ),
         ) {
             if (showManualCreate) {
-                Button(onClick = { onSelected(StoryFormData(Story(name = StoryName("Story name")))) }) {
-                    Text("Add manually")
+                Button(
+                    onClick = {
+                        onSelected(
+                            StoryFormData(
+                                Story(
+                                    name = StoryName(Strings.page_storyCreate_defaultName())
+                                )
+                            )
+                        )
+                    }
+                ) {
+                    Text(Strings.page_storyCreate_addManuallyButton.remember())
                 }
-                Text("OR", style = MaterialTheme.typography.h5)
+                Text(Strings.page_storyCreate_or.remember(), style = MaterialTheme.typography.h5)
             }
             StoryImportForm(
                 onSourceSelected = { showManualCreate = (it == null) },

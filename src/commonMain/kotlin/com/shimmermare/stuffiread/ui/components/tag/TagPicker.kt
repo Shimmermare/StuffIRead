@@ -11,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.tags.Tag
 import com.shimmermare.stuffiread.tags.TagId
 import com.shimmermare.stuffiread.tags.TagWithCategory
@@ -21,6 +22,8 @@ import com.shimmermare.stuffiread.ui.components.layout.PickerWithSearchLayout
 import com.shimmermare.stuffiread.ui.components.layout.PopupContent
 import com.shimmermare.stuffiread.ui.components.search.SearchBar
 import com.shimmermare.stuffiread.ui.components.text.FilledNameText
+import com.shimmermare.stuffiread.ui.util.remember
+import com.shimmermare.stuffiread.util.i18n.PluralLocalizedString
 
 @Composable
 fun TagPicker(
@@ -56,7 +59,7 @@ private fun PickedTag(pickedTagId: TagId, onOpenPopupRequest: () -> Unit) {
         TagName(pickedTag, onClick = onOpenPopupRequest)
     } else {
         FilledNameText(
-            "Click to pick",
+            Strings.components_tagPicker_pickerButton.remember(),
             MaterialTheme.colors.primary,
             modifier = Modifier.height(DefaultTagNameHeight).clickable(onClick = onOpenPopupRequest)
         )
@@ -100,10 +103,10 @@ private fun PickerPopup(
                 title = title,
                 pickedItems = {
                     if (pickedTag != null) {
-                        Text(text = "Picked tag:")
+                        Text(Strings.components_tagPicker_pickedTag.remember())
                         TagName(pickedTag, onClick = { pickedTagId = TagId.None })
                     } else {
-                        Text(text = "Tag not picked")
+                        Text(Strings.components_tagPicker_notPicked.remember())
                     }
                 },
                 searchBar = {
@@ -114,7 +117,7 @@ private fun PickerPopup(
                 },
                 availableToPickItems = {
                     if (availableToPickTags.isNotEmpty()) {
-                        Text(text = "Found ${availableToPickTags.size} tag(s):")
+                        Text(components_tagPicker_search_found.remember(availableToPickTags.size))
                         ChipVerticalGrid {
                             availableToPickTags.forEach {
                                 TagName(
@@ -124,23 +127,23 @@ private fun PickerPopup(
                             }
                         }
                     } else if (allTags.isEmpty()) {
-                        Text("No tag(s) exist to pick.")
+                        Text(Strings.components_tagPicker_search_noExisting.remember())
                     } else {
-                        Text("No tag(s) found.")
+                        Text(Strings.components_tagPicker_search_notFound.remember())
                     }
                 },
                 actionButtons = {
                     Button(onClick = onCloseRequest) {
-                        Text("Cancel")
+                        Text(Strings.components_tagPicker_cancelButton.remember())
                     }
                     Button(
                         enabled = currentlyPickedTagId != pickedTagId,
                         onClick = { onPicked(pickedTagId) }
                     ) {
-                        Text("Confirm")
+                        Text(Strings.components_tagPicker_confirmButton.remember())
                     }
                     Button(onClick = { showQuickCreate = true }) {
-                        Text("Quick create")
+                        Text(Strings.components_tagPicker_quickCreateButton.remember())
                     }
                 }
             )
@@ -157,3 +160,12 @@ private fun PickerPopup(
         )
     }
 }
+
+val components_tagPicker_search_found = PluralLocalizedString(
+    Strings.components_tagPicker_search_found_other,
+    Strings.components_tagPicker_search_found_one,
+    Strings.components_tagPicker_search_found_two,
+    Strings.components_tagPicker_search_found_few,
+    Strings.components_tagPicker_search_found_many,
+    Strings.components_tagPicker_search_found_other,
+)

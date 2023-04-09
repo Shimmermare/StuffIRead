@@ -12,6 +12,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
+import com.shimmermare.stuffiread.ui.util.remember
 
 @Composable
 fun ErrorCard(
@@ -49,7 +51,7 @@ fun ErrorCard(
 
             if (exception != null) {
                 Column {
-                    Text("Exception stack trace:", fontWeight = FontWeight.Bold)
+                    Text(Strings.components_errorCard_stackTraceTitle.remember(), fontWeight = FontWeight.Bold)
                     // Default font can't display tab char
                     val text = exception.stackTraceToString().replace("\t", "    ")
                     Text(text)

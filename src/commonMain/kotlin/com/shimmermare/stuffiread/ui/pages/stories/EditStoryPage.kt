@@ -1,4 +1,4 @@
-package com.shimmermare.stuffiread.ui.pages.story.edit
+package com.shimmermare.stuffiread.ui.pages.stories
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -9,7 +9,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.stories.StoryId
+import com.shimmermare.stuffiread.ui.CurrentLocale
 import com.shimmermare.stuffiread.ui.Router
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storyCoverService
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storyFilesService
@@ -17,7 +19,8 @@ import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storyService
 import com.shimmermare.stuffiread.ui.components.story.SavingStoryForm
 import com.shimmermare.stuffiread.ui.components.story.StoryFormData
 import com.shimmermare.stuffiread.ui.pages.LoadedPage
-import com.shimmermare.stuffiread.ui.pages.story.info.StoryInfoPage
+import com.shimmermare.stuffiread.ui.pages.error.ErrorPage
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.toSet
 import kotlinx.coroutines.withContext
@@ -28,13 +31,12 @@ class EditStoryPage(
 ) : LoadedPage<StoryFormData>() {
     @Composable
     override fun Title() {
-        val title = remember(storyId, status) {
+        val title = remember(storyId, status, CurrentLocale) {
             when (status) {
-                Status.LOADING -> "Loading story $storyId..."
-                Status.LOADED -> "Story (Editing) - ${content!!.story.name} [${storyId}]"
-                Status.FAILED -> "Failed to load story $storyId!"
+                Status.LOADING -> Strings.page_storyEdit_loading()
+                Status.LOADED -> Strings.page_storyEdit_title(content!!.story.name) + "[" + storyId + "]"
+                Status.FAILED -> Strings.page_storyEdit_error_failedToLoad(storyId)
             }
-
         }
         Text(text = title, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
@@ -55,8 +57,22 @@ class EditStoryPage(
     }
 
     @Composable
-    override fun LoadedContent() {
+    override fun LoadingError() {
+        Napier.e(error) { "Failed to load story $storyId" }
 
+        Router.goTo(
+            ErrorPage(
+                title = Strings.page_storyEdit_error_failedToLoad(storyId),
+                exception = error,
+                actions = listOf(ErrorPage.Action(Strings.page_storyEdit_error_failedToLoad_tryAgainButton()) {
+                    Router.goTo(EditStoryPage(storyId))
+                })
+            )
+        )
+    }
+
+    @Composable
+    override fun LoadedContent() {
         Scaffold(
             modifier = Modifier
                 .fillMaxSize()

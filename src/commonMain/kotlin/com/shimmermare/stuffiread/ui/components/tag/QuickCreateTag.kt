@@ -9,13 +9,13 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.tags.Tag
 import com.shimmermare.stuffiread.tags.TagCategoryId
 import com.shimmermare.stuffiread.tags.TagName
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
 import com.shimmermare.stuffiread.ui.components.layout.FullscreenPopup
-import com.shimmermare.stuffiread.ui.pages.tag.edit.EditTagPageMode
-import com.shimmermare.stuffiread.ui.pages.tag.edit.TagForm
+import com.shimmermare.stuffiread.ui.util.remember
 
 @Composable
 fun QuickCreateTag(
@@ -27,11 +27,11 @@ fun QuickCreateTag(
             verticalArrangement = Arrangement.spacedBy(10.dp),
             modifier = Modifier.padding(20.dp),
         ) {
-            Text("Create tag", style = MaterialTheme.typography.h6)
+            Text(Strings.components_quickCreateTag_title.remember(), style = MaterialTheme.typography.h6)
             TagForm(
-                mode = EditTagPageMode.CREATE,
+                creationMode = true,
                 tag = Tag(
-                    name = TagName("New tag"),
+                    name = TagName(Strings.components_tagForm_name_default_new()),
                     categoryId = TagCategoryId.None,
                 ),
                 modifier = Modifier.width(800.dp),

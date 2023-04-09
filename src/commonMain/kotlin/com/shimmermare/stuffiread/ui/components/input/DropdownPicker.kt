@@ -37,7 +37,7 @@ fun <T> DropdownPicker(
     pickerField: @Composable (expanded: Boolean) -> Unit = { expanded ->
         TextDropdownPickerField(value, displayText, expanded)
     },
-    dropdownValues: List<T>,
+    dropdownValues: Iterable<T>,
     dropdownItem: @Composable (item: T) -> Unit = { item ->
         TextDropdownItem(item, picked = item == value, displayText)
     },
@@ -103,7 +103,7 @@ fun <T> DropdownPicker(
 }
 
 @Composable
-fun <T> TextDropdownPickerField(value: T, displayText: (T) -> String, expanded: Boolean) {
+private fun <T> TextDropdownPickerField(value: T, displayText: (T) -> String, expanded: Boolean) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(start = 5.dp, top = 5.dp, bottom = 5.dp)
@@ -114,7 +114,7 @@ fun <T> TextDropdownPickerField(value: T, displayText: (T) -> String, expanded: 
 }
 
 @Composable
-fun <T> TextDropdownItem(value: T, picked: Boolean, displayText: (T) -> String) {
+private fun <T> TextDropdownItem(value: T, picked: Boolean, displayText: (T) -> String) {
     Text(
         text = displayText(value),
         color = if (picked) MaterialTheme.colors.onPrimary else Color.Unspecified,

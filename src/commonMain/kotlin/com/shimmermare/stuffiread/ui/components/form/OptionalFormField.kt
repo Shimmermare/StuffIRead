@@ -11,6 +11,8 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
+import com.shimmermare.stuffiread.ui.util.remember
 
 @Composable
 fun <FormData, FieldValue> OptionalFormField(
@@ -38,11 +40,10 @@ fun <FormData, FieldValue> OptionalFormField(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (value == null) {
-                Text("Not specified")
                 Button(
                     onClick = { onValueChange(defaultValue()) },
                 ) {
-                    Text("Set")
+                    Text(Strings.components_form_optionalField_setButton.remember())
                 }
             } else {
                 input(value, valid, onValueChange)

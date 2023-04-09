@@ -11,6 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.settings.AppSettings
 import com.shimmermare.stuffiread.ui.AppSettingsHolder
 import com.shimmermare.stuffiread.ui.Router
@@ -19,6 +20,7 @@ import com.shimmermare.stuffiread.ui.StoryArchiveHolder.storyArchive
 import com.shimmermare.stuffiread.ui.components.dialog.ConfirmationDialog
 import com.shimmermare.stuffiread.ui.pages.error.ErrorPage
 import com.shimmermare.stuffiread.ui.routing.Page
+import com.shimmermare.stuffiread.ui.util.remember
 import com.shimmermare.stuffiread.util.FileUtils
 import com.shimmermare.stuffiread.util.FileUtils.directoryNotExistsOrEmpty
 import io.github.aakira.napier.Napier
@@ -54,8 +56,8 @@ class OpenArchivePage(
                 Napier.e(e) { "Failed to open story archive $archiveDirectory" }
                 Router.goTo(
                     ErrorPage(
-                        title = "Failed to open story archive",
-                        description = "Story archive: $archiveDirectory",
+                        title = Strings.page_openArchive_error_failedToOpen_title.toString(),
+                        description = Strings.page_openArchive_error_failedToOpen_description(archiveDirectory),
                         exception = e,
                     )
                 )
@@ -81,20 +83,20 @@ class OpenArchivePage(
 
         offerExampleContentFor?.let { archiveDirectory ->
             ConfirmationDialog(
-                title = { Text("Archive empty") },
-                dismissButtonText = "No",
+                title = { Text(Strings.page_openArchive_exampleContent_title.remember()) },
+                dismissButtonText = Strings.page_openArchive_exampleContent_dismissButton.remember(),
                 onDismissRequest = {
                     offerExampleContentFor = null
                     tryOpenStoryArchive(archiveDirectory, offerExampleContentIfEmpty = false)
                 },
-                confirmButtonText = "Yes",
+                confirmButtonText = Strings.page_openArchive_exampleContent_confirmButton.remember(),
                 onConfirmRequest = {
                     offerExampleContentFor = null
                     copyExampleContentToArchive(archiveDirectory)
                     tryOpenStoryArchive(archiveDirectory)
                 }
             ) {
-                Text("Archive '$archiveDirectory' is empty. Add example content?\nIncludes a few stories with categorized tags.")
+                Text(Strings.page_openArchive_exampleContent_description.remember(archiveDirectory))
             }
         }
     }

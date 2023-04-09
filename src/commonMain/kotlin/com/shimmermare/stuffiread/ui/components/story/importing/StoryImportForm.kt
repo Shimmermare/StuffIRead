@@ -19,6 +19,6 @@ fun StoryImportForm(
     if (importedStory == null) {
         ImportFromSourceForm(onSourceSelected) { importedStory = it }
     } else {
-        ImportTagMappingForm(importedStory!!, onImported)
+        TagMappingForm(importedStory!!, onImported)
     }
 }

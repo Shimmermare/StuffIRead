@@ -10,10 +10,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.tags.TagCategory
 import com.shimmermare.stuffiread.tags.TagCategoryId
 import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
 import com.shimmermare.stuffiread.ui.components.dialog.ConfirmationDialog
+import com.shimmermare.stuffiread.ui.util.remember
 
 /**
  * Dialog that presents to user option to safely delete tag category.
@@ -35,7 +37,7 @@ fun DeleteTagCategoryDialog(
                 horizontalArrangement = Arrangement.spacedBy(5.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("Confirm removal of ")
+                Text(Strings.components_deleteTagCategoryDialog_title.remember())
                 TagCategoryName(category)
             }
         },
@@ -53,9 +55,9 @@ fun DeleteTagCategoryDialog(
         }
     ) {
         if (tagsInCategoryCount > 0u) {
-            Text("$tagsInCategoryCount tags in this category. Before deleting category you must provide a replacement: ")
+            Text(Strings.components_deleteTagCategoryDialog_replacement_description.remember(tagsInCategoryCount))
             TagCategoryPicker(
-                title = "Pick replacement tag category",
+                title = Strings.components_deleteTagCategoryDialog_replacement_title.remember(),
                 pickedCategoryId = replacementCategoryId,
                 filter = { it.id != category.id },
                 onPick = { replacementCategoryId = it }

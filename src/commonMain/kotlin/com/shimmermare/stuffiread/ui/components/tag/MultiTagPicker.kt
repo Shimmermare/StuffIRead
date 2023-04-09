@@ -12,6 +12,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.tags.Tag
 import com.shimmermare.stuffiread.tags.TagId
 import com.shimmermare.stuffiread.tags.TagWithCategory
@@ -22,6 +23,8 @@ import com.shimmermare.stuffiread.ui.components.layout.FullscreenPopup
 import com.shimmermare.stuffiread.ui.components.layout.PickerWithSearchLayout
 import com.shimmermare.stuffiread.ui.components.layout.PopupContent
 import com.shimmermare.stuffiread.ui.components.search.SearchBar
+import com.shimmermare.stuffiread.ui.util.remember
+import com.shimmermare.stuffiread.util.i18n.PluralLocalizedString
 
 /**
  * Pick multiple tags.
@@ -117,7 +120,7 @@ private fun MultiPickerPopup(
                 title = title,
                 pickedItems = {
                     if (pickedTags.isNotEmpty()) {
-                        Text(text = "Picked ${pickedTags.size} tag(s):")
+                        Text(components_tagPicker_multi_pickedTags.remember(pickedTags.size))
                         ChipVerticalGrid {
                             pickedTags.forEach { tag ->
                                 TagName(
@@ -127,7 +130,7 @@ private fun MultiPickerPopup(
                             }
                         }
                     } else {
-                        Text("No tag(s) picked.")
+                        Text(Strings.components_tagPicker_multi_notPicked.remember())
                     }
                 },
                 searchBar = {
@@ -138,7 +141,7 @@ private fun MultiPickerPopup(
                 },
                 availableToPickItems = {
                     if (availableToPickTags.isNotEmpty()) {
-                        Text(text = "Found ${availableToPickTags.size} tag(s):")
+                        Text(components_tagPicker_search_found.remember(availableToPickTags.size))
                         ChipVerticalGrid {
                             availableToPickTags.forEach {
                                 TagName(
@@ -148,23 +151,23 @@ private fun MultiPickerPopup(
                             }
                         }
                     } else if (allTags.isEmpty()) {
-                        Text("No tag(s) exist to pick.")
+                        Text(Strings.components_tagPicker_search_noExisting.remember())
                     } else {
-                        Text("No tag(s) found.")
+                        Text(Strings.components_tagPicker_search_notFound.remember())
                     }
                 },
                 actionButtons = {
                     Button(onClick = onCloseRequest) {
-                        Text("Cancel")
+                        Text(Strings.components_tagPicker_cancelButton.remember())
                     }
                     Button(
                         enabled = currentlyPickedTagIds != pickedTagIds,
                         onClick = { onPicked(pickedTagIds) }
                     ) {
-                        Text("Confirm")
+                        Text(Strings.components_tagPicker_confirmButton.remember())
                     }
                     Button(onClick = { showQuickCreate = true }) {
-                        Text("Quick create")
+                        Text(Strings.components_tagPicker_quickCreateButton.remember())
                     }
                 }
             )
@@ -181,3 +184,12 @@ private fun MultiPickerPopup(
         )
     }
 }
+
+private val components_tagPicker_multi_pickedTags = PluralLocalizedString(
+    Strings.components_tagPicker_multi_pickedTags_other,
+    Strings.components_tagPicker_multi_pickedTags_one,
+    Strings.components_tagPicker_multi_pickedTags_two,
+    Strings.components_tagPicker_multi_pickedTags_few,
+    Strings.components_tagPicker_multi_pickedTags_many,
+    Strings.components_tagPicker_multi_pickedTags_other,
+)

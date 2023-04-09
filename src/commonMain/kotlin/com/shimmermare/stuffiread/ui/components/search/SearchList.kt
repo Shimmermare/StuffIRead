@@ -16,16 +16,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.shimmermare.stuffiread.i18n.Strings
+import com.shimmermare.stuffiread.ui.util.remember
+import com.shimmermare.stuffiread.util.i18n.PluralLocalizedString
+import de.comahe.i18n4k.strings.LocalizedStringFactory1
 
 /**
  * List with search through named items and customizable advanced search.
+ *
+ * @param resultText - provider of localized text lines with amount of found units.
+ *     E.g. 1 -> "found 1 item", 2 -> "found 2 items" and so on.
  */
 @Composable
 fun <T> SearchList(
     items: Collection<T>,
     modifier: Modifier = Modifier.padding(20.dp),
     nameGetter: (T) -> String,
-    unitNameProvider: (Int) -> String = { if (it == 1) "item" else "items" },
+    resultText: PluralLocalizedString<LocalizedStringFactory1>,
     table: @Composable (List<T>) -> Unit
 ) {
     var searchByNameText: String by remember { mutableStateOf("") }
@@ -42,16 +49,13 @@ fun <T> SearchList(
         ) {
             SearchBar(
                 searchText = searchByNameText,
-                placeholderText = "Search by name",
+                placeholderText = Strings.components_searchList_searchBarPlaceholder.remember(),
                 onSearchTextChanged = { searchByNameText = it },
             )
         }
 
         Text(
-            text = when (filteredItems.size) {
-                0 -> "No ${unitNameProvider(0)} found"
-                else -> "${filteredItems.size} ${unitNameProvider(filteredItems.size)} found"
-            },
+            text = resultText.remember(filteredItems.size),
             style = MaterialTheme.typography.h6
         )
 

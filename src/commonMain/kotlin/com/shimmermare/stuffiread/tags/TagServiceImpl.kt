@@ -135,7 +135,8 @@ class TagServiceImpl(
     }
 
     override fun updateTag(tag: Tag): Tag {
-        val (tree, updated) = tree.copyAndUpdateTag(tag)
+        val (tree, updatedList) = tree.copyAndUpdateTags(listOf(tag))
+        val updated = updatedList[0]
         this.tree = tree
         saveTreeAsync()
         return updated

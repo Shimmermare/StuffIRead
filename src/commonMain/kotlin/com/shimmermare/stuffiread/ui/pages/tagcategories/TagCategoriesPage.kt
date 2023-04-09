@@ -1,6 +1,7 @@
 package com.shimmermare.stuffiread.ui.pages.tagcategories
 
 import androidx.compose.runtime.Composable
+import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.tags.TagCategory
 import com.shimmermare.stuffiread.tags.TagCategoryId
 import com.shimmermare.stuffiread.ui.Router
@@ -8,9 +9,9 @@ import com.shimmermare.stuffiread.ui.StoryArchiveHolder.tagService
 import com.shimmermare.stuffiread.ui.components.tagcategory.DeleteTagCategoryDialog
 import com.shimmermare.stuffiread.ui.pages.MutableTablePage
 import com.shimmermare.stuffiread.ui.pages.error.ErrorPage
-import com.shimmermare.stuffiread.ui.pages.tagcategory.edit.EditTagCategoryPage
-import com.shimmermare.stuffiread.ui.pages.tagcategory.info.TagCategoryInfoPage
 import com.shimmermare.stuffiread.ui.routing.Router
+import com.shimmermare.stuffiread.ui.util.remember
+import com.shimmermare.stuffiread.util.i18n.PluralLocalizedString
 import io.github.aakira.napier.Napier
 
 /**
@@ -31,18 +32,16 @@ class TagCategoriesPage : MutableTablePage<TagCategoryId, TagCategory>() {
 
         Router.goTo(
             ErrorPage(
-                title = "Failed to load tag categories",
+                title = Strings.page_tagCategories_failedToLoad_title.remember(),
                 exception = error,
-                actions = listOf(ErrorPage.Action("Try Again") {
+                actions = listOf(ErrorPage.Action(Strings.page_tagCategories_failedToLoad_tryAgainButton.remember()) {
                     Router.goTo(TagCategoriesPage())
                 })
             )
         )
     }
 
-    override fun getUnitName(count: Int): String {
-        return if (count == 1) "tag category" else "tag categories"
-    }
+    override fun getSearchResultText() = tagCategories_search_result
 
     override fun Router.goToCreatePage() = goTo(EditTagCategoryPage.create())
 
@@ -63,8 +62,19 @@ class TagCategoriesPage : MutableTablePage<TagCategoryId, TagCategory>() {
         TagCategoryTable(
             categories = items,
             onClickRequest = { Router.goTo(TagCategoryInfoPage(it.id)) },
-            onEditRequest = { Router.goTo(EditTagCategoryPage(it)) },
+            onEditRequest = { Router.goTo(EditTagCategoryPage.edit(it)) },
             onDeleteRequest = onDeleteRequest
+        )
+    }
+
+    companion object {
+        private val tagCategories_search_result = PluralLocalizedString(
+            Strings.page_tagCategories_search_result_zero,
+            Strings.page_tagCategories_search_result_one,
+            Strings.page_tagCategories_search_result_two,
+            Strings.page_tagCategories_search_result_few,
+            Strings.page_tagCategories_search_result_many,
+            Strings.page_tagCategories_search_result_other,
         )
     }
 }
