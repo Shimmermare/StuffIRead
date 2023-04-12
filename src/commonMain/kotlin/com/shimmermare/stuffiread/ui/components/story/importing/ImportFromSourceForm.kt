@@ -20,6 +20,7 @@ import com.shimmermare.stuffiread.importer.ImportSource
 import com.shimmermare.stuffiread.importer.ImportedStory
 import com.shimmermare.stuffiread.importer.pastebin.PasteKey
 import com.shimmermare.stuffiread.ui.AppSettingsHolder.settings
+import com.shimmermare.stuffiread.ui.CurrentLocale
 import com.shimmermare.stuffiread.ui.components.input.OptionalOutlinedEnumField
 import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollColumn
 import com.shimmermare.stuffiread.ui.util.remember
@@ -29,9 +30,10 @@ fun ImportFromSourceForm(
     onSourceSelected: (ImportSource?) -> Unit,
     onImported: (ImportedStory) -> Unit
 ) {
-    val enabledSources: Set<ImportSource> = remember(settings) {
-        ImportSource.values()
-            .let { if (settings.enablePonyIntegrations) it.toList() else it.filter { s -> !s.ponyIntegration } }
+    val enabledSources: Set<ImportSource> = remember(settings, CurrentLocale) {
+        ImportSource.values().asSequence()
+            .filter { settings.showForeignImportSources || it.locale.language == CurrentLocale.language }
+            .filter { settings.enablePonyIntegrations || !it.ponyIntegration }
             .toSet()
     }
 

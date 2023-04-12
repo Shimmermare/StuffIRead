@@ -25,14 +25,29 @@ fun AppMenu(
         onDismissRequest = onDismissRequest
     ) {
         if (StoryArchiveHolder.isOpen) {
-            DropdownMenuItem(onClick = { StoryArchiveHolder.closeStoryArchive() }) {
+            DropdownMenuItem(
+                onClick = {
+                    StoryArchiveHolder.closeStoryArchive()
+                    onDismissRequest()
+                }
+            ) {
                 Text(Strings.appMenu_closeArchive.remember())
             }
         }
-        DropdownMenuItem(onClick = onOpenSettingsRequest) {
+        DropdownMenuItem(
+            onClick = {
+                onOpenSettingsRequest()
+                onDismissRequest()
+            }
+        ) {
             Text(Strings.appMenu_settings.remember())
         }
-        DropdownMenuItem(onClick = { showAbout = true }) {
+        DropdownMenuItem(
+            onClick = {
+                showAbout = true
+                onDismissRequest()
+            }
+        ) {
             Text(Strings.appMenu_about.remember())
         }
     }

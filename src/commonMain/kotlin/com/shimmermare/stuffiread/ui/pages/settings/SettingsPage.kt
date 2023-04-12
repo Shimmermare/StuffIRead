@@ -3,9 +3,11 @@ package com.shimmermare.stuffiread.ui.pages.settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material.Button
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -19,12 +21,13 @@ import com.shimmermare.stuffiread.settings.ThemeBehavior
 import com.shimmermare.stuffiread.stories.Score
 import com.shimmermare.stuffiread.ui.AppSettingsHolder
 import com.shimmermare.stuffiread.ui.CurrentLocale
-import com.shimmermare.stuffiread.ui.components.form.BoolFormField
 import com.shimmermare.stuffiread.ui.components.form.EnumFormField
 import com.shimmermare.stuffiread.ui.components.form.FormField
 import com.shimmermare.stuffiread.ui.components.form.InputFormState
+import com.shimmermare.stuffiread.ui.components.form.LeanBoolFormField
 import com.shimmermare.stuffiread.ui.components.form.SubmittableInputForm
 import com.shimmermare.stuffiread.ui.components.input.OutlinedDropdownField
+import com.shimmermare.stuffiread.ui.components.layout.VerticalScrollColumn
 import com.shimmermare.stuffiread.ui.components.story.StoryScore
 import com.shimmermare.stuffiread.ui.routing.Page
 import com.shimmermare.stuffiread.ui.util.remember
@@ -34,35 +37,51 @@ import de.comahe.i18n4k.i18n4k
 class SettingsPage : Page {
     @Composable
     override fun Body() {
-        Column(
-            modifier = Modifier.padding(20.dp).sizeIn(maxWidth = 600.dp),
+        VerticalScrollColumn(
+            modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            val resetButtonText = Strings.page_settings_resetButton.remember()
-            SubmittableInputForm(
-                data = AppSettingsHolder.settings,
-                modifier = Modifier.padding(20.dp).sizeIn(maxWidth = 800.dp),
-                submitButtonText = Strings.page_settings_saveButton.remember(),
-                onSubmit = {
-                    AppSettingsHolder.update(it)
-                },
-                actions = { state ->
-                    Button(
-                        onClick = {
-                            AppSettingsHolder.reset()
-                        },
-                        enabled = state.data != state.data.copyAndResetUserSettings()
-                    ) {
-                        Text(resetButtonText)
-                    }
-                },
-            ) { state ->
-                LocaleField(state)
-                ThemeField(state)
-                ScoreDisplayField(state)
-                OpenLastArchiveOnStartupField(state)
-                PonyIntegrationsField(state)
+            Column(
+                modifier = Modifier.padding(20.dp).sizeIn(maxWidth = 600.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                SettingsForm()
             }
+        }
+    }
+
+    @Composable
+    private fun SettingsForm() {
+        val resetButtonText = Strings.page_settings_resetButton.remember()
+        SubmittableInputForm(
+            data = AppSettingsHolder.settings,
+            modifier = Modifier.padding(20.dp).sizeIn(maxWidth = 800.dp),
+            submitButtonText = Strings.page_settings_saveButton.remember(),
+            onSubmit = {
+                AppSettingsHolder.update(it)
+            },
+            actions = { state ->
+                Button(
+                    onClick = {
+                        AppSettingsHolder.reset()
+                    },
+                    enabled = state.data != state.data.copyAndResetUserSettings()
+                ) {
+                    Text(resetButtonText)
+                }
+            },
+        ) { state ->
+            Text(Strings.page_settings_section_app.remember(), style = MaterialTheme.typography.h5)
+            LocaleField(state)
+            OpenLastArchiveOnStartupField(state)
+            CheckUpdatesField(state)
+            Text(Strings.page_settings_section_style.remember(), style = MaterialTheme.typography.h5)
+            ThemeField(state)
+            ScoreDisplayField(state)
+            Text(Strings.page_settings_section_import.remember(), style = MaterialTheme.typography.h5)
+            ShowForeignSourcesField(state)
+            PonyIntegrationsField(state)
+
         }
     }
 
@@ -100,6 +119,17 @@ class SettingsPage : Page {
                 allowedValues = choicesSet,
             )
         }
+    }
+
+    @Composable
+    private fun CheckUpdatesField(state: InputFormState<AppSettings>) {
+        LeanBoolFormField(
+            id = "checkUpdates",
+            state = state,
+            name = Strings.page_settings_checkUpdates.remember(),
+            getter = { it.checkUpdates },
+            setter = { form, value -> form.copy(checkUpdates = value) },
+        )
     }
 
     @Composable
@@ -152,7 +182,7 @@ class SettingsPage : Page {
 
     @Composable
     private fun OpenLastArchiveOnStartupField(state: InputFormState<AppSettings>) {
-        BoolFormField(
+        LeanBoolFormField(
             id = "openLastArchiveOnStartup",
             state = state,
             name = Strings.page_settings_openLastArchiveOnStartup.remember(),
@@ -163,12 +193,23 @@ class SettingsPage : Page {
 
     @Composable
     private fun PonyIntegrationsField(state: InputFormState<AppSettings>) {
-        BoolFormField(
+        LeanBoolFormField(
             id = "ponyIntegrations",
             state = state,
             name = Strings.page_settings_ponyIntegrations.remember(),
             getter = { it.enablePonyIntegrations },
             setter = { form, value -> form.copy(enablePonyIntegrations = value) },
+        )
+    }
+
+    @Composable
+    private fun ShowForeignSourcesField(state: InputFormState<AppSettings>) {
+        LeanBoolFormField(
+            id = "showForeignImportSources",
+            state = state,
+            name = Strings.page_settings_showForeignImportSources.remember(),
+            getter = { it.showForeignImportSources },
+            setter = { form, value -> form.copy(showForeignImportSources = value) },
         )
     }
 }
