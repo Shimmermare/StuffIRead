@@ -40,7 +40,7 @@ jobs:
 
       - name: Setup Gradle
         if: steps.cache-restore.outputs.cache-hit != 'true'
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v2.4.2
 
       - name: Build Packages
         if: steps.cache-restore.outputs.cache-hit != 'true'
