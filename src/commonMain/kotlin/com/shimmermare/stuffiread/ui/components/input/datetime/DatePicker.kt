@@ -84,7 +84,7 @@ fun DatePicker(
 @Composable
 private fun DatePickerField(value: LocalDate, onClick: () -> Unit) {
     ExtendedOutlinedTextField(
-        value = dateToDisplayString(value),
+        value = "${monthNames[value.month].toString()} ${value.dayOfMonth}, ${value.year}",
         modifier = Modifier.size(210.dp, height = 36.dp).clickable(onClick = onClick),
         singleLine = true,
         // Because readOnly field consumes clicks (aka no open dropdown on click) - use disabled field
@@ -266,11 +266,6 @@ private fun DayCell(value: Int, selected: Boolean = false, onClick: () -> Unit) 
     ) {
         Text(value.toString())
     }
-}
-
-@Composable
-private fun dateToDisplayString(date: LocalDate): String {
-    return "${monthNames[date.month]!!.remember()} ${date.dayOfMonth}, ${date.year}"
 }
 
 private val dayOfWeekShortNames = listOf(
