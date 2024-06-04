@@ -86,6 +86,8 @@ fun ImportFromSourceForm(
                     )
 
                     ImportSource.ARCHIVE_OF_OUR_OWN -> ArchiveOfOurOwnImportForm(onImported = onImported)
+
+                    ImportSource.PONYFICTION -> PonyfictionImportForm(onImported = onImported)
                 }
             }
         }
@@ -98,8 +100,8 @@ private fun ImportSource.getDisplayName(): String {
         ImportSource.PONEPASTE -> "ponepaste.org"
         ImportSource.PONEBIN -> "poneb.in"
         ImportSource.ARCHIVE_OF_OUR_OWN -> "archiveofourown.org"
+        ImportSource.PONYFICTION -> "ponyfiction.org"
         // ImportSource.FIMFICTION -> "FimFiction.net"
         // ImportSource.FICBOOK -> "ficbook.net"
-        // ImportSource.PONYFICTION -> "ponyfiction.org"
     }
 }

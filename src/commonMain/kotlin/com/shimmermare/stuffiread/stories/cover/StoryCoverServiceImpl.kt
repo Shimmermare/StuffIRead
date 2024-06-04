@@ -46,7 +46,7 @@ class StoryCoverServiceImpl(
             }
 
             if (cover != null) {
-                storyDir.resolve("$COVER_FILE_NAME_WITHOUT_EXTENSION.${cover.format.extension.first()}")
+                storyDir.resolve("$COVER_FILE_NAME_WITHOUT_EXTENSION.${cover.format.extensions.first()}")
                     .writeBytes(cover.data)
             }
         }

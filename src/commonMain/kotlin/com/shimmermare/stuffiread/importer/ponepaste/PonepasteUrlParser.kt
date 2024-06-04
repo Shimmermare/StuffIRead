@@ -3,7 +3,7 @@ package com.shimmermare.stuffiread.importer.ponepaste
 import com.shimmermare.stuffiread.importer.UrlParser
 
 object PonepasteUrlParser : UrlParser<PonepasteId> {
-    private val regex = Regex(".*ponepaste\\.org/(?:raw/)?(\\d+)")
+    private val regex = Regex(".*ponepaste\\.org/(?:raw/)?(\\d+).*")
 
     override fun matches(url: String): Boolean {
         return regex.matches(url)

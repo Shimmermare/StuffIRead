@@ -10,14 +10,10 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 
 object AppVersionUtils {
     val CURRENT_VERSION: String? = System.getProperty("jpackage.app-version")
-
-    private val JSON = Json { ignoreUnknownKeys = true }
-
 
     /**
      * Return newer version if there's one.
@@ -47,7 +43,7 @@ object AppVersionUtils {
                 error("Latest release endpoint responded with ${response.status}")
             }
 
-            val latestRelease = response.bodyAsChannel().toInputStream().use { JSON.decodeFromStream<Release>(it) }
+            val latestRelease = response.bodyAsChannel().toInputStream().use { AppJson.decodeFromStream<Release>(it) }
             // Should be ok for 0.0.0 format
             if (latestRelease.tagName > CURRENT_VERSION) {
                 return NewUpdate(latestRelease.tagName, latestRelease.createdAt, latestRelease.htmlUrl)

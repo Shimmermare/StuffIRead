@@ -1,5 +1,8 @@
 package com.shimmermare.stuffiread.stories.file
 
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+
 /**
  * File with story content.
  * Usually there is single file per story, but user may choose to save file in multiple formats
@@ -31,11 +34,11 @@ data class StoryFile(
         // Match words consisting of any unicode letter characters
         private val WORD_REGEX = Regex("[\\p{L}-`']+")
 
-        private val ILLEGAL_FILE_NAME_CHARS = Regex("[^a-zA-Z0-9+_. -]")
+        private val ILLEGAL_FILE_NAME_CHARS = Regex("[<>:\"/\\\\|?*\\x00-\\x1F]")
 
         fun createFileName(name: String, format: StoryFileFormat): String {
             return replaceIllegalCharsInFileName(name).let {
-                if (format.extension != null && !it.endsWith(".${format.extension}")) {
+                if (!it.endsWith(".${format.extension}")) {
                     "$it.${format.extension}"
                 } else {
                     it
@@ -47,12 +50,13 @@ data class StoryFile(
             return name.replace(ILLEGAL_FILE_NAME_CHARS, "_").trim()
         }
 
-        fun fromText(name: String, text: String): StoryFile {
+        fun fromText(name: String, text: String, added: Instant = Clock.System.now()): StoryFile {
             val bytes = text.toByteArray(charset = Charsets.UTF_8)
             val info = StoryFileMeta(
                 fileName = createFileName(name, StoryFileFormat.TXT),
                 format = StoryFileFormat.TXT,
                 originalName = name,
+                added,
                 wordCount = countWords(text),
                 size = bytes.size.toUInt()
             )

@@ -5,13 +5,14 @@ enum class StoryFileFormat(val extension: String) {
     EPUB("epub"),
     PDF("pdf"),
     HTML("html"),
+    FB2("fb2"),
     OTHER("?");
 
     companion object {
         private val formatsByExtension = values().associateBy { it.extension }
 
         fun getByExtension(extension: String): StoryFileFormat {
-            return formatsByExtension.getOrDefault(extension, OTHER)
+            return formatsByExtension.getOrDefault(extension.lowercase(), OTHER)
         }
     }
 }
