@@ -32,6 +32,8 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
+import com.shimmermare.stuffiread.i18n.Strings
+import com.shimmermare.stuffiread.ui.util.remember
 
 /**
  * Enum selection in form of dropdown with optional selected value.
@@ -135,7 +137,7 @@ private fun <E> DropdownField(
                 contentDescription = null,
             )
         },
-        placeholder = { Text("Click to select") },
+        placeholder = { Text(Strings.dropdownField_clickToSelect.remember()) },
         singleLine = true,
         // Because readOnly field consumes clicks (aka no open dropdown on click) - use disabled field
         enabled = false,
