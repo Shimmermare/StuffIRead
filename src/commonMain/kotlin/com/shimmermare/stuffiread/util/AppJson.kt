@@ -14,6 +14,7 @@ import kotlin.io.path.absolutePathString
 val AppJson = Json {
     prettyPrint = true
     useAlternativeNames = false
+    ignoreUnknownKeys = true
 }
 
 object PathSerializer : KSerializer<Path> {

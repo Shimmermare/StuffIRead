@@ -8,6 +8,8 @@ import com.shimmermare.stuffiread.importer.ponebin.PonebinImporter
 import com.shimmermare.stuffiread.importer.ponebin.PonebinUrlParser
 import com.shimmermare.stuffiread.importer.ponepaste.PonepasteImporter
 import com.shimmermare.stuffiread.importer.ponepaste.PonepasteUrlParser
+import com.shimmermare.stuffiread.importer.ponyfiction.PonyfictionImporter
+import com.shimmermare.stuffiread.importer.ponyfiction.PonyfictionUrlParser
 import de.comahe.i18n4k.Locale
 import de.comahe.i18n4k.forLocaleTag
 
@@ -21,7 +23,7 @@ enum class ImportSource(
     PASTEBIN(PastebinUrlParser, PastebinImporter, locale = forLocaleTag("en")),
     PONEPASTE(PonepasteUrlParser, PonepasteImporter, ponyIntegration = true, locale = forLocaleTag("en")),
     PONEBIN(PonebinUrlParser, PonebinImporter, ponyIntegration = true, locale = forLocaleTag("en")),
+    PONYFICTION(PonyfictionUrlParser, PonyfictionImporter, ponyIntegration = true, locale = forLocaleTag("ru")),
     // TODO FIMFICTION(..., ..., ponyIntegration = true, locale = forLocaleTag("en")),
     // TODO FICBOOK(..., ..., locale = forLocaleTag("ru")),
-    // TODO PONYFICTION(..., ..., ponyIntegration = true, locale = forLocaleTag("ru")),
 }
