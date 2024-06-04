@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "com.shimmermare.stuffiread"
-version = "1.1.1"
+version = "1.2"
 
 repositories {
     google()
@@ -67,7 +67,7 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = name
             packageVersion = version.toString()
-            copyright = "Shimmermare 2023"
+            copyright = "Shimmermare 2023-2024"
 
             vendor = "Shimmermare"
             licenseFile.set(layout.projectDirectory.file("LICENSE.txt"))
