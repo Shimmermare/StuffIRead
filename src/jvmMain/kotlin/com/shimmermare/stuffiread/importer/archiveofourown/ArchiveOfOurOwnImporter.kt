@@ -129,7 +129,9 @@ actual object ArchiveOfOurOwnImporter : StoryImporter<ArchiveOfOurOwnImportSetti
         }
 
         val wordCount: UInt = try {
-            html.selectFirst(".work.meta > dd.stats > dl.stats > dd.words")!!.text().toUInt()
+            html.selectFirst(".work.meta > dd.stats > dl.stats > dd.words")!!.text()
+            .filter { it.isDigit() }
+            .toUInt()
         } catch (e: Exception) {
             Napier.e(e) { "Failed to parse word count for $workId" }
             0u
