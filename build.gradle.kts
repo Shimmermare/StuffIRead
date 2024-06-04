@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "com.shimmermare.stuffiread"
-version = "1.2"
+version = "1.2.0"
 
 repositories {
     google()
