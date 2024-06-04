@@ -2,8 +2,10 @@ package com.shimmermare.stuffiread.importer.ponepaste
 
 import com.shimmermare.stuffiread.importer.pastebased.PasteMetadata
 import io.github.aakira.napier.Napier
+import kotlinx.datetime.Instant
 import kotlinx.datetime.toKotlinInstant
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -14,8 +16,8 @@ import java.time.format.DateTimeFormatter
  *  Because relying on HTML structure is fragile, all fields will be replaced with placeholders if extraction failed.
  */
 actual object PonepasteMetadataProvider {
-    // E.g. 16th July 2021 09:31:33 PM
-    private val DATE_FORMAT = DateTimeFormatter.ofPattern("d['st']['nd']['rd']['th'] MMMM yyyy hh:mm:ss a")
+    // E.g.  2024-05-15 20:30:59
+    private val DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 
     actual suspend fun get(pasteId: PonepasteId): PasteMetadata<PonepasteId> {
         val html = Jsoup.connect(PonepasteImporter.getPasteUrl(pasteId)).get()
@@ -34,17 +36,17 @@ actual object PonepasteMetadataProvider {
             "Failed to parse name"
         }
 
-        val date = try {
-            val textDate = html.selectFirst("small.title")!!.textNodes()
-                .map { it.text().trim() }
-                .first { it.startsWith("Created: ") }
-                .removePrefix("Created: ")
-            // Looks like time is always UTC0
-            LocalDateTime.from(DATE_FORMAT.parse(textDate))
-                .toInstant(ZoneOffset.UTC)
-                .toKotlinInstant()
+        val addedDate = try {
+            parseDate(html, "Created: ")
         } catch (e: Exception) {
             Napier.e(e) { "Failed to parse added date for $pasteId" }
+            null
+        }
+
+        val modifiedDate = try {
+            parseDate(html, "Updated: ")
+        } catch (e: Exception) {
+            Napier.e(e) { "Failed to parse updated date for $pasteId" }
             null
         }
 
@@ -57,10 +59,22 @@ actual object PonepasteMetadataProvider {
 
         return PasteMetadata(
             id = pasteId,
-            author = author,
-            name = name,
-            addedDate = date,
-            tags = tags
+            author,
+            name,
+            addedDate,
+            modifiedDate,
+            tags
         )
+    }
+
+    private fun parseDate(html: Document, prefix: String): Instant {
+        val textDate = html.selectFirst("small.title")!!.textNodes()
+            .map { it.text().trim() }
+            .first { it.startsWith(prefix) }
+            .removePrefix(prefix)
+        // Looks like time is always UTC0
+        return LocalDateTime.from(DATE_FORMAT.parse(textDate))
+            .toInstant(ZoneOffset.UTC)
+            .toKotlinInstant()
     }
 }
