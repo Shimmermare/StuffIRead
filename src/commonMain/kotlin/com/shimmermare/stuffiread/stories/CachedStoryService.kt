@@ -12,7 +12,7 @@ import kotlin.time.Duration.Companion.minutes
 class CachedStoryService(
     private val source: StoryService
 ) : StoryService {
-    private val cache: Cache<StoryId, Story> = Cache.Builder()
+    private val cache: Cache<StoryId, Story> = Cache.Builder<StoryId, Story>()
         .maximumCacheSize(CACHE_SIZE)
         .expireAfterAccess(EXPIRE_AFTER)
         .build()

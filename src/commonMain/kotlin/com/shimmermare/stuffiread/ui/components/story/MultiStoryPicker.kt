@@ -31,6 +31,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.stories.Story
 import com.shimmermare.stuffiread.stories.StoryFilter
@@ -148,7 +149,7 @@ private fun SelectorPopup(
     }
 
     Popup(
-        focusable = true,
+        properties = PopupProperties(focusable = true),
         onDismissRequest = { onSelected(selectedStories.keys) }
     ) {
         PopupContent {

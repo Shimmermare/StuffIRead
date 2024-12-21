@@ -12,7 +12,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowRightAlt
+import androidx.compose.material.icons.automirrored.filled.ArrowRightAlt
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -99,7 +99,7 @@ fun TagMappingForm(
                         modifier = Modifier.weight(1F),
                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
                     )
-                    Icon(Icons.Filled.ArrowRightAlt, null)
+                    Icon(Icons.AutoMirrored.Filled.ArrowRightAlt, null)
                     Column(
                         horizontalAlignment = Alignment.End,
                         modifier = Modifier.weight(1F)

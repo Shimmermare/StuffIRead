@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import com.shimmermare.stuffiread.ui.components.layout.PopupContent
 
 @Composable
@@ -86,7 +87,7 @@ fun <T> DropdownPicker(
         }
         if (expanded) {
             Popup(
-                focusable = true,
+                properties = PopupProperties(focusable = true),
                 onDismissRequest = { expanded = false }
             ) {
                 PopupContent(

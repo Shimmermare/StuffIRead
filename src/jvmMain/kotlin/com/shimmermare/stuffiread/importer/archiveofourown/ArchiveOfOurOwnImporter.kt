@@ -12,10 +12,11 @@ import com.shimmermare.stuffiread.stories.file.StoryFileFormat
 import com.shimmermare.stuffiread.stories.file.StoryFileMeta
 import com.shimmermare.stuffiread.util.AppHttpClient
 import io.github.aakira.napier.Napier
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import io.ktor.util.*
+import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsChannel
+import io.ktor.http.ContentDisposition
+import io.ktor.http.HttpStatusCode
+import io.ktor.utils.io.toByteArray
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -130,8 +131,8 @@ actual object ArchiveOfOurOwnImporter : StoryImporter<ArchiveOfOurOwnImportSetti
 
         val wordCount: UInt = try {
             html.selectFirst(".work.meta > dd.stats > dl.stats > dd.words")!!.text()
-            .filter { it.isDigit() }
-            .toUInt()
+                .filter { it.isDigit() }
+                .toUInt()
         } catch (e: Exception) {
             Napier.e(e) { "Failed to parse word count for $workId" }
             0u

@@ -14,11 +14,14 @@ import com.shimmermare.stuffiread.stories.file.StoryFileMeta
 import com.shimmermare.stuffiread.util.AppHttpClient
 import com.shimmermare.stuffiread.util.AppJson
 import io.github.aakira.napier.Napier
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import io.ktor.util.*
-import io.ktor.utils.io.*
+import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsChannel
+import io.ktor.client.statement.bodyAsText
+import io.ktor.client.statement.readRawBytes
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
+import io.ktor.utils.io.readUTF8Line
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -182,7 +185,7 @@ object PonyfictionImporter : StoryImporter<PonyfictionImportSettings> {
             if (response.status != HttpStatusCode.OK) {
                 throw Exception("Request failed: ${response.status}")
             }
-            val bytes = response.readBytes()
+            val bytes = response.readRawBytes()
             PonyfictionMetaDumpParser.getMetaMappings(bytes)
         } catch (e: Exception) {
             Napier.e(e) { "Failed to download meta dump, tags and characters won't be mapped" }
@@ -207,7 +210,7 @@ object PonyfictionImporter : StoryImporter<PonyfictionImportSettings> {
                 val imageFormat: StoryCoverFormat = StoryCoverFormat.getByMimeSubType(contentType.contentSubtype)
                     ?: throw Exception("Unsupported image type: $contentType")
 
-                val imageBytes = response.readBytes()
+                val imageBytes = response.readRawBytes()
                 Napier.d { "Downloaded story cover from $imageUrl - $imageFormat, ${imageBytes.size} bytes" }
                 return StoryCover(format = imageFormat, data = imageBytes)
             } catch (e: Exception) {
@@ -223,7 +226,7 @@ object PonyfictionImporter : StoryImporter<PonyfictionImportSettings> {
         if (response.status != HttpStatusCode.OK) {
             throw Exception("Failed to download FB2: ${response.status}")
         }
-        val content = response.readBytes()
+        val content = response.readRawBytes()
         return StoryFile(
             meta = StoryFileMeta(
                 fileName = StoryFile.createFileName(story.title, StoryFileFormat.FB2),

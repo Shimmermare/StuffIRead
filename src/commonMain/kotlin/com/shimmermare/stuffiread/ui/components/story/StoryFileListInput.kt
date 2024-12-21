@@ -24,7 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -166,7 +166,7 @@ private fun StoryFileCardActionButton(icon: ImageVector, enabled: Boolean = true
                 if (enabled) {
                     it.clickable(
                         interactionSource = remember { MutableInteractionSource() },
-                        indication = rememberRipple(bounded = false, radius = 16.dp),
+                        indication = ripple(bounded = false, radius = 16.dp),
                         onClick = onClick,
                     )
                 } else {

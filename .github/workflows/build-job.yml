@@ -36,7 +36,7 @@ jobs:
         if: steps.cache-restore.outputs.cache-hit != 'true'
         with:
           distribution: temurin
-          java-version: 18
+          java-version: 21
 
       - name: Setup Gradle
         if: steps.cache-restore.outputs.cache-hit != 'true'

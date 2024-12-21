@@ -25,6 +25,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import com.godaddy.android.colorpicker.ClassicColorPicker
 import com.godaddy.android.colorpicker.HsvColor
 import com.shimmermare.stuffiread.ui.components.layout.PopupContent
@@ -63,7 +64,7 @@ fun PopupColorPicker(
             Box {
                 Popup(
                     alignment = Alignment.TopStart,
-                    focusable = true,
+                    properties = PopupProperties(focusable = true),
                     onDismissRequest = {
                         show = false
                         onPick.invoke(currentColor)

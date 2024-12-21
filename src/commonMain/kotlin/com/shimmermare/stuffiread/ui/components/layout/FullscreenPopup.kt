@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
+import androidx.compose.ui.window.PopupProperties
 import com.shimmermare.stuffiread.ui.theme.Theme
 import com.shimmermare.stuffiread.ui.theme.theme
 
@@ -26,7 +27,7 @@ inline fun FullscreenPopup(
 ) {
     Popup(
         popupPositionProvider = NoopPopupPositionProvider,
-        focusable = true,
+        properties = PopupProperties(focusable = true),
     ) {
         val backgroundColor = if (theme == Theme.DARK) {
             Color.White.copy(alpha = 0.15F)

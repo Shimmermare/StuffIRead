@@ -10,7 +10,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -51,7 +51,7 @@ private fun StarsInput(score: Score, starCount: Int, onValueChange: (Score) -> U
                 modifier = Modifier.size(starSize)
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
-                        indication = rememberRipple(bounded = false, radius = starSize / 2),
+                        indication = ripple(bounded = false, radius = starSize / 2),
                         onClick = {
                             val newScore = Score((index - 1) / (starCount.toFloat() - 1))
                             onValueChange(newScore)

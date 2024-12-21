@@ -1,14 +1,19 @@
+@file:OptIn(ExperimentalKotlinGradlePluginApi::class)
+
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     kotlin("multiplatform")
-    kotlin("plugin.serialization") version "1.7.10"
+    kotlin("plugin.serialization") version "2.0.20"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.0.20"
     id("org.jetbrains.compose")
-    id("de.comahe.i18n4k") version "0.5.0"
+    id("de.comahe.i18n4k") version "0.9.0"
 }
 
 group = "com.shimmermare.stuffiread"
-version = "1.2.0"
+version = "1.3.0"
 
 repositories {
     google()
@@ -17,9 +22,12 @@ repositories {
 }
 
 kotlin {
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
     jvm {
-        compilations.all {
-            kotlinOptions.jvmTarget = "11"
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_21)
         }
         withJava()
     }
@@ -67,7 +75,7 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = name
             packageVersion = version.toString()
-            copyright = "Shimmermare 2023-2024"
+            copyright = "Shimmermare 2023-2025"
 
             vendor = "Shimmermare"
             licenseFile.set(layout.projectDirectory.file("LICENSE.txt"))

@@ -26,10 +26,10 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.NavigateBefore
+import androidx.compose.material.icons.automirrored.filled.NavigateNext
 import androidx.compose.material.icons.filled.EditCalendar
-import androidx.compose.material.icons.filled.NavigateBefore
-import androidx.compose.material.icons.filled.NavigateNext
-import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,6 +41,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import com.shimmermare.stuffiread.i18n.Strings
 import com.shimmermare.stuffiread.ui.components.input.DropdownPicker
 import com.shimmermare.stuffiread.ui.components.input.ExtendedOutlinedTextField
@@ -112,7 +113,7 @@ private fun DatePickerPopup(value: LocalDate, onDismissRequest: () -> Unit, onVa
     }
 
     Popup(
-        focusable = true,
+        properties = PopupProperties(focusable = true),
         onDismissRequest = onDismissRequest,
         offset = IntOffset(0, 36)
     ) {
@@ -136,7 +137,7 @@ private fun DatePickerPopup(value: LocalDate, onDismissRequest: () -> Unit, onVa
                             monthToShow = monthToShow.minus(1)
                         }
                     ) {
-                        Icon(Icons.Filled.NavigateBefore, null)
+                        Icon(Icons.AutoMirrored.Filled.NavigateBefore, null)
                     }
                     Row {
                         MonthDropdown(monthToShow, onValueChange = { monthToShow = it })
@@ -152,7 +153,7 @@ private fun DatePickerPopup(value: LocalDate, onDismissRequest: () -> Unit, onVa
                             monthToShow = monthToShow.plus(1)
                         }
                     ) {
-                        Icon(Icons.Filled.NavigateNext, null)
+                        Icon(Icons.AutoMirrored.Filled.NavigateNext, null)
                     }
                 }
                 LazyVerticalGrid(
@@ -258,7 +259,7 @@ private fun DayCell(value: Int, selected: Boolean = false, onClick: () -> Unit) 
                 } else {
                     it.clickable(
                         onClick = onClick,
-                        indication = rememberRipple(bounded = false, radius = 16.dp),
+                        indication = ripple(bounded = false, radius = 16.dp),
                         interactionSource = remember { MutableInteractionSource() }
                     )
                 }
